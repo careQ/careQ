@@ -1,0 +1,19 @@
+spring:
+  mvc:
+    hidden-method:
+      filter:
+        enabled: true
+  profiles:
+    active: local
+    include: secret
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/careQ?useSSL=false&allowPublicKeyRetrieval=true
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
