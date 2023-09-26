@@ -34,8 +34,8 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime reservation_date;
 
-    @Column
-    private Enum reservation_status;
+    @Column(nullable = false)
+    private Integer reservation_status;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")

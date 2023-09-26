@@ -27,6 +27,9 @@ public class RegisterChart {
     @CreationTimestamp
     private LocalDateTime register_time;
 
+    @Column(nullable = false)
+    private Integer status;
+
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "member_id")
     private Member member;
