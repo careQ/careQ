@@ -1,5 +1,6 @@
 package com.reve.careQ.domain.Pharmacy.entity;
 
+import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +12,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 @Entity
 @SuperBuilder
-public class Pharmacy {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long pharmacy_id;
+public class Pharmacy extends BaseEntity {
 
     @Column
     private String pharmacy_name;

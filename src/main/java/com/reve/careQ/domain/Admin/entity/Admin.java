@@ -1,15 +1,19 @@
 package com.reve.careQ.domain.Admin.entity;
 
+import com.reve.careQ.domain.Chat.entity.Chat;
+import com.reve.careQ.domain.HospSub.entity.HospSub;
+import com.reve.careQ.domain.Message.entity.Message;
+import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
+import java.util.List;
+
+import static jakarta.persistence.FetchType.LAZY;
 
 @Getter
 @Setter
@@ -19,17 +23,9 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Builder
-public class Admin {
+public class Admin extends BaseEntity {
+
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long admin_id;
-
-    @CreatedDate
-    private LocalDateTime admin_created_at;
-
-    @UpdateTimestamp
-    private LocalDateTime admin_updated_at;
 
     @Column(unique = true)
     @Size(min = 4, max = 16)
@@ -40,5 +36,15 @@ public class Admin {
 
     @Column(unique = true)
     private String admin_email;
+
+    @OneToMany(mappedBy = "admin", fetch = LAZY)
+    private List<Chat> chatList;
+
+    @OneToMany(mappedBy = "admin", fetch = LAZY)
+    private List<Message> messageList;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name="hospsub_id")
+    private HospSub hospSub;
 
 }

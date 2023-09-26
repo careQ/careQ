@@ -1,15 +1,20 @@
 package com.reve.careQ.domain.Member.entity;
 
+import com.reve.careQ.domain.Chat.entity.Chat;
+import com.reve.careQ.domain.Message.entity.Message;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
+import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
+import java.util.List;
+
+import static jakarta.persistence.FetchType.LAZY;
 
 @Getter
 @Setter
@@ -19,17 +24,9 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Builder
-public class Member {
+public class Member extends BaseEntity {
+
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @CreatedDate
-    private LocalDateTime created_at;
-
-    @UpdateTimestamp
-    private LocalDateTime updated_at;
 
     @Column(unique = true)
     @Size(min = 4, max = 16)
@@ -40,5 +37,17 @@ public class Member {
 
     @Column(unique = true)
     private String email;
+
+    @OneToMany(mappedBy = "member", fetch = LAZY)
+    private List<RegisterChart> registerCharts;
+
+    @OneToMany(mappedBy = "member", fetch = LAZY)
+    private List<Reservation> reservations;
+
+    @OneToMany(mappedBy = "member", fetch = LAZY)
+    private List<Chat> chatList;
+
+    @OneToMany(mappedBy = "member", fetch = LAZY)
+    private List<Message> messageList;
 
 }
