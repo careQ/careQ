@@ -1,6 +1,6 @@
 package com.reve.careQ.domain.Subject.entity;
 
-import com.reve.careQ.domain.HospSub.entity.HospSub;
+import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,10 +17,10 @@ import static jakarta.persistence.FetchType.LAZY;
 @SuperBuilder
 public class Subject extends BaseEntity {
 
-    @Column(unique = true)
+    @Column
     private String sub_name;
 
     @OneToMany(mappedBy = "subject", fetch = LAZY)
-    private List<HospSub> hospSubList;
+    private List<Admin> adminList;
 
 }

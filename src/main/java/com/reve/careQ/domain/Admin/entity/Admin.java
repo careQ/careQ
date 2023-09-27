@@ -1,8 +1,11 @@
 package com.reve.careQ.domain.Admin.entity;
 
 import com.reve.careQ.domain.Chat.entity.Chat;
-import com.reve.careQ.domain.HospSub.entity.HospSub;
+import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Message.entity.Message;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
+import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -43,8 +46,18 @@ public class Admin extends BaseEntity {
     @OneToMany(mappedBy = "admin", fetch = LAZY)
     private List<Message> messageList;
 
+    @OneToMany(mappedBy = "admin", fetch = LAZY)
+    private List<RegisterChart> registerChartList;
+
+    @OneToMany(mappedBy = "admin", fetch = LAZY)
+    private List<Reservation> reservationList;
+
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name="hospsub_id")
-    private HospSub hospSub;
+    @JoinColumn(name="hospital_id")
+    private Hospital hospital;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name="subject_id")
+    private Subject subject;
 
 }

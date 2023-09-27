@@ -1,6 +1,6 @@
 package com.reve.careQ.domain.Hospital.entity;
 
-import com.reve.careQ.domain.HospSub.entity.HospSub;
+import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -37,6 +37,6 @@ public class Hospital extends BaseEntity {
     private Date hospital_days;
 
     @OneToMany(mappedBy = "hospital", fetch = LAZY)
-    private List<HospSub> hospSubList;
+    private List<Admin> AdminList;
 
 }

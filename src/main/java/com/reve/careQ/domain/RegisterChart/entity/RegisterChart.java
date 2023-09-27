@@ -1,6 +1,6 @@
 package com.reve.careQ.domain.RegisterChart.entity;
 
-import com.reve.careQ.domain.HospSub.entity.HospSub;
+import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Queue.entity.Queue;
 import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
@@ -35,9 +35,9 @@ public class RegisterChart {
     private Member member;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "hospsub_id")
-    private HospSub hospSub;
-    
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
+
     @OneToOne(mappedBy = "registerChart", fetch = LAZY)
     private Queue queue;
 

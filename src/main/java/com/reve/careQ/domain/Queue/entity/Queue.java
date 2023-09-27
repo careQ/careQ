@@ -21,8 +21,8 @@ public class Queue {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "id"),
-            @JoinColumn(name = "hosp_sub_id")
+            @JoinColumn(name = "member_id"),
+            @JoinColumn(name = "admin_id")
     })
     private RegisterChart registerChart;
 

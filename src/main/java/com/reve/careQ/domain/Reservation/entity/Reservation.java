@@ -1,6 +1,6 @@
 package com.reve.careQ.domain.Reservation.entity;
 
-import com.reve.careQ.domain.HospSub.entity.HospSub;
+import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import jakarta.persistence.*;
@@ -42,7 +42,7 @@ public class Reservation {
     private Member member;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hospsub_id")
-    private HospSub hospSub;
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
 
 }
