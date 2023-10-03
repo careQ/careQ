@@ -28,11 +28,11 @@ public class Member extends BaseEntity {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Column(unique = true)
+    @Column
     @Size(min = 4, max = 16)
     private String username;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
     @Column(unique = true)
