@@ -6,12 +6,14 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -28,15 +30,28 @@ public class Member extends BaseEntity {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Column
-    @Size(min = 4, max = 16)
     private String username;
-
-    @Column
     private String password;
-
-    @Column(unique = true)
     private String email;
+    private String role;
+
+    public List<? extends GrantedAuthority> getGrantedAuthorities() {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+
+        // 모든 멤버는 member 권한을 가짐
+        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_MEMBER"));
+
+        // username이 admin인 회원은 추가로 admin 권한도 가짐
+        if ("ADMIN".equals(role)) {
+            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+
+        return grantedAuthorities;
+    }
+
+    public boolean isAdmin() {
+        return "ADMIN".equals(role);
+    }
 
     @OneToMany(mappedBy = "member", fetch = LAZY)
     private List<RegisterChart> registerCharts;
