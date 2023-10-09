@@ -13,14 +13,12 @@ import org.springframework.context.MessageSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.servlet.LocaleResolver;
 
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
 @Component
 @RequestScope
@@ -33,7 +31,7 @@ public class Rq {
     private final HttpServletResponse resp;
     private final HttpSession session;
     private final User user;
-    private Member member = null; // 레이지 로딩, 처음부터 넣지 않고, 요청이 들어올 때 넣는다.
+    private Member member = null;
 
     public Rq(MemberService memberService, MessageSource messageSource, LocaleResolver localeResolver, HttpServletRequest req, HttpServletResponse resp, HttpSession session) {
         this.memberService = memberService;
@@ -51,21 +49,6 @@ public class Rq {
         } else {
             this.user = null;
         }
-    }
-
-    public boolean isAdmin() {
-        if (isLogout()) return false;
-
-        return getMember().isAdmin();
-    }
-
-    public boolean isRefererAdminPage() {
-        SavedRequest savedRequest = (SavedRequest) session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-
-        if (savedRequest == null) return false;
-
-        String referer = savedRequest.getRedirectUrl();
-        return referer != null && referer.contains("/adm");
     }
 
     // 로그인 되어 있는지 체크
@@ -128,39 +111,6 @@ public class Rq {
     // 메세지에 ttl 적용
     private String msgWithTtl(String msg) {
         return Ut.url.encode(msg) + ";ttl=" + new Date().getTime();
-    }
-
-    public void setSessionAttr(String name, String value) {
-        session.setAttribute(name, value);
-    }
-
-    public <T> T getSessionAttr(String name, T defaultValue) {
-        try {
-            return (T) session.getAttribute(name);
-        } catch (Exception ignored) {
-        }
-
-        return defaultValue;
-    }
-
-    public void removeSessionAttr(String name) {
-        session.removeAttribute(name);
-    }
-
-    public String getCText(String code, String... args) {
-        return messageSource.getMessage(code, args, getLocale());
-    }
-
-    private Locale getLocale() {
-        if (locale == null) locale = localeResolver.resolveLocale(req);
-
-        return locale;
-    }
-
-    public String getParamsJsonStr() {
-        Map<String, String[]> parameterMap = req.getParameterMap();
-
-        return Ut.json.toStr(parameterMap);
     }
 
 }
