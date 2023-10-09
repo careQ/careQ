@@ -23,6 +23,11 @@ public class SecurityConfig {
                                 .defaultSuccessUrl("/members/home")
 
                 )
+                .oauth2Login(
+                        oauth2Login -> oauth2Login
+                                .loginPage("/members/login")
+                                .defaultSuccessUrl("/members/home")
+                )
                 .logout(
                         logout -> logout
                                 .logoutUrl("/members/logout")

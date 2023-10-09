@@ -20,10 +20,9 @@ public class NotProd {
             @Transactional
             public void run(String... args) throws Exception {
 
-                Member member1 = memberService.join("user1", "1234", "user1@test.com", "일반회원").getData();
-                Member member2 = memberService.join("user2", "1234", "user2@test.com", "일반회원").getData();
-                Member member3 = memberService.join("user3", "1234", "user3@test.com", "일반회원").getData();
-                Member member4 = memberService.join("user4", "1234", "user4@test.com", "일반회원").getData();
+                Member member1 = memberService.join("careQ", "user1", "1234", "user1@test.com").getData();
+                Member member2 = memberService.join("careQ", "user2", "1234", "user2@test.com").getData();
+                Member member3 = memberService.join("careQ", "user3", "1234", "user3@test.com").getData();
 
             }
         };

@@ -42,7 +42,7 @@ public class MemberController {
     @PreAuthorize("isAnonymous()")
     @PostMapping("/join")
     public String join(@Valid JoinFormDto joinFormDto) {
-        RsData<Member> joinRs = memberService.join(joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail(), "일반회원");
+        RsData<Member> joinRs = memberService.join("CareQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
 
         if (joinRs.isFail()) {
 

@@ -34,23 +34,15 @@ public class Member extends BaseEntity {
     private String password;
     private String email;
     private String role;
+    private String providerTypeCode; // 소셜 회원 (KAKAO, NAVER, GOOGLE) , 일반 회원 (careQ)
 
     public List<? extends GrantedAuthority> getGrantedAuthorities() {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 
-        // 모든 멤버는 member 권한을 가짐
         grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_MEMBER"));
 
-        // username이 admin인 회원은 추가로 admin 권한도 가짐
-        if ("ADMIN".equals(role)) {
-            grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
-
         return grantedAuthorities;
-    }
 
-    public boolean isAdmin() {
-        return "ADMIN".equals(role);
     }
 
     @OneToMany(mappedBy = "member", fetch = LAZY)
