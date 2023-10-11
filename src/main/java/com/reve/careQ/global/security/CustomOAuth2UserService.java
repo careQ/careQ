@@ -2,6 +2,9 @@ package com.reve.careQ.global.security;
 
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.global.security.userInfo.GoogleUserInfo;
+import com.reve.careQ.global.security.userInfo.NaverUserInfo;
+import com.reve.careQ.global.security.userInfo.OAuth2UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -22,15 +25,23 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        //google
+
+        OAuth2UserInfo oAuth2UserInfo = null;
         String providerTypeCode = userRequest.getClientRegistration().getRegistrationId();
-        String providerId = oAuth2User.getAttribute("sub");
+
+        if(providerTypeCode.equals("google")){
+            oAuth2UserInfo = new GoogleUserInfo(oAuth2User.getAttributes());
+        }
+        else if(providerTypeCode.equals("naver")){
+            oAuth2UserInfo = new NaverUserInfo(oAuth2User.getAttributes());
+        }
+
+        String providerId = oAuth2UserInfo.getProviderId();
         String username = providerTypeCode+"_"+providerId;
-        String email = oAuth2User.getAttribute("email");
+        String email = oAuth2UserInfo.getEmail();
 
         Member member = memberService.whenSocialLogin(providerTypeCode, username, email).getData();
 
         return new SecurityMember(member.getId(), member.getUsername(), member.getPassword(), member.getGrantedAuthorities());
-
     }
 }
