@@ -1,15 +1,61 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
-
 <head>
-    <title>일반회원메인페이지</title>
+    <title>일반 회원 메인 페이지</title>
 </head>
-
 <body>
-
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
-    <P>일반회원메인</P>
+    <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
+        <!-- 로그아웃 버튼 -->
+        <form th:if="${@rq.login}" th:action="|/members/logout|" method="post" class="m-0 flex justify-end w-64">
+            <button th:if="${@rq.login}" type="submit" class="btn btn-sm btn-ghost ml-auto" style="background-color: #ffffff; color: #78C4BA;">로그아웃</button>
+        </form>
+        <!-- 회원 기본 정보 -->
+        <div class="flex flex-col">
+            <p class="font-semibold text-xl">다채님, 안녕하세요</p>
+            <p class="font-semibold text-xl"><span class="text-[#78C4BA] text-xl">'원광대학교 산부인과'</span> 입니다</p>
+        </div>
+        <!-- 대기 현황 -->
+        <div class="block rounded-lg bg-[#f4f4f4] text-center w-64 h-32 my-4">
+            <div class="h-full flex flex-col justify-center">
+                <div class="flex justify-between">
+                    <div class="w-1/2 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
+                        <div class="text-[#78C4BA]">현재 대기</div>
+                        <div class="text-black style=" style="font-size: 1.15rem;">N명</div>
+                    </div>
+                    <div class="w-1/2 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
+                        <div class="text-[#78C4BA]">예상시간</div>
+                        <div class="text-black" style="font-size: 1.15em;">H시간 M분</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 예약 정보 -->
+        <div class="block rounded-lg bg-[#f4f4f4] text-center w-64 h-32 my-4">
+            <div class="h-full flex flex-col justify-center">
+                <div class="bg-[#E4EEED] text-left p-2 border border-[#78C4BA] mx-2 rounded-lg">
+                    <p>예약 시간 : 2023-10-12 13:00</p>
+                    <p>예약 현황 : <span class="text-[#F83758]">확정</span></p>
+                    <p class="text-[#F83758]">잊지 않고 방문 부탁드립니다.</p>
+                </div>
+            </div>
+        </div>
+        <!-- 줄서기 예약하기 버튼 -->
+        <button id="btn-join-1" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA;">
+            <span class="text-white" style="font-size: 17px;">줄서기/ 예약하기</span>
+        </button>
+        <!-- 메뉴 바 -->
+        <nav class="bg-[#f4f4f4] w-64 mt-3 py-4">
+            <div class="container">
+                <ul class="flex justify-center space-x-7">
+                    <li><a href="#" class="text-[#78C4BA] hover:text-[#ffffff] transition duration-300 ease-in-out">홈</a></li>
+                    <li><a href="#" class="text-[#78C4BA] hover:text-[#ffffff] transition duration-300 ease-in-out">검색</a></li>
+                    <li><a href="#" class="text-[#78C4BA] hover:text-[#ffffff] transition duration-300 ease-in-out">채팅</a></li>
+                    <li><a href="#" class="text-[#78C4BA] hover:text-[#ffffff] transition duration-300 ease-in-out">My</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
 </main>
 </body>
-
 </html>
 

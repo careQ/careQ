@@ -1,11 +1,8 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
-
 <head>
     <title>로그인</title>
 </head>
-
 <body>
-
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <script>
         function LoginForm__submit(form) {
@@ -44,7 +41,6 @@
         }
 
     </script>
-
     <div class="max-w-2xl w-full px-4">
         <h1 class="mb-4">
             <i class="fa-solid fa-arrow-right-to-bracket"></i>
@@ -58,28 +54,24 @@
                 </label>
                 <input type="text" name="username" placeholder="아이디" class="input input-bordered" autofocus/>
             </div>
-
             <div class="form-control">
                 <label class="label">
                     <span class="label-text">비밀번호</span>
                 </label>
                 <input type="password" name="password" placeholder="비밀번호" class="input input-bordered"/>
             </div>
-
             <button id="btn-login-1" class="btn btn-block bg-[#78C4BA] gap-1 text-white">
                 <i class="fa-solid fa-arrow-right-to-bracket"></i>
                 <span>로그인</span>
             </button>
-
             <div class="login-signup">
                 <span class="text">계정이 없으신가요?
                     <a th:href="@{/members/join}" class="text signup-link" style="color: #78C4BA">회원가입</a>
                 </span>
             </div>
-
             </th:block>
-
         </form>
+
         <div>
             <div class="social-login flex items-center justify-center space-x-4">
                 <a href="/oauth2/authorization/google">
@@ -93,8 +85,8 @@
                 </a>
             </div>
         </div>
+
     </div>
 </main>
 </body>
-
 </html>

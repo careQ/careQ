@@ -1,5 +1,4 @@
 <html xmlns:layout="">
-
 <head>
 
   <meta charset="UTF-8">
@@ -20,7 +19,6 @@
   <link rel="stylesheet" href="/resource/common/common.css">
 
 </head>
-
 <body>
 
 <!-- 데이지 UI 불러오기 -->
@@ -30,12 +28,7 @@
 
 <!-- 공통 상단 -->
 <header layout:fragment="header" style="display: flex; justify-content: center; align-items: center;">
-  <form th:if="${@rq.login}" th:action="|/members/logout|" method="post" class="m-0">
-    <button th:if="${@rq.login}" type="submit" class="btn btn-sm btn-ghost" style="background-color: #78C4BA; color: #ffffff;">로그아웃</button>
-  </form>
-  <span th:if="${@rq.login}" th:text="|${@rq.member.username}님 환영합니다.|"></span>
 </header>
-
 <main layout:fragment="main"></main>
 
 <script th:inline="javascript">
