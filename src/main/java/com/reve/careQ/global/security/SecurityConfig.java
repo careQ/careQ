@@ -20,13 +20,13 @@ public class SecurityConfig {
                 .formLogin(
                         formLogin -> formLogin
                                 .loginPage("/members/login")
-                                .defaultSuccessUrl("/members/home")
+                                .defaultSuccessUrl("/members/")
 
                 )
                 .oauth2Login(
                         oauth2Login -> oauth2Login
                                 .loginPage("/members/login")
-                                .defaultSuccessUrl("/members/home")
+                                .defaultSuccessUrl("/members/")
                 )
                 .logout(
                         logout -> logout

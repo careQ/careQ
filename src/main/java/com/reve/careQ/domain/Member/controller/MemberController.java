@@ -28,7 +28,7 @@ public class MemberController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/home")
+    @GetMapping("/")
     public String showMembersHome() {
         return "members/members-home";
     }
