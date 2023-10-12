@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,8 +26,12 @@ public class MemberService {
         return memberRepository.findByUsername(username);
     }
 
-    private Optional<Member> findByEmail(String email) {
+    private List<Member> findByEmail(String email) {
         return memberRepository.findByEmail(email);
+    }
+
+    private Optional<Member> findByEmailAndProviderTypeCode(String providerTypeCode, String email) {
+        return memberRepository.findByEmailAndProviderTypeCode(providerTypeCode, email);
     }
 
     @Transactional
@@ -39,7 +44,7 @@ public class MemberService {
             password = passwordEncoder.encode(password);
         }
 
-        if (findByEmail(email).isPresent()) {
+        if ((!findByEmail(email).isEmpty()) && (providerTypeCode.equals("careQ"))){
             return RsData.of("F-2", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email));
         }
 
@@ -58,14 +63,15 @@ public class MemberService {
     }
 
     @Transactional
-    public RsData<Member> whenSocialLogin(String providerTypeCode, String username,String email) {
-        Optional<Member> soMember = findByEmail(email);
+    public RsData<Member> whenSocialLogin(String providerTypeCode, String username, String email) {
 
-        if (soMember.isPresent()) return RsData.of("S-2", "로그인 되었습니다.", soMember.get());
+        Optional<Member> socialMember = findByEmailAndProviderTypeCode(email, providerTypeCode);
+
+        if (socialMember.isPresent()) return RsData.of("S-2", "로그인 되었습니다.", socialMember.get());
 
         String password = UUID.randomUUID().toString().substring(0, 6);
 
-        return join(providerTypeCode,username, password,email);
+        return join(providerTypeCode, username, password, email);
     }
 
 }

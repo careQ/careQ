@@ -20,12 +20,12 @@ public class RsData<T> {
         return of(resultCode, msg, null);
     }
 
-    public static <T> RsData<T> successOf(T data) {
-        return of("S-1", "성공", data);
+    public static <T> RsData<T> successOf(String resultCode, String msg) {
+        return of(resultCode, msg);
     }
 
-    public static <T> RsData<T> failOf(T data) {
-        return of("F-1", "실패", data);
+    public static <T> RsData<T> failOf(String resultCode, String msg) {
+        return of(resultCode, msg);
     }
 
     public boolean isSuccess() {

@@ -42,7 +42,7 @@ public class MemberController {
     @PreAuthorize("isAnonymous()")
     @PostMapping("/join")
     public String join(@Valid JoinFormDto joinFormDto) {
-        RsData<Member> joinRs = memberService.join("CareQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
+        RsData<Member> joinRs = memberService.join("careQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
 
         if (joinRs.isFail()) {
 
@@ -52,4 +52,5 @@ public class MemberController {
         // 아래 링크로 리다이렉트(302, 이동) 하고 그 페이지에서 메세지 보여줌
         return rq.redirectWithMsg("/members/login", joinRs);
     }
+
 }

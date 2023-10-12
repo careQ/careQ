@@ -3,6 +3,7 @@ package com.reve.careQ.global.security;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.global.security.userInfo.GoogleUserInfo;
+import com.reve.careQ.global.security.userInfo.KakaoUserInfo;
 import com.reve.careQ.global.security.userInfo.NaverUserInfo;
 import com.reve.careQ.global.security.userInfo.OAuth2UserInfo;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         else if(providerTypeCode.equals("naver")){
             oAuth2UserInfo = new NaverUserInfo(oAuth2User.getAttributes());
         }
+        else if (providerTypeCode.equals("kakao")) {
+            oAuth2UserInfo = new KakaoUserInfo(oAuth2User.getAttributes());
+
+        }
 
         String providerId = oAuth2UserInfo.getProviderId();
         String username = providerTypeCode+"_"+providerId;
@@ -43,5 +48,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Member member = memberService.whenSocialLogin(providerTypeCode, username, email).getData();
 
         return new SecurityMember(member.getId(), member.getUsername(), member.getPassword(), member.getGrantedAuthorities());
+
     }
 }
