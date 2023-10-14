@@ -1,5 +1,6 @@
 package com.reve.careQ.global.rq;
 
+import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.global.exception.UserNotFoundException;

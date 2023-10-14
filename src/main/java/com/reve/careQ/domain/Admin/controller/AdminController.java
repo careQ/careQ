@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class AdminController {
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/home")
+//    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/")
     public String showAdminsHome() {
         return "admins/admins-home";
     }

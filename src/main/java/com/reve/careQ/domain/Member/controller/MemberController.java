@@ -28,7 +28,7 @@ public class MemberController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/home")
+    @GetMapping("/")
     public String showMembersHome() {
         return "members/members-home";
     }
@@ -52,5 +52,6 @@ public class MemberController {
         // 아래 링크로 리다이렉트(302, 이동) 하고 그 페이지에서 메세지 보여줌
         return rq.redirectWithMsg("/members/login", joinRs);
     }
+
 
 }

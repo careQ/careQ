@@ -15,18 +15,18 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain memberSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .formLogin(
                         formLogin -> formLogin
                                 .loginPage("/members/login")
-                                .defaultSuccessUrl("/members/home")
+                                .defaultSuccessUrl("/members/")
 
                 )
                 .oauth2Login(
                         oauth2Login -> oauth2Login
                                 .loginPage("/members/login")
-                                .defaultSuccessUrl("/members/home")
+                                .defaultSuccessUrl("/members/")
                 )
                 .logout(
                         logout -> logout
