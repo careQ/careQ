@@ -9,6 +9,6 @@ public class CompositePKEntity implements Serializable {
 
     private Long id;
 
-    private Long administrator_id;
+    private Long administratorId;
 
 }

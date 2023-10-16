@@ -16,9 +16,11 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @SuperBuilder
 public class Subject extends BaseEntity {
+    @Column(unique = true, nullable = false)
+    private String code;
 
     @Column
-    private String sub_name;
+    private String name;
 
     @OneToMany(mappedBy = "subject", fetch = LAZY)
     private List<Admin> adminList;

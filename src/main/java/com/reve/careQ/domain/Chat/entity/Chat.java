@@ -20,14 +20,14 @@ import static jakarta.persistence.FetchType.LAZY;
 public class Chat extends BaseEntity {
 
     @Column
-    private String chat_name;
+    private String name;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "memberId")
     private Member member;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name = "adminId")
     private Admin admin;
 
     @OneToMany(mappedBy = "chat", fetch = LAZY)

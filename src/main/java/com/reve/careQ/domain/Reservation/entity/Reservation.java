@@ -29,20 +29,20 @@ public class Reservation {
     private LocalDateTime deleteDate;
 
     @EmbeddedId
-    private CompositePKEntity reservation_id;
+    private CompositePKEntity id;
 
     @Column(nullable = false)
-    private LocalDateTime reservation_date;
+    private LocalDateTime date;
 
     @Column(nullable = false)
-    private Integer reservation_status;
+    private Integer status;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "memberId")
     private Member member;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name = "adminId")
     private Admin admin;
 
 }

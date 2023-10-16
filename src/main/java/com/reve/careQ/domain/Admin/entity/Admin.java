@@ -8,12 +8,14 @@ import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -31,14 +33,13 @@ public class Admin extends BaseEntity {
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Column(unique = true)
-    @Size(min = 4, max = 16)
-    private String admin_username;
+    private String username;
 
-    @Column(nullable = false)
-    private String admin_password;
+    @Column
+    private String password;
 
-    @Column(unique = true)
-    private String admin_email;
+    @Column
+    private String email;
 
     @OneToMany(mappedBy = "admin", fetch = LAZY)
     private List<Chat> chatList;
@@ -53,11 +54,19 @@ public class Admin extends BaseEntity {
     private List<Reservation> reservationList;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name="hospital_id")
+    @JoinColumn(name = "hospitalCode",referencedColumnName="code")
     private Hospital hospital;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name="subject_id")
+    @JoinColumn(name = "subjectCode",referencedColumnName="code")
     private Subject subject;
 
+    public List<? extends GrantedAuthority> getGrantedAuthorities() {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+
+        grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+
+        return grantedAuthorities;
+
+    }
 }
