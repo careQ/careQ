@@ -14,15 +14,15 @@ import lombok.experimental.SuperBuilder;
 public class Queue {
 
     @EmbeddedId
-    private CompositePKEntity queue_id;
+    private CompositePKEntity id;
 
     @Column
-    private Long waiting_num;
+    private Long waitingNum;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "member_id"),
-            @JoinColumn(name = "admin_id")
+            @JoinColumn(name = "memberId"),
+            @JoinColumn(name = "adminId")
     })
     private RegisterChart registerChart;
 

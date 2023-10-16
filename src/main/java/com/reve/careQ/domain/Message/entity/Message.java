@@ -28,15 +28,15 @@ public class Message extends BaseEntity {
     private Timestamp sendTime;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "memberId")
     private Member member;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name = "adminId")
     private Admin admin;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "chat_id")
+    @JoinColumn(name = "chatId")
     private Chat chat;
 
 }

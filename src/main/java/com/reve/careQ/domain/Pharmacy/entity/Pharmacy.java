@@ -15,15 +15,15 @@ import java.util.Date;
 public class Pharmacy extends BaseEntity {
 
     @Column
-    private String pharmacy_name;
+    private String name;
 
     @Column
-    private String pharmacy_state;
+    private String state;
 
     @Column
-    private String pharmacy_city;
+    private String city;
 
     @Column
-    private Date pharmacy_days;
+    private Date days;
 
 }

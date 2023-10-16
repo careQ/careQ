@@ -21,21 +21,21 @@ import static jakarta.persistence.FetchType.LAZY;
 public class RegisterChart {
 
     @EmbeddedId
-    private CompositePKEntity registerChart_id;
+    private CompositePKEntity id;
 
     @Column(nullable = false)
     @CreationTimestamp
-    private LocalDateTime register_time;
+    private LocalDateTime time;
 
     @Column(nullable = false)
     private Integer status;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "memberId")
     private Member member;
 
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name = "adminId")
     private Admin admin;
 
     @OneToOne(mappedBy = "registerChart", fetch = LAZY)

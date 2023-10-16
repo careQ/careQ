@@ -17,24 +17,26 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @SuperBuilder
 public class Hospital extends BaseEntity {
+    @Column(unique = true, nullable = false)
+    private String code;
 
     @Column
-    private String hospital_name;
+    private String name;
 
     @Column
-    private String hospital_state;
+    private String state;
 
     @Column
-    private String hospital_city;
+    private String city;
 
     @Column
-    private String hospital_type;
+    private String type;
 
     @Column
-    private String hospital_subjectlist;
+    private String hospitalSubjectList;
 
     @Column
-    private Date hospital_days;
+    private Date days;
 
     @OneToMany(mappedBy = "hospital", fetch = LAZY)
     private List<Admin> AdminList;
