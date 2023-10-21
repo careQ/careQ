@@ -29,16 +29,13 @@ public class NotProd {
             @Transactional
             public void run(String... args) throws Exception {
 
-                Member member1 = memberService.join("careQ", "useruser1", "1234", "user1@test.com").getData();
-                Member member2 = memberService.join("careQ", "useruser2", "1234", "user2@test.com").getData();
-                Member member3 = memberService.join("careQ", "useruser3", "1234", "user3@test.com").getData();
+                memberService.join("careQ", "useruser1", "1234", "user1@test.com").getData();
+                memberService.join("careQ", "useruser2", "1234", "user2@test.com").getData();
+                memberService.join("careQ", "useruser3", "1234", "user3@test.com").getData();
 
-                Hospital hospital1 = hospitalService.insert("A0000028","세브란스병원","서울특별시","강남구").getData();
-                Subject subject1 = subjectService.insert("D001","내과").getData();
-                Subject subject2 = subjectService.insert("D002","소아청소년과").getData();
-                Subject subject3 = subjectService.insert("D003","신경과").getData();
+                hospitalService.insert("A0000028","세브란스병원","서울특별시","강남구").getData();
 
-                Admin admin1 = adminService.join("A0000028","D001","adminadmin1","aaaa").getData();
+                adminService.join("A0000028","D001","adminadmin1","aaaa").getData();
             }
         };
     }
