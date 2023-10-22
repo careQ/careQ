@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>약국 및 병원 검색 페이지</title>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 240px;
+            height: 66.67%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-button {
+            color: #78C4BA;
+            cursor: pointer;
+            position: relative; /* 상대 위치 지정 */
+        }
+
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            fill: none;
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .title {
+            font-weight: bold;
+            font-size: 1.125rem;
+            color: #78C4BA;
+            text-align: center;
+            margin-left: 15px;
+        }
+
+        .select-container {
+            display: inline-flex;
+            width: 100%;
+        }
+
+        .select {
+            width: 50%;
+            margin-right: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #searchButton {
+            background-color: #78C4BA;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .list {
+            width: 100%;
+            background-color: #f4f4f4;
+            border-radius: 9px;
+            text-align: left;
+            margin-top: 1rem;
+            overflow-y: auto;
+            max-height: 37%;
+            min-height: 200px;
+        }
+
+        .list-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .list-title {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #121212;
+            margin-top: 1rem;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        .list-info {
+            font-size: 0.8rem;
+            color: #121212;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        .phone {
+            color: #F83758;
+        }
+
+        .map-container {
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .button-toggle {
+            display: flex;
+        }
+
+        .button-toggle-input {
+            display: none;
+        }
+
+        .button-toggle-label {
+            cursor: pointer;
+            padding: 6px 45px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            margin-bottom: 15px;
+            border-radius: 0;
+        }
+
+        .button-toggle-input:checked + .button-toggle-label {
+            background-color: #78C4BA;
+            color: #fff;
+            border: 1px solid #78C4BA;
+            border-radius: 0;
+        }
+
+        .button-toggle-input#pharmacyRadio:checked + .button-toggle-label {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .button-toggle-input#pharmacyRadio:checked ~ .button-toggle-input#hospitalRadio + .button-toggle-label {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .button-toggle-input#hospitalRadio:checked + .button-toggle-label {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .button-toggle-input#hospitalRadio:checked ~ .button-toggle-input#pharmacyRadio + .button-toggle-label {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .button-toggle-label:hover {
+            background-color: #f0f0f0;
+        }
+
+        .button-toggle-label:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(120, 196, 186, 0.5);
+        }
+
+        .search-button {
+            background-color: #78C4BA;
+            border: none;
+            padding: -30px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .search-icon {
+            width: 20px;
+            height: 20px;
+            stroke: #fff;
+        }
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <!-- 뒤로가기 화살표 -->
+        <div class="back-button" id="backButton">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </div>
+        <script>
+            const backButton = document.getElementById('backButton');
+
+            backButton.addEventListener('click', function () {
+                window.location.href = '/members/'; // 클릭 시 /members/로 이동
+            });
+        </script>
+        <div class="title">약국 & 병원 검색</div>
+    </div>
+
+    <!-- 약국 및 병원 선택 토글 -->
+    <div class="button-toggle">
+        <input type="radio" class="button-toggle-input" name="searchType" id="pharmacyRadio" value="pharmacy" checked>
+        <label class="button-toggle-label" for="pharmacyRadio">약국</label>
+        <input type="radio" class="button-toggle-input" name="searchType" id="hospitalRadio" value="hospital">
+        <label class="button-toggle-label" for="hospitalRadio">병원</label>
+    </div>
+
+    <!--시도/시군구 셀렉트 박스 -->
+    <div class="select-container">
+
+        <select id="Q0" class="select" name="addressRegion2">
+            <option value="서울특별시">서울특별시</option>
+
+            <option value="경기도">경기도</option>
+            <option value="인천광역시">인천광역시</option>
+
+            <option value="강원도">강원도</option>
+
+            <option value="충청북도">충청북도</option>
+            <option value="충청남도">충청남도</option>
+            <option value="대전광역시">대전광역시</option>
+            <option value="세종특별자치시">세종특별자치시</option>
+
+            <option value="전라북도">전라북도</option>
+            <option value="전라남도">전라남도</option>
+            <option value="광주광역시">광주광역시</option>
+
+            <option value="경상북도">경상북도</option>
+            <option value="경상남도">경상남도</option>
+            <option value="부산광역시">부산광역시</option>
+            <option value="대구광역시">대구광역시</option>
+            <option value="울산광역시">울산광역시</option>
+
+            <option value="제주특별자치도">제주특별자치도</option>
+        </select>
+
+        <select id="Q1" class="select" name="addressRegion3"></select>
+
+        <!-- 검색 아이콘 -->
+        <button class="search-button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </button>
+
+    </div>
+
+    <!-- 약국 및 병원 리스트 -->
+    <div class="list" id="locationList"></div>
+
+    <!-- 지도 -->
+    <div class="map-container" id="map" style="width:100%; height:200px;"></div>
+</div>
+<script type="text/javascript" th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${mapKey}}"></script>
+<script th:inline="javascript">
+    const pharmacyApiKey = /*[[${pharmacyApiKey}]]*/;
+    const hospitalApiKey = /*[[${hospitalApiKey}]]*/;
+</script>
+<script type="module" src="/js/api.js"></script>
+</body>
+</html>
