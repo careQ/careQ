@@ -40,6 +40,11 @@ dependencies {
 
 	// 타임리프에서 layout.html 사용하려고
 	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+
+	//xml
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.12.4'
+
+
 }
 
 tasks.named('test') {

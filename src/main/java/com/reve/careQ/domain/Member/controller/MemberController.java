@@ -3,12 +3,14 @@ package com.reve.careQ.domain.Member.controller;
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final Rq rq;
+    private final ApiKeys apiKeys;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -53,5 +56,14 @@ public class MemberController {
         return rq.redirectWithMsg("/members/login", joinRs);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/searches")
+    public String searches(Model model) {
+        model.addAttribute("mapKey", apiKeys.getmapKey());
+        model.addAttribute("pharmacyApiKey", apiKeys.getPharmacyApiKey());
+        model.addAttribute("hospitalApiKey", apiKeys.getHospitalApiKey());
+
+        return "members/searches";
+    }
 
 }
