@@ -1,17 +1,73 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>병원 선택 페이지</title>
+    <!--jQuery-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <style>
+        .scroll::-webkit-scrollbar{
+            display: none;
+        }
+    </style>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <script>
+        $(document).ready = getHospitals('', '', '');
+
+        function getCity(state){
+            const xhttp = new XMLHttpRequest();
+
+            xhttp.open("GET", window.location.pathname + "?state=" + state);
+            xhttp.send();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.response);
+
+                    var selectcity = document.getElementById("city");
+                    selectcity.innerHTML = "<option value=''>구군 선택</option>";
+
+                    data.forEach(function (city) {
+                        var row = "<option value='" + city + "'>"+ city + "</option>";
+                        selectcity.innerHTML += row;
+                    });
+
+                }
+            };
+        }
+
+        function getHospitals(state, city, name){
+            const xhttp = new XMLHttpRequest();
+
+            xhttp.open("GET", window.location.pathname +"?state=" + state + "&city=" + city + "&name=" + name);
+            xhttp.send();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.response);
+
+                    var tbody = document.getElementById("t_body");
+                    tbody.innerHTML = "";
+
+                    data.forEach(function (hospital) {
+                        var row = "<tr><td><a href='" + window.location.pathname + "/" + hospital.id+ "'><button class='w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2'>";
+                        row += "<div id='hospital' class='text-[#121212] text-left ml-3' style='font-size: 0.8rem;'>" + hospital.name + "</div>";
+                        row += "</button></a></td></tr>";
+                        tbody.innerHTML += row;
+                    });
+
+                }
+            };
+        }
+    </script>
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
         <!-- 헤더 -->
         <div class="flex items-center mb-6">
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#78C4BA">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
-            </div>
+            <a th:href="@{/members/subjects}">
+                <button>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#78C4BA">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+            </a>
             <div class="flex mx-8">
                 <div class="flex-1 text-center">
                     <h1 class="font-semibold text-lg text-[#78C4BA]">queue/reservation</h1>
@@ -29,50 +85,42 @@
                 <div class="text-[#ffffff]" style="font-size: 0.8rem;">병원 선택</div>
             </div>
         </div>
+        <!-- TODO: 다중 select 구현 -->
+        <div class="relative inline-flex mt-2 w-64">
+            <!-- 시도 선택 -->
+            <select id="state" onchange="getCity(document.getElementById('state').value);getHospitals(document.getElementById('state').value, '', '')" data-te-select-init class="w-1/2 mr-4 text-sm border rounded border-gray-300 focus:border-gray-300" name="addressRegion1">
+                <option value="">시도 선택</option>
+                <option th:each="state : ${statesBySubject}" th:value="${state}" th:text="${state}">시도</option>
+            </select>
+            <!-- 구군 선택 -->
+            <select id="city" onchange="getHospitals(document.getElementById('state').value, document.getElementById('city').value,'')"data-te-select-init class="w-1/2 ml-4 text-sm border rounded border-gray-300 focus:border-gray-300" name="addressRegion2">
+                <option value="">구군 선택</option>
+                <!--시도 별로 달라짐-->
+            </select>
+        </div>
         <!-- 검색 창 -->
-        <div class="form-control mt-3 mb-3 w-64">
+        <div class="form-control mt-2 w-64">
             <div class="input-group">
-                <input type="text" placeholder="Search" class="input input-bordered text-black text-xs" style="height: 32px;">
-                <button class="btn btn-sm" style="background-color: #78C4BA !important; border: none;">
+                <input type="text" id= "name" placeholder="Search" class="input input-bordered text-black text-xs" style="height: 32px;width: 212px;">
+                <button onclick="getHospitals(document.getElementById('state').value,
+                                              document.getElementById('city').value,
+                                              document.getElementById('name').value)"
+                        class="btn btn-sm" style="background-color: #78C4BA !important; border: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </button>
             </div>
         </div>
-        <!-- TODO: 다중 select 구현 -->
-        <div class="relative inline-flex w-64">
-            <!-- 시도 선택 -->
-            <select data-te-select-init class="w-1/2 mr-4 text-sm border rounded border-gray-300 focus:border-gray-300" name="addressRegion1">
-                <option value="0">시도 선택</option>
-            </select>
-            <!-- 구군 선택 -->
-            <select data-te-select-init class="w-1/2 ml-4 text-sm border rounded border-gray-300 focus:border-gray-300" name="addressRegion2">
-                <option value="0">구군 선택</option>
-            </select>
-        </div>
         <!-- TODO: 병원 리스트 -> 실제 리스트로 백엔드에서 구현 -->
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
+        <div class="scroll" style="overflow-y: scroll">
+            <table>
+                <tbody id="t_body">
+                <!--병원 검색-->
+                </tbody>
+            </table>
         </div>
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
-        </div>
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
-        </div>
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
-        </div>
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
-        </div>
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
-        </div>
-        <div class="w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2">
-            <div class="text-[#121212] text-left ml-3" style="font-size: 0.8rem;">원광대학교</div>
-        </div>
+
     </div>
 </main>
 </body>

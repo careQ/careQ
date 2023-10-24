@@ -4,6 +4,7 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.repository.AdminRepository;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.repository.HospitalRepository;
+import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.domain.Subject.repository.SubjectRepository;
 import com.reve.careQ.global.rsData.RsData;
@@ -25,6 +26,8 @@ public class AdminService {
     private final AdminRepository adminRepository;
 
     private final HospitalRepository hospitalRepository;
+
+    private final HospitalService hospitalService;
 
     private final SubjectRepository subjectRepository;
 
@@ -48,6 +51,18 @@ public class AdminService {
 
         if (subjectRepository.findByCode(subjectCode).isEmpty()){
             return RsData.of("F-1", "해당 과목코드(%s)는 존재하지 않습니다.".formatted(subjectCode));
+        }
+
+        if (hospitalRepository.findByCode(hospitalCode).isEmpty()){
+            String xmlData = hospitalService.useHospitalApi(hospitalCode).getData();
+            String[] parseXml = hospitalService.parseXml(xmlData).getData();
+
+            if (parseXml == null){
+                return RsData.of("F-1", "존재하지 않는 병원코드 입니다.");
+            }
+
+
+            hospitalService.insert(parseXml[0], parseXml[1], parseXml[2], parseXml[3]);
         }
 
         if (StringUtils.hasText(password)) {
