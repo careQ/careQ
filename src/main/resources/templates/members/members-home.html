@@ -40,12 +40,13 @@
             </div>
         </div>
         <!-- 줄서기 예약하기 버튼 -->
-
-        <form th:if="${@rq.login}" th:action="|/members/subjects|" method="get" class="m-0 flex justify-end w-64">
-            <button type="submit" id="btn-join-1" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA;">
+        <div class="m-0 flex justify-end w-64">
+            <a th:if="${@rq.login}" th:href="@{/members/subjects}">
+            <button id="btn-join-1" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA;">
                 <span class="text-white" style="font-size: 17px;">줄서기/ 예약하기</span>
             </button>
-        </form>
+            </a>
+        </div>
         <!-- 메뉴 바 -->
         <nav class="bg-[#f4f4f4] w-64 mt-3 py-4">
             <div class="container">
