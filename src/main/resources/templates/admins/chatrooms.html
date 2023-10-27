@@ -1,0 +1,88 @@
+<html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>관리자 채팅방 목록 페이지</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table th, table td {
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-right: none;
+        }
+
+        table thead tr {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body class="bg-[#ffffff]">
+<main layout:fragment="main">
+    <header class="text-gray-600 body-font">
+        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+            <a class="flex title-font font-medium items-center text-[#78c4ba] mb-4 md:mb-0">
+                <span class="text-xl">careQ</span>
+            </a>
+            <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
+            </nav>
+            <!-- 로그아웃 버튼 -->
+            <form th:if="${@rq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
+                <svg class="w-[24px] h-[24px] fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
+                </svg>
+                <button th:if="${@rq.login}" type="submit">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+    <div class="container mx-auto p-5">
+        <div class="flex justify-between items-center">
+            <h1 class="font-semibold text-lg text-[#78C4BA]">예약자 관리</h1>
+            <!-- 검색창 -->
+            <style>
+                .input-group {
+                    width: auto;
+                }
+            </style>
+            <div class="input-group">
+                <input type="text" id="name" placeholder="환자ID로 검색" class="input input-bordered text-black text-xs" style="height: 32px;width: 212px;">
+                <button class="btn btn-sm" style="background-color: #78C4BA !important; border: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+        <!-- 채팅방 목록 테이블 -->
+        <table class="w-full border-collapse mt-5">
+            <thead>
+            <tr class="bg-gray-200 text-black">
+                <th class="py-2 px-4 text-left">순번</th>
+                <th class="py-2 px-4 text-left">환자 ID</th>
+                <th class="py-2 px-4 text-left">채팅 일시</th>
+                <th class="py-2 px-4 text-left">채팅방 생성일시</th>
+                <th class="py-2 px-4 text-left">채팅방 입장</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">1</td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">다채_121212</td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">23-10-12 00:00:00</td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">23-10-12 00:00:00</td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">
+                    <a th:href="@{/admins/chatrooms/1}"> <!--나중에 주소 바꾸기-->
+                        <button class="bg-[#78c4ba] text-white py-1 px-2 rounded">채팅하기</button>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

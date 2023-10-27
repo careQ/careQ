@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -28,7 +29,7 @@ public class AdminController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/")
+    @GetMapping()
     public String showAdminsHome() {
         return "admins/admins-home";
     }
@@ -51,6 +52,18 @@ public class AdminController {
 
         // 아래 링크로 리다이렉트(302, 이동) 하고 그 페이지에서 메세지 보여줌
         return rq.redirectWithMsg("/admins/login", joinRs);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/chatrooms")
+    public String showChatrooms() {
+        return "admins/chatrooms";
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/chatrooms/{chatroom-id}")
+    public String showChat(@PathVariable("chatroom-id") Long id) {
+        return "admins/chat";
     }
 
 }

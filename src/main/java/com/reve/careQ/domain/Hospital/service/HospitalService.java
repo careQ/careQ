@@ -2,7 +2,6 @@ package com.reve.careQ.domain.Hospital.service;
 
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.repository.HospitalRepository;
-import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,18 @@ public class HospitalService {
 
     private final ApiKeys apikeys;
 
+    public Optional<Hospital> findById(Long id) {
+        return hospitalRepository.findById(id);
+    }
+
+    public Optional<Hospital> findByCode(String code) {
+        return hospitalRepository.findByCode(code);
+    }
+
+    public Optional<Hospital> findByName(String name) {
+        return hospitalRepository.findByName(name);
+    }
+
     @Transactional
     public RsData<Hospital> insert(String code, String name, String state, String city) {
 
@@ -45,14 +56,6 @@ public class HospitalService {
 
         return RsData.of("S-1", "병원테이블에 삽입되었습니다.", hospital);
 
-    }
-
-    @Transactional
-    public RsData<Optional<Hospital>> findById(Long id) {
-
-        Optional<Hospital> hospital = hospitalRepository.findById(id);
-
-        return RsData.of("S-1", "해당 병원이 존재합니다.", hospital);
     }
 
     @Transactional
