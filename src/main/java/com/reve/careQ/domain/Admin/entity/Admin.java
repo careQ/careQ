@@ -54,11 +54,11 @@ public class Admin extends BaseEntity {
     private List<Reservation> reservationList;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "hospitalCode",referencedColumnName="code")
+    @JoinColumn(name = "hospitalId")
     private Hospital hospital;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "subjectCode",referencedColumnName="code")
+    @JoinColumn(name = "subjectId")
     private Subject subject;
 
     public List<? extends GrantedAuthority> getGrantedAuthorities() {

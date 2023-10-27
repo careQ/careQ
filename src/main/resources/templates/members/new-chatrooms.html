@@ -1,0 +1,87 @@
+<html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>새로운 채팅방 검색 페이지</title>
+    <!--jQuery-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+<body>
+<main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <script>
+        function searchChatroom(form) {
+
+            form.subjectName.value = form.subjectName.value.trim();
+            form.hospitalName.value = form.hospitalName.value.trim();
+
+            if (form.subjectName.value.length == 0) {
+                toastWarning('진료과목을 입력해주세요.');
+                form.subjectName.focus();
+                return;
+            }
+
+            if (form.hospitalName.value.length == 0) {
+                toastWarning('병원명을 입력해주세요.');
+                form.hospitalName.focus();
+                return;
+            }
+
+            form.submit(); // 폼 발송
+        }
+    </script>
+    <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
+        <!-- 헤더 -->
+        <div class="flex w-64 bg-[#78C4BA]">
+            <div class="flex justify-between my-3 pl-2">
+                <a th:href="@{/members/chatrooms}">
+                    <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#ffffff">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                </a>
+                <div class="inline-block ml-9">
+                    <h1 class="font-semibold text-lg text-[#ffffff]">Chatting Room</h1>
+                </div>
+            </div>
+        </div>
+        <!-- 문구 -->
+        <div class="bg-[#78C4BA] flex w-64">
+            <div class="flex w-1/2 h-full">
+                <!-- 사진 -->
+            </div>
+            <div class="flex flex-col text-center w-1/2 h-full text-white text-xs mt-3 mb-5">
+                <div>채팅을 원하시는</div>
+                <div class="font-semibold">진료과와 병원명을</div>
+                <div>
+                    <span class="font-semibold">정확하게 </span>
+                    <span>입력해주세요</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 flex items-center">
+        <form id="searchChatroomForm" th:action="@{/members/chatrooms/new-chatrooms}" method="POST">
+            <!--진료과/병원 검색-->
+            <input type="hidden" id="memberId" name="memberId" th:value="${@rq.getMember.id}">
+            <div class="flex flex-col justify-center items-center w-64 my-15">
+                <div class="subject-input mb-5">
+                    <div style="width: 210px;">진료과목</div>
+                    <input type="text" name="subjectName" placeholder="진료 과목을 입력해주세요." class="input input-bordered text-black text-xs w-2/3" style="height: 32px;width: 210px;">
+                </div>
+                <div class="hospital-input">
+                    <div style="width: 210px;">병원명</div>
+                    <input type="text" name="hospitalName" placeholder="병원명을 입력해주세요." class="input input-bordered text-black text-xs w-2/3" style="height: 32px;width: 210px;">
+                </div>
+            </div>
+            <!-- 채팅방 입장 버튼 -->
+            <div class="flex flex-col w-64 my-10">
+                <button onclick="searchChatroom(this)" class="w-full rounded bg-[#78C4BA] text-center p-2 border border-[#78C4BA] mb-4">
+                    <div class="text-[#ffffff] flex justify-center h-full">
+                        <div>채팅방 입장하기</div>
+                    </div>
+                </button>
+            </div>
+        </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -10,10 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AdminRepository extends JpaRepository<Admin, Long> {
-
-    Optional<Admin> findByHospitalCodeAndSubjectCode(String hospitalCode, String subjectCode);
+    Optional<Admin> findById(Long Id);
 
     Optional<Admin> findByUsername(String username);
+
+    Optional<Admin> findByHospitalIdAndSubjectId(Long hospitalId, Long subjectId);
 
     @Query("SELECT DISTINCT admin.hospital.state FROM Admin admin WHERE admin.subject.code = :subjectCode")
     List<String> selectAllStates(@Param("subjectCode") String subjectCode);

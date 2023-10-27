@@ -1,6 +1,7 @@
 package com.reve.careQ.global.init;
 
 import com.reve.careQ.domain.Admin.service.AdminService;
+import com.reve.careQ.domain.Chat.service.ChatService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
@@ -18,7 +19,7 @@ public class NotProd {
             MemberService memberService,
             AdminService adminService,
             HospitalService hospitalService,
-            SubjectService subjectService
+            ChatService chatService
     ) {
         return new CommandLineRunner() {
             @Override
@@ -56,6 +57,20 @@ public class NotProd {
                 adminService.join("A1300006","D001","adminadmin20","aaaa").getData();//광주광역시 광산구
                 adminService.join("A1300007","D001","adminadmin21","aaaa").getData();//광주광역시 북구
                 adminService.join("A1300004","D001","adminadmin22","aaaa").getData();//대구광역시 남구
+
+                chatService.insert((long)1,(long)1);
+                chatService.insert((long)1,(long)3);
+                chatService.insert((long)1,(long)5);
+                chatService.insert((long)1,(long)7);
+                chatService.insert((long)1,(long)9);
+
+                chatService.insert((long)2,(long)1);
+                chatService.insert((long)2,(long)2);
+                chatService.insert((long)2,(long)5);
+
+                chatService.insert((long)3,(long)2);
+                chatService.insert((long)3,(long)4);
+
             }
         };
     }

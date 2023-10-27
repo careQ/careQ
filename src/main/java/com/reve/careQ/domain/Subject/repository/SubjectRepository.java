@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
+
+    Optional<Subject> findById(Long id);
+
     Optional<Subject> findByCode(String code);
+
+    Optional<Subject> findByName(String name);
 
     List<Subject> findByNameLike(String name);
 
-    Optional<Subject> findById(Long id);
 }

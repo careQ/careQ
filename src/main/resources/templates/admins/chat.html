@@ -1,0 +1,114 @@
+<html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>관리자 실시간 채팅방 페이지</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table th, table td {
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-right: none;
+        }
+
+        table thead tr {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body class="bg-[#ffffff]">
+<main layout:fragment="main">
+    <header class="text-gray-600 body-font">
+        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+            <a class="flex title-font font-medium items-center text-[#78c4ba] mb-4 md:mb-0">
+                <span class="text-xl">careQ</span>
+            </a>
+            <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
+            </nav>
+            <!-- 로그아웃 버튼 -->
+            <form th:if="${@rq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
+                <svg class="w-[24px] h-[24px] fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
+                </svg>
+                <button th:if="${@rq.login}" type="submit">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+    <div class="container mx-auto p-5">
+        <div class="flex justify-between items-center">
+            <h1 class="font-semibold text-lg text-[#78C4BA]">User1</h1>
+            <a th:href="@{/admins/chatrooms}">
+                <button class="bg-[#F83758] text-white py-1 px-2 rounded text-sm">종료하기</button>
+            </a>
+        </div>
+        <hr class="border-t border-gray-300 my-3">
+
+        <div class="flex-1 p-4 overflow-y-auto" id="chat-container">
+            <!-- 실시간 채팅 동적으로 추가 -->
+            <!-- TODO: 다인아 만약에 동적으로 생성하는 거 자바스크립트 꼬이면 그냥 아래 코드에서 제이쿼리 ${message} 빼고 네모 쓰면 될 듯? -->
+            <!--            <div class="flex mb-2 w-56">-->
+            <!--                <div class="bg-[#78C4BA] p-2 rounded-lg max-w-[70%] text-sm relative">-->
+            <!--                    <p class="text-gray-500 font-semibold mb-1">관리자:</p>-->
+            <!--                    <p>${message}</p>-->
+            <!--                </div>-->
+            <!--            </div>-->
+            <!--            <div class="flex justify-end mb-2">-->
+            <!--                <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[70%] text-sm relative">-->
+            <!--                    <p class="text-gray-500 font-semibold mb-1">회원:</p>-->
+            <!--                    <p>${message}</p>-->
+            <!--                </div>-->
+            <!--            </div>-->
+        </div>
+        <!-- 전송버튼 -->
+        <div class="p-4 border-t border-[#78C4BA]">
+            <div class="flex">
+                <input id="message-input" type="text" class="flex-1 p-2 rounded-l-lg text-sm" placeholder="메시지를 입력하세요" style="font-size: 13px; border: 1px solid #ccc; width: 80%;">
+                <button id="send-button" class="bg-[#78C4BA] text-white p-2 rounded-r-lg text-sm" style="min-width: 40px; font-size: 12px;">
+                    전송
+                </button>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>
+<script>
+    // 관리자 메시지를 추가
+    function addAdminMessage(message) {
+        const chatContainer = document.getElementById("chat-container");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "flex mb-2 w-full"; // 메시지를 나타내는 messageDiv 요소에 CSS 클래스를 추가
+        messageDiv.innerHTML = `
+            <div class="flex mb-2 w-56">
+                <div class="bg-[#78C4BA] p-2 rounded-lg max-w-[80%] text-Xs relative">
+                    <p class="text-gray-500 font-semibold mb-1">관리자:</p>
+                    <p>${message}</p>
+                </div>
+            </div>
+    `;
+        chatContainer.appendChild(messageDiv);
+    }
+
+    // 회원 메시지를 추가
+    function addUserMessage(message) {
+        const chatContainer = document.getElementById("chat-container");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "flex mb-2 w-full justify-end"; // css 클래스 추가
+        messageDiv.innerHTML = `
+            <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[80%] text-xs relative" style="text-align: right;"> <!-- 오른쪽 정렬 설정 -->
+                <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">회원:</p>
+                <p>${message}</p>
+            </div>
+    `;
+        chatContainer.appendChild(messageDiv);
+    }
+
+    // Test
+    addAdminMessage("안녕하세요. 원광대학교 산부인과입니다. 무엇을 도와드릴까요?");
+    addUserMessage("안녕하세요. 저는 …….이 궁금합니다.");
+</script>

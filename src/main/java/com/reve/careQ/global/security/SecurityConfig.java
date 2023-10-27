@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .formLogin(
                         formLogin -> formLogin
                                 .loginPage("/admins/login")
-                                .defaultSuccessUrl("/admins/")
+                                .defaultSuccessUrl("/admins")
 
                 )
                 .logout(
@@ -42,13 +42,13 @@ public class SecurityConfig {
                 .formLogin(
                         formLogin -> formLogin
                                 .loginPage("/members/login")
-                                .defaultSuccessUrl("/members/")
+                                .defaultSuccessUrl("/members")
 
                 )
                 .oauth2Login(
                         oauth2Login -> oauth2Login
                                 .loginPage("/members/login")
-                                .defaultSuccessUrl("/members/")
+                                .defaultSuccessUrl("/members")
                 )
                 .logout(
                         logout -> logout
