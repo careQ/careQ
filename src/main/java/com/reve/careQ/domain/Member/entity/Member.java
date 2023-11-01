@@ -1,7 +1,6 @@
 package com.reve.careQ.domain.Member.entity;
 
 import com.reve.careQ.domain.Chat.entity.Chat;
-import com.reve.careQ.domain.Message.entity.Message;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.baseEntity.BaseEntity;
@@ -53,8 +52,5 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", fetch = LAZY)
     private List<Chat> chatList;
-
-    @OneToMany(mappedBy = "member", fetch = LAZY)
-    private List<Message> messageList;
 
 }

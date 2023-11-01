@@ -32,6 +32,18 @@ public class ChatService {
         return chatRepository.findByMemberId(memberId);
     }
 
+    public List<Chat> findByAdminId(Long adminId){
+        return chatRepository.findByAdminId(adminId);
+    }
+
+    public Optional<Chat> findById(Long chatId){
+        return chatRepository.findById(chatId);
+    }
+
+    public List<Chat> selectChatByAdminIdAndMemberName(Long adminId, String name){
+        return chatRepository.selectChatByAdminIdAndMemberName(adminId, name);
+    }
+
     @Transactional
     public RsData<Chat> insert(Long memberId, Long adminId) {
         if (findByMemberIdAndAdminId(memberId, adminId).isPresent()) {

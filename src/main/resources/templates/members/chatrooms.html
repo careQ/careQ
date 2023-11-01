@@ -3,10 +3,46 @@
     <title>채팅 히스토리 페이지</title>
     <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+            getChats('');
+        });
+
+        function getChats(name){
+            const xhttp = new XMLHttpRequest();
+
+            xhttp.open("GET", window.location.pathname + "?name=" + name);
+            xhttp.send();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.response);
+
+                    var chatrooms = document.getElementById("t_body");
+                    chatrooms.innerHTML = "";
+
+                    data.forEach(function (chat) {
+                        var row = `<tr>
+                                   <div class='flex justify-between text-center p-2 mt-2'>
+                                        <div class='flex inline-block text-[#121212] text-left ml-3' style='font-size: 0.8rem;'>${chat.hospitalName} ${chat.subjectName}</div>
+                                            <a href='/members/chatrooms/`+chat.id+`' class="flex inline-block mr-2">
+                                                <button>
+                                                    <svg class="w-6 h-6 fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"></path>
+                                                    </svg>
+                                                </button>
+                                            </a>
+                                    </div>
+                                    </tr>`;
+                        chatrooms.innerHTML += row;
+                    });
+
+                }
+            };
+        }
+    </script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
-
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
         <!-- 헤더 -->
         <div class="flex w-64 bg-[#78C4BA]">
@@ -24,19 +60,8 @@
             </div>
         </div>
         <!-- 채팅방 리스트 -->
-        <div class="flex-1 p-4 overflow-y-auto">
-            <tr th:each=" chatroom : ${chatroomList}">
-                <div class='flex justify-between text-center p-2 mt-2'>
-                    <div class='flex inline-block text-[#121212] text-left ml-3' style='font-size: 0.8rem;' th:text="${chatroom.admin.hospital.name}+' '+${chatroom.admin.subject.name}">병원</div>
-                    <a th:href="@{/members/chatrooms/{chatroomId}(chatroomId=${chatroom.id})}" class="flex inline-block mr-2">
-                        <button>
-                            <svg class="w-6 h-6 fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"></path>
-                            </svg>
-                        </button>
-                    </a>
-                </div>
-            </tr>
+        <div id="t_body" class="flex-1 p-2 overflow-y-auto">
+            <!--채팅룸 리스트-->
         </div>
         <!-- 새로운 채팅 버튼 -->
         <div class="flex flex-col w-64 my-10">

@@ -12,11 +12,11 @@
             <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
             </nav>
 
-            <form th:if="${@rq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
+            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
                 <svg class="w-[24px] h-[24px] fill-[#ffffff]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
                     <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
                 </svg>
-                <button th:if="${@rq.login}" type="submit">
+                <button th:if="${@adminRq.login}" type="submit">
                     Logout
                 </button>
             </form>
@@ -24,7 +24,6 @@
     </header>
 
     <div class="flex items-center justify-center h-screen">
-<!--        <div class="flex m-10">-->
             <div class="w-[300px] h-[300px] p-4 md:w-1/3 m-4 ml-20">
                 <div class="flex rounded-lg h-full bg-[#ffffff] p-8 flex-col items-center justify-center">
                     <div class="w-10 h-10 inline-flex items-center justify-center rounded-full bg-[#C0E1DE] text-white flex-shrink-0">
@@ -76,7 +75,6 @@
                     </div>
                 </div>
             </div>
-<!--        </div>-->
     </div>
 </main>
 </body>
