@@ -2,7 +2,6 @@ package com.reve.careQ.domain.Admin.entity;
 
 import com.reve.careQ.domain.Chat.entity.Chat;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
-import com.reve.careQ.domain.Message.entity.Message;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Subject.entity.Subject;
@@ -43,9 +42,6 @@ public class Admin extends BaseEntity {
 
     @OneToMany(mappedBy = "admin", fetch = LAZY)
     private List<Chat> chatList;
-
-    @OneToMany(mappedBy = "admin", fetch = LAZY)
-    private List<Message> messageList;
 
     @OneToMany(mappedBy = "admin", fetch = LAZY)
     private List<RegisterChart> registerChartList;
