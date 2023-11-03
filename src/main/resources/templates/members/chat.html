@@ -63,7 +63,7 @@
                            </div>
                        </div>`;
 
-               chatContainer.appendChild(messageDiv);
+            chatContainer.appendChild(messageDiv);
         }
 
         // 회원 메시지를 추가
@@ -77,8 +77,41 @@
                         <p>${content}</p>
                    </div>`;
 
-               chatContainer.appendChild(messageDiv);
-           }
+            chatContainer.appendChild(messageDiv);
+        }
+
+        // DB 메세지 불러올 때 날짜 구분
+        var date = '0000 / 00 / 00';
+        function updateDateValue(newDate) {
+            if (newDate != date){
+                date = newDate;
+                const showDate = document.getElementById("date");
+                const inner = document.createElement("p");
+                inner.className = "text-xs";
+                inner.textContent = date;
+
+                showDate.appendChild(inner);
+            }
+        }
+
+        // 메세지 보낼 때 날짜 구분
+        function addDate(lastDate){
+            var d = new Date();
+
+            var year = d.getFullYear();
+            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+            var day = ('0' + d.getDate()).slice(-2);
+            var currentDate = year + " / " + month + " / " + day;
+
+            if ((lastDate != currentDate)||(lastDate == null)){
+                const showDate = document.getElementById("todayDate");
+                const inner = document.createElement("p");
+                inner.className = "text-xs";
+                inner.textContent = currentDate;
+
+                showDate.appendChild(inner);
+            }
+        }
 
         $(function () {
             $(document).ready(function(){connect();})
@@ -116,8 +149,13 @@
         </div>
         <!-- 채팅 화면 -->
         <input type="hidden" id="memberName" th:value="${@rq.getMember().getUsername()}">
-        <div class="flex-1 p-4 overflow-y-auto" id="chat-container">
+        <div class="flex-1 overflow-y-auto" id="chat-container">
             <tr th:each=" message : ${messages}">
+                <input type="hidden" id="newDate" th:value="${#temporals.format(message.createDate,'yyyy / MM / dd')}">
+                <div id="date" class="flex mb-2 w-56 justify-center">
+                    <!-- 채팅 날짜 -->
+                </div>
+                <script>updateDateValue(document.getElementById('newDate').value);</script>
                 <div class="flex mb-2 w-56 justify-end"  th:if="${message.userType}=='MEMBER'">
                     <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[70%] text-xs relative" style="text-align: right;"> <!-- 오른쪽 정렬 설정 -->
                         <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">회원:</p>
@@ -131,6 +169,16 @@
                     </div>
                 </div>
             </tr>
+            <!-- 날짜 추가여부 -->
+            <div id="todayDate" class="flex mb-2 w-56 justify-center">
+            </div>
+            <div class="flex mb-2 w-56 justify-center" th:if="${lastMessage.isPresent()}">
+                <input type="hidden" id="lastDate" th:value="${#temporals.format(lastMessage.get(),'yyyy / MM / dd')}">
+                <script>addDate(document.getElementById("lastDate").value);</script>
+            </div>
+            <div class="flex mb-2 w-56 justify-center" th:unless="${lastMessage.isPresent()}">
+                <script>addDate();</script>
+            </div>
             <!-- 실시간 채팅 동적으로 추가 -->
         </div>
         <!-- 전송버튼 -->

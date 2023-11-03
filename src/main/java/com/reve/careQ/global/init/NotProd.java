@@ -32,6 +32,7 @@ public class NotProd {
 
                 hospitalService.insert("A0000028","세브란스병원","서울특별시","강남구").getData();
 
+
                 adminService.join("A0000028","D001","adminadmin1","aaaa").getData();//서울특별시 강남구
                 adminService.join("A1100311","D001","adminadmin2","aaaa").getData();//서울특별시 동대문구
                 adminService.join("A1100411","D001","adminadmin3","aaaa").getData();//서울특별시 강서구
@@ -57,6 +58,9 @@ public class NotProd {
                 adminService.join("A1300006","D001","adminadmin20","aaaa").getData();//광주광역시 광산구
                 adminService.join("A1300007","D001","adminadmin21","aaaa").getData();//광주광역시 북구
                 adminService.join("A1300004","D001","adminadmin22","aaaa").getData();//대구광역시 남구
+
+                adminService.join("A0000028","D002","adminadmin23","aaaa").getData();//서울특별시 강남구
+
 
                 chatService.insert((long)1,(long)1);
                 chatService.insert((long)1,(long)3);

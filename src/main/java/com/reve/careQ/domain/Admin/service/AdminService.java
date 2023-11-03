@@ -4,10 +4,15 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.repository.AdminRepository;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
+import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.domain.Subject.service.SubjectService;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +33,7 @@ public class AdminService {
     private final HospitalService hospitalService;
 
     private final SubjectService subjectService;
+    private final ReservationRepository reservationRepository;
 
     public Optional<Admin> findById(Long id) {
         return adminRepository.findById(id);
@@ -125,5 +131,32 @@ public class AdminService {
         return RsData.of("S-1", "해당 관리자가 존재합니다.", admin.get());
     }
 
+    public RsData<Admin> getCurrentAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) principal;
+                String username = userDetails.getUsername();
+
+                // username을 이용해 현재 로그인한 관리자 찾기
+                Optional<Admin> currentAdmin = findByUsername(username);
+
+                if (currentAdmin.isPresent()) {
+                    return RsData.of("S-1", "현재 로그인한 관리자 정보를 가져왔습니다.", currentAdmin.get());
+                } else {
+                    return RsData.of("F-1", "현재 로그인한 관리자 정보를 찾을 수 없습니다.");
+                }
+            }
+        }
+
+        return RsData.of("F-2", "로그인한 사용자 정보를 가져오지 못했습니다.");
+    }
+
+    public List<Reservation> getReservationsForAdmin(Admin admin) {
+        return reservationRepository.findByAdmin(admin);
+    }
 
 }

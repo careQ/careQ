@@ -111,10 +111,10 @@ public class HospitalService {
             String[] hospital = {code, dutyName, state, city};
 
             return RsData.of("S-1", "병원테이블에 삽입되었습니다.", hospital);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return RsData.of("F-1", "XML 파싱 중 다음과 같은 오류가 발생했습니다.오류 : "+e.getMessage());
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return RsData.of("F-1", "XML 파싱 중 다음과 같은 오류가 발생했습니다.오류 : "+e.getMessage());
+        }
     }
 
 }
