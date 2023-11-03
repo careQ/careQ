@@ -25,7 +25,6 @@
             if (stompClient !== null) {
                 stompClient.disconnect();
             }
-            setConnected(false);
             console.log("Disconnected");
         }
 
@@ -57,7 +56,7 @@
             messageDiv.className = "flex mb-2 w-full"; // 메시지를 나타내는 messageDiv 요소에 CSS 클래스를 추가
             messageDiv.innerHTML = `
                    <div class="flex mb-2 w-56">
-                        <div class="bg-[#78C4BA] p-2 rounded-lg max-w-[80%] text-Xs relative">
+                        <div class="bg-[#78C4BA] p-2 rounded-lg max-w-[80%] relative">
                           <p class="text-gray-500 font-semibold mb-1">회원:</p>
                               <p>${content}</p>
                            </div>
@@ -72,12 +71,43 @@
             const messageDiv = document.createElement("div");
             messageDiv.className = "flex mb-2 w-full justify-end"; // css 클래스 추가
             messageDiv.innerHTML = `
-                  <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[80%] text-xs relative" style="text-align: right;"> <!--오른쪽 정렬-->
+                  <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[80%] relative" style="text-align: right;"> <!--오른쪽 정렬-->
                         <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">관리자:</p>
                         <p>${content}</p>
                    </div>`;
 
             chatContainer.appendChild(messageDiv);
+        }
+
+        // DB 메세지 불러올 때 날짜 구분
+        var date = '0000 / 00 / 00';
+        function updateDateValue(newDate) {
+            if (newDate != date){
+                date = newDate;
+                const showDate = document.getElementById("date");
+                const inner = document.createElement("p");
+                inner.textContent = date;
+
+                showDate.appendChild(inner);
+            }
+        }
+
+        // 메세지 보낼 때 날짜 구분
+        function addDate(lastDate){
+            var d = new Date();
+
+            var year = d.getFullYear();
+            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+            var day = ('0' + d.getDate()).slice(-2);
+            var currentDate = year + " / " + month + " / " + day;
+
+            if ((lastDate != currentDate)||(lastDate == null)){
+                const showDate = document.getElementById("todayDate");
+                const inner = document.createElement("p");
+                inner.textContent = currentDate;
+
+                showDate.appendChild(inner);
+            }
         }
 
         $(function () {
@@ -88,16 +118,31 @@
     </script>
 </head>
 <body>
-<main layout:fragment="main" class="flex flex-col">
-    <header class="flex text-gray-600 body-font">
+<main layout:fragment="main" class="container mx-auto h-full flex flex-col">
+    <!--헤더-->
+    <header class="text-gray-600 body-font">
         <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
             <a class="flex title-font font-medium items-center text-[#78c4ba] mb-4 md:mb-0">
                 <span class="text-xl">careQ</span>
+                <!-- 내비게이션 바 -->
+                <div class="text-sm font-medium text-center text-gray-500 dark:text-gray-400 dark:border-gray-700 ml-10">
+                    <ul class="flex flex-wrap -mb-px">
+                        <li class="mr-2">
+                            <a th:href="@{/admins/queues}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">줄서기 관리</a>
+                        </li>
+                        <li class="mr-2">
+                            <a th:href="@{/admins/reservations}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">예약 관리</a>
+                        </li>
+                        <li class="mr-2">
+                            <a th:href="@{/admins/chatrooms}" class="inline-block p-4 text-[#78c4ba] border-b-2 border-[#78c4ba] rounded-t-lg active dark:text-[#78c4ba] dark:border-[#78c4ba]" aria-current="page">채팅방 목록</a>
+                        </li>
+                    </ul>
+                </div>
             </a>
             <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
             </nav>
             <!-- 로그아웃 버튼 -->
-            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#78C4BA] mt-4 md:mt-0">
+            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#78c4ba] mt-4 md:mt-0">
                 <svg class="w-[24px] h-[24px] fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
                     <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
                 </svg>
@@ -107,42 +152,56 @@
             </form>
         </div>
     </header>
-    <div class="container flex-1 flex-col mx-auto p-5">
-        <div class="flex justify-between items-center">
-            <h1 class="font-semibold text-lg text-[#78C4BA]" th:text="${chatroom.member.username}">User1</h1>
-            <a th:href="@{/admins/chatrooms}">
-                <button id="disconnect" class="bg-[#F83758] text-white py-1 px-2 rounded text-sm">종료하기</button>
-            </a>
-        </div>
-        <hr class="flex border-t border-gray-300 my-3">
-        <!-- 채팅 화면 -->
-        <input type="hidden" id="adminName" th:value="${@adminRq.getAdmin().getUsername()}">
-        <div class="flex-1 flex-col p-4 overflow-y-auto" id="chat-container">
-            <tr th:each=" message : ${messages}">
-                <div class="flex mb-2 w-full justify-end"  th:if="${message.userType}=='ADMIN'">
-                    <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[80%] text-xs relative" style="text-align: right;"> <!-- 오른쪽 정렬 설정 -->
-                        <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">관리자:</p>
-                        <p th:text="${message.content}"></p>
-                    </div>
+    <!-- 유저네임 및 종료버튼 -->
+    <div class="flex flex-row justify-between items-center">
+        <div class="font-semibold text-2xl text-[#78C4BA]" th:text="${chatroom.member.username}">회원명</div>
+        <a th:href="@{/admins/chatrooms}">
+            <button id="disconnect" class="bg-[#F83758] text-white py-1 px-2 rounded">종료하기</button>
+        </a>
+    </div>
+    <hr class="flex border-t border-gray-300 my-3">
+    <!-- 채팅 화면 -->
+    <input type="hidden" id="adminName" th:value="${@adminRq.getAdmin().getUsername()}">
+    <div class="flex-1 flex-col p-4 overflow-y-auto" id="chat-container">
+        <tr th:each=" message : ${messages}">
+            <input type="hidden" id="newDate" th:value="${#temporals.format(message.createDate,'yyyy / MM / dd')}">
+            <div id="date" class="flex mb-2 w-full justify-center">
+                <!-- 채팅 날짜 -->
+            </div>
+            <script>updateDateValue(document.getElementById('newDate').value);</script>
+            <div class="flex mb-2 w-full justify-end"  th:if="${message.userType}=='ADMIN'">
+                <div class="bg-[#F6F6F6] p-2 rounded-lg max-w-[80%] relative" style="text-align: right;"> <!-- 오른쪽 정렬 설정 -->
+                    <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">관리자:</p>
+                    <p th:text="${message.content}"></p>
                 </div>
-                <div class="flex mb-2 w-full" th:unless="${message.userType}=='ADMIN'">
-                    <div class="bg-[#78C4BA] p-2 rounded-lg max-w-[80%] text-xs relative">
-                        <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">회원:</p>
-                        <p th:text="${message.content}"></p>
-                    </div>
+            </div>
+            <div class="flex mb-2 w-full" th:unless="${message.userType}=='ADMIN'">
+                <div class="bg-[#78C4BA] p-2 rounded-lg max-w-[80%] relative">
+                    <p class="text-gray-500 font-semibold mb-1" style="text-align: right;">회원:</p>
+                    <p th:text="${message.content}"></p>
                 </div>
-            </tr>
-            <!-- 실시간 채팅 동적으로 추가 -->
+            </div>
+        </tr>
+        <!-- 날짜 추가여부 -->
+        <div id="todayDate" class="flex mb-2 w-full justify-center">
         </div>
-        <!-- 전송버튼 -->
-        <div class="flex p-4 border-t border-[#78C4BA]">
-            <input id="message-input" type="text" class="flex-1 p-2 rounded-l-lg text-sm" placeholder="메시지를 입력하세요" style="font-size: 13px; border: 1px solid #ccc; width: 80%;">
-            <button id="send-button" class="flex bg-[#78C4BA] justify-center text-white p-2 rounded-r-lg text-sm" style="min-width: 40px; font-size: 12px;">
-                <svg class="w-6 h-6 fill-[#ffffff]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"></path>
-                </svg>
-            </button>
+        <div class="flex mb-2 w-full justify-center" th:if="${lastMessage.isPresent()}">
+            <input type="hidden" id="lastDate" th:value="${#temporals.format(lastMessage.get(),'yyyy / MM / dd')}">
+            <script>addDate(document.getElementById("lastDate").value);</script>
         </div>
+        <div class="flex mb-2 w-full justify-center" th:unless="${lastMessage.isPresent()}">
+            <script>addDate();</script>
+        </div>
+        <!-- 실시간 채팅 동적으로 추가 -->
+    </div>
+    <!-- 전송버튼 -->
+    <div class="flex p-4 border-t border-[#78C4BA]">
+        <input id="message-input" type="text" class="flex-1 p-2 rounded-l-lg text-sm" placeholder="메시지를 입력하세요" style="font-size: 13px; border: 1px solid #ccc; width: 80%;">
+        <button id="send-button" class="flex bg-[#78C4BA] justify-center text-white p-2 rounded-r-lg text-sm" style="min-width: 40px; font-size: 12px;">
+            <svg class="w-6 h-6 fill-[#ffffff]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"></path>
+            </svg>
+        </button>
     </div>
 </main>
 </body>

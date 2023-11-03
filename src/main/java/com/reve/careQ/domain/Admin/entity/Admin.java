@@ -65,4 +65,5 @@ public class Admin extends BaseEntity {
         return grantedAuthorities;
 
     }
+
 }

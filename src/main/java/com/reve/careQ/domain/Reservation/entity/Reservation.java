@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Getter
+//@Setter
 @RequiredArgsConstructor
 @Entity
 @SuperBuilder
@@ -31,18 +32,25 @@ public class Reservation {
     @EmbeddedId
     private CompositePKEntity id;
 
+    @MapsId("memberId")
+    @JoinColumn(name = "member_id")
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
+    private Member member;
+
+    @MapsId("adminId")
+    @JoinColumn(name = "admin_id")
+    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
+    private Admin admin;
+
     @Column(nullable = false)
     private LocalDateTime date;
 
     @Column(nullable = false)
-    private Integer status;
+    @Enumerated(EnumType.STRING)
+    private ReservationStatus status;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "memberId")
-    private Member member;
-
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "adminId")
-    private Admin admin;
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
+    }
 
 }

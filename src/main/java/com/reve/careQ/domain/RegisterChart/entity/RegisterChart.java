@@ -30,12 +30,14 @@ public class RegisterChart {
     @Column(nullable = false)
     private Integer status;
 
+    @MapsId("memberId")
+    @JoinColumn(name = "member_id")
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "memberId")
     private Member member;
 
+    @MapsId("adminId")
+    @JoinColumn(name = "admin_id")
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "adminId")
     private Admin admin;
 
     @OneToOne(mappedBy = "registerChart", fetch = LAZY)

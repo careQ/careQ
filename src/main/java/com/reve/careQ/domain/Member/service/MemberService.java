@@ -4,6 +4,8 @@ import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,6 +78,19 @@ public class MemberService {
         String password = UUID.randomUUID().toString().substring(0, 6);
 
         return join(providerTypeCode, username, password, email);
+    }
+
+    @Transactional
+    public RsData<Member> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Optional<Member> memberOptional = findByUsername(username);
+
+        if (memberOptional.isEmpty()) {
+            return RsData.of("F-4", "현재 로그인한 사용자를 찾을 수 없습니다.");
+        }
+
+        return RsData.of("S-3", "현재 로그인한 사용자를 가져왔습니다.", memberOptional.get());
     }
 
 }
