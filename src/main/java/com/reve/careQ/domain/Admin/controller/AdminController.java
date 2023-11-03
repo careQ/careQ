@@ -96,7 +96,6 @@ public class AdminController {
             Reservation reservation = reservationOptional.get();
             reservation.setStatus(ReservationStatus.CONFIRMED);
 
-            // 예약 정보 저장
             reservationRepository.save(reservation);
 
             // 승인 되면 세션에 승인 상태 저장

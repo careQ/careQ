@@ -84,6 +84,7 @@ public class ChatController {
     public ModelAndView showChat(@PathVariable("user-type") String userType, @PathVariable("chatroom-id") Long id){
         ModelAndView mv = new ModelAndView();
 
+        mv.addObject("lastMessage",messageService.findLastMessage(id));
         mv.addObject("messages", messageService.findByChatId(id));
         mv.addObject("chatroom", chatService.findById(id).get());
         mv.setViewName(userType+"/chat");

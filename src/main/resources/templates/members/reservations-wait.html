@@ -20,7 +20,6 @@
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
-
         <div class="flex items-center mb-6">
             <div class="flex mx-8 mb-3">
                 <div class="flex-1 text-center">
@@ -28,13 +27,11 @@
                 </div>
             </div>
         </div>
-
         <!-- 회원 기본 정보 -->
         <div class="w-64 mb-7 flex flex-col text-center">
             <p class="font-semibold text-l" th:text="${@rq.getMember.username + '님이 선택하신'}"></p>
             <p><span class="text-[#78C4BA] text-l" th:text="|${hospital.name} ${subject.name}|">병원 / 진료과</span></p>
         </div>
-
         <!-- 예약 현황 카테고리 -->
         <div class="flex justify-between w-64 mb-10">
             <div class="w-1/3 rounded bg-[#78C4BA] text-center p-1 border border-[#78C4BA] mr-4">
@@ -53,25 +50,17 @@
             <p class="font-semibold text-l">승인 <span class="text-[#78C4BA] text-l">대기중</span>입니다.</p>
             <p class="font-semibold text-l">잠시만 기다려주세요.</p>
         </div>
-
         <!-- 예약 정보 -->
         <p style="font-size: 14px;" th:text="'예약 병원 : ' + ${hospital.name}"></p>
         <p style="font-size: 14px;" th:text="'예약 진료과 : ' + ${subject.name}"></p>
         <p style="font-size: 14px;" th:text="'예약 일자 : ' + ${date}"></p>
-
 <!--        <button type="submit" id="btn-reservation" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; margin: 10px; border: 1px solid #F83758; box-shadow: none;">-->
 <!--            <span class="text-white" style="font-size: 15px;">예약 취소</span>-->
 <!--        </button>-->
-
-
-
-                <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/'}" method="post">
-                    <input type="hidden" name="_method" value="delete"/>
-                    <button id="delete-btn">삭제</button>
-                </form>
-
-
-
+        <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/'}" method="post">
+             <input type="hidden" name="_method" value="delete"/>
+             <button id="delete-btn">삭제</button>
+        </form>
     </div>
 </main>
 </body>
