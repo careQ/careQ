@@ -36,4 +36,10 @@ public class RsData<T> {
         return !isSuccess();
     }
 
+// 상태 추가 - 2310,31
+    public static <T> RsData<T> success() {
+        return of("S-0", "Success");
+    }
+
+
 }

@@ -11,7 +11,7 @@ spring:
     url: jdbc:mysql://localhost:3306/careQ?useSSL=false&allowPublicKeyRetrieval=true
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     defer-datasource-initialization: true
   sql:
     init:

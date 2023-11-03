@@ -16,6 +16,7 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     Optional<Admin> findByHospitalIdAndSubjectId(Long hospitalId, Long subjectId);
 
+
     @Query("SELECT DISTINCT admin.hospital.state FROM Admin admin WHERE admin.subject.code = :subjectCode")
     List<String> selectAllStates(@Param("subjectCode") String subjectCode);
 

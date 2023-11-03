@@ -1,14 +1,25 @@
 package com.reve.careQ.global.compositePKEntity;
 
 import jakarta.persistence.Embeddable;
-
 import java.io.Serializable;
-
 @Embeddable
 public class CompositePKEntity implements Serializable {
+    private Long memberId;
+    private Long adminId;
 
-    private Long id;
+    public Long getMemberId() {
+        return memberId;
+    }
 
-    private Long administratorId;
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
+    }
 
+    public Long getAdminId() {
+        return adminId;
+    }
+
+    public void setAdminId(Long adminId) {
+        this.adminId = adminId;
+    }
 }
