@@ -16,6 +16,41 @@
             100% { transform: rotate(360deg); }
         }
     </style>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/ws/reservation');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/members/'+document.getElementById('getMemberId').value
+                    +'/subjects/'+window.location.pathname.split('/')[3]
+                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
+                    if((JSON.parse(message.body).userType == 'ADMIN')&&(JSON.parse(message.body).status == 'CONFIRMED')){
+                        console.log(JSON.parse(message.body));
+                        window.location.href = window.location.href + "confirm";
+                    }
+                });
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        $(function () {
+            $(document).ready(function(){connect();})
+            $( "#disconnect" ).click(function() { disconnect(); });
+        });
+    </script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
@@ -29,6 +64,7 @@
         </div>
         <!-- 회원 기본 정보 -->
         <div class="w-64 mb-7 flex flex-col text-center">
+            <input id="getMemberId" type="hidden" th:value="${@rq.getMember().getId()}">
             <p class="font-semibold text-l" th:text="${@rq.getMember.username + '님이 선택하신'}"></p>
             <p><span class="text-[#78C4BA] text-l" th:text="|${hospital.name} ${subject.name}|">병원 / 진료과</span></p>
         </div>
