@@ -16,6 +16,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findByIdAdminIdAndIdMemberId(Long adminId, Long memberId);
 
-    boolean existsByMember(Member currentUser);
+    boolean existsByAdminIdAndMemberId(Long adminId, Long memberId);
+
+    List<Reservation> findByMember(Member currentUser);
 
 }
