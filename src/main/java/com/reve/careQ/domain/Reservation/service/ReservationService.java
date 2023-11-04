@@ -34,6 +34,10 @@ public class ReservationService {
         this.memberService = memberService;
     }
 
+    public Optional<Reservation> findByIdAdminIdAndIdMemberId(Long adminId, Long memberId){
+        return reservationRepository.findByIdAdminIdAndIdMemberId(adminId, memberId);
+    }
+
     @Transactional
     public RsData<Reservation> insert(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         // 사용자 정보 가져오기
@@ -110,6 +114,13 @@ public class ReservationService {
         }
 
         return RsData.of("S-3", "예약 가능한 병원입니다.");
+    }
+
+    @Transactional
+    public RsData<Reservation> updateStatus(Reservation reservation, ReservationStatus status){
+        reservation.setStatus(status);
+        reservationRepository.save(reservation);
+        return RsData.of("S-1", "예약 상태가 업데이트 되었습니다.", reservation);
     }
 
 }

@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.Reservation.entity.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
@@ -12,6 +13,8 @@ import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,6 +34,8 @@ public class ReservationController {
     private final Rq rq;
     private final AdminService adminService;
     private final MemberService memberService;
+
+    private final SimpMessageSendingOperations sendingOperations;
 
     // 예약 신청페이지
     @PreAuthorize("isAuthenticated()")
@@ -116,8 +121,29 @@ public class ReservationController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/confirm")
-    public String confirmReservation() {
-        return "members/reservations-confirm";
+    public ModelAndView confirmReservation(@PathVariable("subject-id") Long subjectId,
+                                     @PathVariable("hospital-id") Long hospitalId){
+        ModelAndView mv= new ModelAndView();
+
+        mv.addObject("subjectName",subjectService.findById(subjectId).get().getName());
+        mv.addObject("hospitalName", hospitalService.findById(hospitalId).get().getName());
+        mv.setViewName("members/reservations-confirm");
+
+        return mv;
+    }
+
+    @MessageMapping("/reservation")
+    public void send(ReservationDto reservationDto) throws Exception {
+        Thread.sleep(1000); // simulated delay
+
+        Admin admin = adminService.findByHospitalIdAndSubjectId(reservationDto.getHospitalId(),reservationDto.getSubjectId()).get();
+        Reservation reservation = reservationService.findByIdAdminIdAndIdMemberId(admin.getId(), reservationDto.getMemberId()).get();
+        if((reservationDto.getUserType() == ReservationDto.UserType.ADMIN)&&(reservation.getStatus() != reservationDto.getStatus())){
+            reservationService.updateStatus(reservation, reservationDto.getStatus());
+        }
+
+        sendingOperations.convertAndSend("/topic/members/"+reservationDto.getMemberId()+"/subjects/"+reservationDto.getSubjectId()
+                +"/hospitals/"+reservationDto.getHospitalId(), reservationDto);
     }
 
 }

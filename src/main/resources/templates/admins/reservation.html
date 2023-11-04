@@ -1,6 +1,53 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>관리자 메인 페이지</title>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+
+        function connect(memberId) {
+            var socket = new SockJS('/ws/reservation');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                    +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                    console.log(JSON.parse(message.body));
+                    window.location.reload();
+                });
+                send(memberId);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function send(memberId) {
+                let msg = {
+                    'userType': 'ADMIN',
+                    'memberId': memberId,
+                    'hospitalId': document.getElementById('hospitalId').value,
+                    'subjectId': document.getElementById('subjectId').value,
+                    'status': 'CONFIRMED'
+                }
+
+                stompClient.send("/app/reservation", {}, JSON.stringify(msg));
+        }
+
+        $(function () {
+            $( "#confirm-btn" ).click(function() {
+                var memberId = document.getElementById('confirm-btn').value;
+                connect(memberId);});
+            $( "#disconnect" ).click(function() { disconnect(); });
+        });
+    </script>
 </head>
 <body class="bg-[#ffffff]">
 <main layout:fragment="main">
@@ -8,15 +55,29 @@
         <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
             <a class="flex title-font font-medium items-center text-[#78c4ba] mb-4 md:mb-0">
                 <span class="text-xl">careQ</span>
+                <!-- 내비게이션 바 -->
+                <div class="text-sm font-medium text-center text-gray-500 dark:text-gray-400 dark:border-gray-700 ml-10">
+                    <ul class="flex flex-wrap -mb-px">
+                        <li class="mr-2">
+                            <a th:href="@{/admins/queues}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">줄서기 관리</a>
+                        </li>
+                        <li class="mr-2">
+                            <a th:href="@{/admins/reservations}" class="inline-block p-4 text-[#78c4ba] border-b-2 border-[#78c4ba] rounded-t-lg active dark:text-[#78c4ba] dark:border-[#78c4ba]" aria-current="page">예약 관리</a>
+                        </li>
+                        <li class="mr-2">
+                            <a th:href="@{/admins/chatrooms}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">채팅방 목록</a>
+                        </li>
+                    </ul>
+                </div>
             </a>
             <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
             </nav>
             <!-- 로그아웃 버튼 -->
-            <form th:if="${@rq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
+            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
                 <svg class="w-[24px] h-[24px] fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
                     <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
                 </svg>
-                <button th:if="${@rq.login}" type="submit">
+                <button th:if="${@adminRq.login}" type="submit">
                     Logout
                 </button>
             </form>
@@ -24,6 +85,8 @@
     </header>
     <div class="container mx-auto p-5">
         <div class="flex justify-between items-center">
+            <input type="hidden" id="hospitalId" th:value="${@adminRq.getAdmin().getHospital().getId()}"/>
+            <input type="hidden" id="subjectId" th:value="${@adminRq.getAdmin().getSubject().getId()}"/>
             <h1 class="font-semibold text-lg text-[#78C4BA]">예약자 관리</h1>
             <!-- 검색창 -->
             <style>
@@ -59,12 +122,12 @@
                 <td th:text="${reservation.date}"></td>
                 <td th:text="${reservation.status}"></td>
                 <td>
-                    <form id="reservation-confirm" th:action="@{'/admins/reservations'}" method="post">
-                        <input type="hidden" name="_method" value="post"/>
-                        <input type="hidden" name="adminId" th:value="${reservation.admin.id}"/>
-                        <input type="hidden" name="memberId" th:value="${reservation.member.id}"/>
-                        <button id="confirm-btn">승인</button>
-                    </form>
+<!--                    <form id="reservation-confirm" th:action="@{'/admins/reservations'}" method="post">-->
+                    <input type="hidden" name="_method" value="post"/>
+                    <input type="hidden" name="adminId" th:value="${reservation.admin.id}"/>
+                    <input type="hidden" name="memberId" th:value="${reservation.member.id}"/>
+                    <button id="confirm-btn" th:value="${reservation.member.id}">승인</button>
+<!--                    </form>-->
                 </td>
             </tr>
             </tbody>
