@@ -24,7 +24,6 @@ import java.util.UUID;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
-
     private final AdminService adminService;
     private final MemberService memberService;
 
@@ -35,63 +34,10 @@ public class ReservationService {
         this.memberService = memberService;
     }
 
-//    @Transactional
-//    public RsData<Reservation> insert(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
-//        // 사용자 정보 가져오기
-//        RsData<Member> currentUserData = memberService.getCurrentUser();
-//
-//        if (currentUserData.isSuccess()) {
-//            Member currentUser = currentUserData.getData();
-//            Optional<Admin> adminOptional = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId);
-//
-//            if (adminOptional.isEmpty()) {
-//                return RsData.of("F-2", "해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다.");
-//            }
-//
-//            LocalDateTime dateTime = LocalDateTime.parse(selectedDate + "T" + selectedTime);
-//
-//            // 사용자가 이미 예약한 상태인지 확인
-//            boolean hasExistingReservation = reservationRepository.existsByMember(currentUser);
-//
-//            if (hasExistingReservation) {
-//                return RsData.of("F-4", "이미 예약한 상태입니다.");
-//            }
-//
-//            // 중복 예약을 확인
-//            boolean isDuplicateReservation = reservationRepository.existsByDateAndAdminId(dateTime, adminOptional.get().getId());
-//
-//            if (isDuplicateReservation) {
-//                return RsData.of("F-4", "이미 예약된 시간대입니다.");
-//            }
-//
-//            // 가져온 Admin 및 Member 엔티티 설정
-//            Admin admin = adminOptional.get();
-//
-//            // UUID 생성
-//            UUID reservationId = UUID.randomUUID();
-//
-//            // 복합 키 생성
-//            CompositePKEntity id = new CompositePKEntity();
-//            id.setAdminId(admin.getId());
-//            id.setMemberId(currentUser.getId());
-//
-//            Reservation reservation = Reservation.builder()
-//                    .id(id)
-//                    .date(dateTime)
-//                    .status(ReservationStatus.PENDING)
-//                    .admin(admin)
-//                    .member(currentUser)
-//                    .build();
-//
-//            Reservation savedReservation = reservationRepository.save(reservation);
-//
-//            return RsData.of("S-1", "예약 테이블에 삽입되었습니다.", savedReservation);
-//        } else {
-//            return RsData.of("F-3", "현재 로그인한 사용자 정보를 가져오지 못했습니다.");
-//        }
-//    }
+    public Optional<Reservation> findByIdAdminIdAndIdMemberId(Long adminId, Long memberId){
+        return reservationRepository.findByIdAdminIdAndIdMemberId(adminId, memberId);
+    }
 
-    //// 중복 선택 가능
     @Transactional
     public RsData<Reservation> insert(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         // 사용자 정보 가져오기
@@ -157,6 +103,24 @@ public class ReservationService {
         } else {
             return RsData.of("F-5", "예약 정보를 찾을 수 없습니다.");
         }
+    }
+
+    public RsData<String> checkDuplicateReservation(Long adminId, Long memberId) {
+        // 예약 정보를 조회하고 중복 예약 확인
+        boolean isDuplicateReservation = reservationRepository.existsByAdminIdAndMemberId(adminId, memberId);
+
+        if (isDuplicateReservation) {
+            return RsData.of("F-4", "이미 예약한 병원입니다.");
+        }
+
+        return RsData.of("S-3", "예약 가능한 병원입니다.");
+    }
+
+    @Transactional
+    public RsData<Reservation> updateStatus(Reservation reservation, ReservationStatus status){
+        reservation.setStatus(status);
+        reservationRepository.save(reservation);
+        return RsData.of("S-1", "예약 상태가 업데이트 되었습니다.", reservation);
     }
 
 }
