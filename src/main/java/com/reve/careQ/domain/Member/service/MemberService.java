@@ -1,7 +1,10 @@
 package com.reve.careQ.domain.Member.service;
 
+import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
+import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -23,6 +26,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     private final MemberRepository memberRepository;
+    private final ReservationRepository reservationRepository;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -93,4 +97,19 @@ public class MemberService {
         return RsData.of("S-3", "현재 로그인한 사용자를 가져왔습니다.", memberOptional.get());
     }
 
+
+    public RsData<List<Reservation>> getReservationsForCurrentUser() {
+        RsData<Member> currentUserData = getCurrentUser();
+        if (currentUserData.isSuccess()) {
+            Member currentUser = currentUserData.getData();
+            List<Reservation> reservations = reservationRepository.findByMember(currentUser);
+            return RsData.of("S-3", "현재 로그인한 사용자의 예약 목록을 가져왔습니다.", reservations);
+        } else {
+            return RsData.of("F-4", "현재 로그인한 사용자를 찾을 수 없습니다.", null);
+        }
+    }
+
+    public List<Reservation> getReservationsForMember(Member currentUser) {
+        return reservationRepository.findByMember(currentUser);
+    }
 }

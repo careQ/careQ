@@ -3,6 +3,7 @@ package com.reve.careQ.domain.Member.controller;
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -11,9 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/members")
@@ -32,8 +33,22 @@ public class MemberController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
-    public String showMembersHome() {
-        return "members/members-home";
+    public String showMembersHome(Model model) {
+
+        RsData<Member> currentUserData = memberService.getCurrentUser();
+
+        if (currentUserData.isSuccess()) {
+            Member currentUser = currentUserData.getData();
+
+            List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
+
+            model.addAttribute("reservations", reservations);
+
+            return "members/members-home";
+        } else {
+            return "redirect:/";
+        }
+
     }
 
     @PreAuthorize("isAnonymous()")

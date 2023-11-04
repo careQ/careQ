@@ -46,15 +46,17 @@
                     </div>
                 </button>
             </a>
-            <a th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/reservations(subjectId=${subject.id},hospitalId=${hospital.id})}">
-                <div class="w-full h-28 rounded bg-[#FFFFFF] text-center p-2 border border-[#78C4BA]">
-                    <div class="text-[#78C4BA] flex flex-col justify-center h-full">
-                        <div>예약하기</div>
-                        <div style="font-size: 0.8rem;">다른 환자 분들을 위해</div>
-                        <div style="font-size: 0.8rem;">당일 예약과 노쇼는 불가능합니다.</div>
+            <form method="post" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${subject.id},hospitalId=${hospital.id})}">
+                <button type="submit">
+                    <div class="w-64 h-28 rounded bg-[#FFFFFF] text-center p-2 border border-[#78C4BA]">
+                        <div class="text-[#78C4BA] flex flex-col justify-center h-full">
+                            <div>예약하기</div>
+                            <div style="font-size: 0.8rem;">다른 환자 분들을 위해</div>
+                            <div style="font-size: 0.8rem;">당일 예약과 노쇼는 불가능합니다.</div>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </button>
+            </form>
         </div>
     </div>
 </main>
