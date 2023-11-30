@@ -1,0 +1,300 @@
+<html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
+<head>
+    <title>관리자 줄서기 관리 페이지</title>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <!--jQuery-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table th, table td {
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-right: none;
+        }
+
+        table thead tr {
+            background-color: #f2f2f2;
+        }
+
+        #modalOpenButton, #modalCloseButton {
+            cursor: pointer;
+        }
+
+        #modalContainer {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            /*display: flex;*/
+            /*justify-content: center;*/
+            /*align-items: center;*/
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        /*#modalContent {*/
+        /*    position: absolute;*/
+        /*}*/
+
+        #modalContainer.hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            getCharts('');
+        });
+
+        function getCharts(name){
+            const xhttp = new XMLHttpRequest();
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            xhttp.open("GET", window.location.pathname + "?name=" + name);
+            xhttp.setRequestHeader(header, token);
+            xhttp.send();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.response);
+
+                    var registerCharts = document.getElementById("t_body");
+                    registerCharts.innerHTML = "";
+
+                    data.forEach(function (registerChart, index) {
+                        var time = getDate(registerChart.time);
+
+                        var row = `<tr>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center">${index+1}</td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center">${registerChart.memberUsername}</td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center">`+time+`</td>`;
+
+                        if (registerChart.status == 'WAITING'){
+                            row += `<td class="border-t border-b py-2 px-4 text-sm text-center">
+                            <div class="flex justify-center">
+                                <div class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">대기 중</div>
+                            </div>
+                        </td>
+                        <td class="border-t border-b py-2 px-4 text-sm text-center">
+                        <div class="flex flex-row justify-center">
+                            <form class="mb-0 mr-3" action="/admins/queues" method="POST">
+                                <input type="hidden" name="_csrf" value='`+token+`'/>
+                                <input type="hidden" name="kind" value="queue"/>
+                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
+                                <button class="text-white py-1 px-2 rounded" style="background-color: #4392F9; width: 90px;">진료 시작</button>
+                            </form>
+                            <form class="m-0" action='/admins/queues' method="POST">
+                                <input type="hidden" name="_csrf" value='`+token+`'/>
+                                <input type="hidden" name="kind" value="queue"/>
+                                <input type="hidden" name="_method" value="delete"/>
+                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
+                                <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">줄서기 취소</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>`;
+                        } else{
+                            row += `<td class="border-t border-b py-2 px-4 text-sm text-center">
+                                        <div class="flex justify-center">
+                                            <div class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">진료 중</div>
+                                        </div>
+                                     </td>
+                        <td class="border-t border-b py-2 px-4 text-sm text-center">
+                        <div class="flex justify-center">
+                            <form class="mb-0" action="/admins/queues" method="POST">
+                                <input type="hidden" name="_csrf" value='`+token+`'/>
+                                <input type="hidden" name="kind" value="queue"/>
+                                <input type="hidden" name="_method" value="delete"/>
+                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
+                                <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>`;
+                        }
+
+                        registerCharts.innerHTML += row;
+                    });
+
+                }
+            };
+        }
+
+        function getDate(date){
+            var d = new Date(date);
+
+            var year = d.getFullYear();
+            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+            var day = ('0' + d.getDate()).slice(-2);
+
+            var hours = ('0' + d.getHours()).slice(-2);
+            var minutes = ('0' + d.getMinutes()).slice(-2);
+            var seconds = ('0' + d.getSeconds()).slice(-2);
+            return year + "-" + month + "-" + day + " " + hours + ":" + minutes + ":" + seconds;
+        }
+
+        function toggleModal() {
+            const modal = document.getElementById('modalContainer');
+            modal.classList.toggle('hidden');
+            document.getElementById('onsiteUser').value = '';
+
+        }
+
+        $(function () {
+            $( "#modalOpenButton" ).click(function() { toggleModal(); });
+            $( "#modalCloseButton" ).click(function() { toggleModal(); });
+        });
+    </script>
+</head>
+<body>
+<main layout:fragment="main">
+    <header class="text-gray-600 body-font">
+        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+            <a class="flex title-font font-medium items-center text-[#78c4ba] mb-4 md:mb-0">
+                <span class="text-xl">careQ</span>
+                <!-- 내비게이션 바 -->
+                <div class="text-sm font-medium text-center text-gray-500 dark:text-gray-400 dark:border-gray-700 ml-10">
+                    <ul class="flex flex-wrap -mb-px">
+                        <li class="mr-2">
+                            <a th:href="@{/admins/queues}" class="inline-block p-4 text-[#78c4ba] border-b-2 border-[#78c4ba] rounded-t-lg active dark:text-[#78c4ba] dark:border-[#78c4ba]" aria-current="page">줄서기 관리</a>
+                        </li>
+                        <li class="mr-2">
+                            <a th:href="@{/admins/reservations}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">예약 관리</a>
+                        </li>
+                        <li class="mr-2">
+                            <a th:href="@{/admins/chatrooms}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">채팅방 목록</a>
+                        </li>
+                    </ul>
+                </div>
+            </a>
+            <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
+            </nav>
+            <!-- 로그아웃 버튼 -->
+            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#78c4ba] mt-4 md:mt-0">
+                <svg class="w-[24px] h-[24px] fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
+                </svg>
+                <button th:if="${@adminRq.login}" type="submit">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+    <div class="container h-2/5 mx-auto p-5">
+        <div class="flex justify-between items-center">
+            <div class="flex flex-row">
+                <h1 class="font-semibold text-lg text-[#78C4BA]">줄서기 관리</h1>
+                <!-- 현장 접수 버튼 -->
+                <button id="modalOpenButton" data-modal-toggle="popup-modal" class="text-white py-1 px-2 rounded bg-[#78C4BA] ml-3">현장 접수</button>
+
+                <div id="modalContainer" class="flex justify-center items-center hidden">
+                    <div id="modalContent" class="w-1/2 h-1/2 bg-[#ffffff] rounded">
+                        <div class="flex justify-between my-10 mx-5">
+                            <div class="w-[30px] h-[30px]"></div>
+                            <div class="font-semibold text-xl text-[#78C4BA]">현장 접수 등록</div>
+                            <button id="modalCloseButton">
+                                <svg class="w-[30px] h-[30px] fill-[#78c4ba]" viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="onsite-form" class="flex flex-col m-auto" action="/admins/on-site" method="POST" style="width: 350px;">
+                            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                            <div class="flex flex-row justify-between items-center">
+                                <label>회원명</label>
+                                <input type="text" name="onsiteUser" id="onsiteUser" placeholder="성함을 입력해주세요." class="input input-bordered text-black text-xs m-1">
+                            </div>
+                            <div class="flex flex-row justify-between items-center">
+                                <label>회원 Email</label>
+                                <input type="email" name="onsiteEmail" id="onsiteemail" placeholder="이메일을 입력해주세요." class="input input-bordered text-black text-xs m-1">
+                            </div>
+                            <div class="flex justify-center my-10">
+                                <button id="modalSubmit" class="w-1/3 text-white p-3 rounded bg-[#78C4BA]" >현장 등록 접수</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+            <!-- 검색창 -->
+            <style>
+                .input-group {
+                    width: auto;
+                }
+            </style>
+            <div class="input-group">
+                <input type="text" id="name" placeholder="환자ID로 검색" class="input input-bordered text-black text-xs" style="height: 32px;width: 212px;">
+                <button onclick="getCharts(document.getElementById('name').value)" class="btn btn-sm" style="background-color: #78C4BA !important; border: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+        <!-- 줄서기 관리 테이블 -->
+        <table class="w-full border-collapse mt-5">
+            <thead>
+            <tr class="bg-gray-200 text-black">
+                <th class="py-2 px-4 text-center">순번</th>
+                <th class="py-2 px-4 text-center">환자 ID</th>
+                <th class="py-2 px-4 text-center">접수 시간</th>
+                <th class="py-2 px-4 text-center">접수 상태</th>
+                <th class="py-2 px-4 text-center">줄서기 관리</th>
+            </tr>
+            </thead>
+            <tbody id="t_body">
+            <!--채팅룸 리스트-->
+            </tbody>
+        </table>
+    </div>
+    <div class="container h-2/5 mx-auto p-5">
+        <div class="flex justify-start items-center">
+            <h1 class="font-semibold text-lg text-[#78C4BA]">당일 예약자 관리</h1>
+        </div>
+        <!-- 당일 예약 관리 테이블 -->
+        <table class="w-full border-collapse mt-5">
+            <thead>
+            <tr class="bg-gray-200 text-black">
+                <th class="py-2 px-4 text-center">순번</th>
+                <th class="py-2 px-4 text-center">환자 ID</th>
+                <th class="py-2 px-4 text-center">예약 일시</th>
+                <th class="py-2 px-4 text-center">예약 상태</th>
+                <th class="py-2 px-4 text-center">진료 상태</th>
+                <th class="py-2 px-4 text-center">승인 여부</th>
+            </tr>
+            </thead>
+            <tbody id="t_body2">
+                <tr th:each="reservation, reservationStat : ${reservations}">
+                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservationStat.count}"></td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.member.username}"></td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.date}"></td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.status}"></td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.registerStatus}"></td>
+                    <td class="border-t border-b py-2 px-4 text-sm text-center">
+                        <form th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}" class="mb-0" action="/admins/queues" method="POST">
+                            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="kind" value="reservation"/>
+                            <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
+                            <button class="text-white py-1 px-2 rounded" style="background-color: #4392F9; width: 90px;">진료 시작</button>
+                        </form>
+                        <form th:if="${#strings.equals(reservation.registerStatus, 'ENTER')}" class="mb-0" action="/admins/queues" method="POST">
+                            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="_method" value="delete"/>
+                            <input type="hidden" name="kind" value="reservation"/>
+                            <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
+                            <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

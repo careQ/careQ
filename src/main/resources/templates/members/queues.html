@@ -52,18 +52,24 @@
                 </div>
             </div>
         </div>
-        <!-- 줄서기/예약 버튼 -->
+        <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
-            <div class="w-full rounded bg-[#78C4BA] text-center p-2 border border-[#78C4BA] mb-4">
-                <div class="text-[#ffffff] flex justify-center h-full">
-                    <div>줄서기 등록</div>
-                </div>
-            </div>
-            <div class="w-full rounded bg-[#FFFFFF] text-center p-2 border border-[#78C4BA]">
-                <div class="text-[#78C4BA] flex justify-center h-full">
-                    <div>진료과/병원 다시 선택하기</div>
-                </div>
-            </div>
+            <form th:if="${register.isEmpty()}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+                <button type="submit" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
+                    <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
+                </button>
+            </form>
+            <form th:unless="${register.isEmpty()}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+                <input type="hidden" name="_method" value="delete"/>
+                <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
+                    <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
+                </button>
+            </form>
+            <a th:href="@{/members/subjects}">
+                <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: white; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
+                    <span class="text-[#78C4BA]" style="font-size: 15px;">진료과/병원 다시 선택하기</span>
+                </button>
+            </a>
         </div>
     </div>
 </main>

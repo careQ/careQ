@@ -108,16 +108,4 @@ public class HospitalController {
         return "redirect:/";
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{hospital-id}/queues")
-    public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId, Model model){
-        ModelAndView mv = new ModelAndView();
-
-        mv.addObject("subject",subjectService.findById(subjectId).get());
-        mv.addObject("hospital",hospitalService.findById(hospitalId).get());
-        mv.setViewName("members/queues");
-
-        return mv;
-    }
-
 }

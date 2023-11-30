@@ -2,7 +2,6 @@ package com.reve.careQ.domain.RegisterChart.entity;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
-import com.reve.careQ.domain.Queue.entity.Queue;
 import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -28,7 +27,8 @@ public class RegisterChart {
     private LocalDateTime time;
 
     @Column(nullable = false)
-    private Integer status;
+    @Enumerated(EnumType.STRING)
+    private RegisterChartStatus status;
 
     @MapsId("memberId")
     @JoinColumn(name = "member_id")
@@ -40,7 +40,8 @@ public class RegisterChart {
     @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     private Admin admin;
 
-    @OneToOne(mappedBy = "registerChart", fetch = LAZY)
-    private Queue queue;
+    public void setStatus(RegisterChartStatus status) {
+        this.status = status;
+    }
 
 }
