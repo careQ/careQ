@@ -2,6 +2,7 @@ package com.reve.careQ.domain.Reservation.entity;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,7 +16,6 @@ import java.time.LocalDateTime;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Getter
-//@Setter
 @RequiredArgsConstructor
 @Entity
 @SuperBuilder
@@ -49,8 +49,15 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RegisterChartStatus registerStatus;
+
     public void setStatus(ReservationStatus status) {
         this.status = status;
+    }
+    public void setRegisterStatus(RegisterChartStatus registerStatus) {
+        this.registerStatus = registerStatus;
     }
 
 }

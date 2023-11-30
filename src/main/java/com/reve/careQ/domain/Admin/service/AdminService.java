@@ -4,6 +4,8 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.repository.AdminRepository;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
+import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.domain.Subject.entity.Subject;
@@ -34,6 +36,8 @@ public class AdminService {
 
     private final SubjectService subjectService;
     private final ReservationRepository reservationRepository;
+
+    private final RegisterChartRepository registerChartRepository;
 
     public Optional<Admin> findById(Long id) {
         return adminRepository.findById(id);
@@ -157,6 +161,10 @@ public class AdminService {
 
     public List<Reservation> getReservationsForAdmin(Admin admin) {
         return reservationRepository.findByAdmin(admin);
+    }
+
+    public List<RegisterChart> getRegisterChartByAdminAndMemberName(Admin admin, String name) {
+        return registerChartRepository.getRegisterChartByAdminAndMemberName(admin, name);
     }
 
 }

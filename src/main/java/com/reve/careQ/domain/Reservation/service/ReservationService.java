@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Admin.service.AdminService;
 
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
@@ -16,10 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+
 @Transactional(readOnly = true)
 public class ReservationService {
 
@@ -36,6 +39,14 @@ public class ReservationService {
 
     public Optional<Reservation> findByIdAdminIdAndIdMemberId(Long adminId, Long memberId){
         return reservationRepository.findByIdAdminIdAndIdMemberId(adminId, memberId);
+    }
+
+    public boolean existsByAdminIdAndMemberId(Long adminId, Long memberId){
+        return reservationRepository.existsByAdminIdAndMemberId(adminId, memberId);
+    }
+
+    public List<Reservation> getTodayReservation(Admin admin){
+        return reservationRepository.getTodayReservation(admin);
     }
 
     @Transactional
@@ -77,6 +88,7 @@ public class ReservationService {
                     .id(id)
                     .date(dateTime)
                     .status(ReservationStatus.PENDING)
+                    .registerStatus(RegisterChartStatus.WAITING)
                     .admin(admin)
                     .member(member)
                     .build();
@@ -121,6 +133,13 @@ public class ReservationService {
         reservation.setStatus(status);
         reservationRepository.save(reservation);
         return RsData.of("S-1", "예약 상태가 업데이트 되었습니다.", reservation);
+    }
+
+    @Transactional
+    public RsData<Reservation> updateRegisterStatus(Reservation reservation, RegisterChartStatus registerStatus){
+        reservation.setRegisterStatus(registerStatus);
+        reservationRepository.save(reservation);
+        return RsData.of("S-1", "진료 상태가 업데이트 되었습니다.", reservation);
     }
 
 }
