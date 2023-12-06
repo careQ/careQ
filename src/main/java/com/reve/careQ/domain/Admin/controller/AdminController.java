@@ -69,10 +69,16 @@ public class AdminController {
     @PreAuthorize("isAnonymous()")
     @PostMapping("/join")
     public String join(@Valid JoinFormDto joinFormDto) {
-        RsData<Admin> joinRs = adminService.join(joinFormDto.getHospitalCode(), joinFormDto.getSubjectCode(), joinFormDto.getUsername(), joinFormDto.getPassword());
+
+        RsData<Admin> joinRs = adminService.join(
+                joinFormDto.getHospitalCode(),
+                joinFormDto.getSubjectCode(),
+                joinFormDto.getUsername(),
+                joinFormDto.getPassword(),
+                joinFormDto.getEmail()
+        );
 
         if (joinRs.isFail()) {
-
             return adminRq.historyBack(joinRs);
         }
 

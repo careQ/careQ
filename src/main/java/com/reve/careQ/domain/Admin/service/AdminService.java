@@ -47,6 +47,10 @@ public class AdminService {
         return adminRepository.findByUsername(username);
     }
 
+    public Optional<Admin> findByEmail(String email) {
+        return adminRepository.findByEmail(email);
+    }
+
     public Optional<Admin> findByHospitalIdAndSubjectId(Long hospitalId, Long subjectId){
         return adminRepository.findByHospitalIdAndSubjectId(hospitalId, subjectId);
     }
@@ -64,7 +68,7 @@ public class AdminService {
     }
 
     @Transactional
-    public RsData<Admin> join(String hospitalCode, String subjectCode,String username, String password) {
+    public RsData<Admin> join(String hospitalCode, String subjectCode,String username, String password, String email) {
         Optional<Hospital> hospital = hospitalService.findByCode(hospitalCode);
         Optional<Subject> subject = subjectService.findByCode(subjectCode);
 
@@ -92,6 +96,10 @@ public class AdminService {
             hospitalService.insert(parseXml[0], parseXml[1], parseXml[2], parseXml[3]);
         }
 
+        if(findByEmail(email).isPresent()) {
+            return RsData.of("F-1", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email));
+        }
+
         if (StringUtils.hasText(password)) {
             password = passwordEncoder.encode(password);
         }
@@ -105,6 +113,7 @@ public class AdminService {
                 .subject(inputsubject)
                 .username(username)
                 .password(password)
+                .email(email)
                 .build();
 
         adminRepository.save(admin);
