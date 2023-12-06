@@ -9,11 +9,17 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+    private final AuthenticationFailureHandler customFailureHandler;
+
+    public SecurityConfig(AuthenticationFailureHandler customFailureHandler) {
+        this.customFailureHandler = customFailureHandler;
+    }
 
     @Bean
     @Order(0)
@@ -42,12 +48,14 @@ public class SecurityConfig {
                 .formLogin(
                         formLogin -> formLogin
                                 .loginPage("/members/login")
+                                .failureHandler(customFailureHandler) // 로그인 실패 핸들러
                                 .defaultSuccessUrl("/members")
 
                 )
                 .oauth2Login(
                         oauth2Login -> oauth2Login
                                 .loginPage("/members/login")
+                                .failureHandler(customFailureHandler) // 로그인 실패 핸들러
                                 .defaultSuccessUrl("/members")
                 )
                 .logout(

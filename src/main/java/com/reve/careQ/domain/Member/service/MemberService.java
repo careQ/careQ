@@ -1,6 +1,5 @@
 package com.reve.careQ.domain.Member.service;
 
-import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
@@ -16,7 +15,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +22,6 @@ import java.util.UUID;
 public class MemberService {
 
     private final PasswordEncoder passwordEncoder;
-
     private final MemberRepository memberRepository;
     private final ReservationRepository reservationRepository;
 
@@ -36,12 +33,8 @@ public class MemberService {
         return memberRepository.findByUsername(username);
     }
 
-    private List<Member> findByEmail(String email) {
+    private Optional<Member> findByEmail(String email) {
         return memberRepository.findByEmail(email);
-    }
-
-    private Optional<Member> findByEmailAndProviderTypeCode(String providerTypeCode, String email) {
-        return memberRepository.findByEmailAndProviderTypeCode(providerTypeCode, email);
     }
 
     @Transactional
@@ -70,18 +63,6 @@ public class MemberService {
 
         return RsData.of("S-1", "회원가입이 완료되었습니다.", member);
 
-    }
-
-    @Transactional
-    public RsData<Member> whenSocialLogin(String providerTypeCode, String username, String email) {
-
-        Optional<Member> socialMember = findByEmailAndProviderTypeCode(email, providerTypeCode);
-
-        if (socialMember.isPresent()) return RsData.of("S-2", "로그인 되었습니다.", socialMember.get());
-
-        String password = UUID.randomUUID().toString().substring(0, 6);
-
-        return join(providerTypeCode, username, password, email);
     }
 
     @Transactional

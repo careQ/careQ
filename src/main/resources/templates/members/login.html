@@ -6,7 +6,6 @@
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <script>
         function LoginForm__submit(form) {
-
             // username 이(가) 올바른지 체크
             form.username.value = form.username.value.trim(); // 입력란의 입력값에 있을지 모르는 좌우공백제거
 
@@ -39,43 +38,46 @@
 
             form.submit(); // 폼 발송
         }
-
     </script>
     <div class="max-w-2xl w-full px-4">
         <h1 class="mb-4">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i>
             로그인
         </h1>
-
         <form th:action method="POST" class="flex flex-col gap-6" onsubmit="LoginForm__submit(this); return false;">
+            <!-- 아이디 입력 -->
             <div class="form-control">
                 <label class="label">
                     <span class="label-text">아이디</span>
                 </label>
-                <input type="text" name="username" placeholder="아이디" class="input input-bordered" autofocus/>
+                <input type="text" name="username" placeholder="아이디를 입력해주세요" class="input input-bordered" autofocus/>
             </div>
+            <!-- 비밀번호 입력 -->
             <div class="form-control">
                 <label class="label">
                     <span class="label-text">비밀번호</span>
                 </label>
-                <input type="password" name="password" placeholder="비밀번호" class="input input-bordered"/>
+                <input type="password" name="password" placeholder="비밀번호를 입력해주세요" class="input input-bordered"/>
             </div>
-            <button id="btn-login-1" class="btn btn-block bg-[#78C4BA] gap-1 text-white">
-                <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                <span>로그인</span>
+            <!-- 에러 메시지 -->
+            <span th:if="${error}">
+                    <p id="valid" class="alert alert-danger text-sm" style="background-color: #FEF2F2; color: #991B1B" th:text="${exception}"></p>
+                </span>
+            <!-- 로그인 버튼 -->
+            <button id="btn-login-1" class="flex justify-center rounded bg-[#78C4BA] gap-1 text-white">
+                <span class="p-3">로그인</span>
             </button>
+            <!-- 회원가입 링크 -->
             <div class="login-signup">
                 <span class="text">계정이 없으신가요?
                     <a th:href="@{/members/join}" class="text signup-link" style="color: #78C4BA">회원가입</a>
                 </span>
             </div>
-            </th:block>
         </form>
-
+        <!-- 소셜로그인 -->
         <div>
             <div class="social-login flex items-center justify-center space-x-4">
                 <a href="/oauth2/authorization/google">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/2048px-Google_%22G%22_Logo.svg.png" alt="구글로 로그인하기" width="50" height="50">
+                    <img src="https://cdn.freebiesupply.com/logos/large/2x/google-g-2015-logo-png-transparent.png" alt="구글로 로그인하기" width="50" height="50">
                 </a>
                 <a href="/oauth2/authorization/naver">
                     <img src="https://clova-phinf.pstatic.net/MjAxODAzMjlfOTIg/MDAxNTIyMjg3MzM3OTAy.WkiZikYhauL1hnpLWmCUBJvKjr6xnkmzP99rZPFXVwgg.mNH66A47eL0Mf8G34mPlwBFKP0nZBf2ZJn5D4Rvs8Vwg.PNG/image.png" alt="네이버로 로그인하기" width="50" height="50">
@@ -85,7 +87,6 @@
                 </a>
             </div>
         </div>
-
     </div>
 </main>
 </body>

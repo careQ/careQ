@@ -27,7 +27,9 @@ public class MemberController {
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
-    public String showLogin() {
+    public String showLogin(@RequestParam(value = "error", required = false)String error, @RequestParam(value = "exception", required = false)String exception, Model model) {
+        model.addAttribute("error", error);
+        model.addAttribute("exception", exception);
         return "members/login";
     }
 
