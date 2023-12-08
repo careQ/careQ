@@ -83,4 +83,16 @@ public class MemberController {
         return "members/searches";
     }
 
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/findpw")
+    public String findPassword() {
+        return "members/findpw";
+    }
+
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/findpw-email")
+    public String findPasswordemail() {
+        return "members/findpw-email";
+    }
+
 }

@@ -57,17 +57,22 @@
                     <span class="label-text">비밀번호</span>
                 </label>
                 <input type="password" name="password" placeholder="비밀번호를 입력해주세요" class="input input-bordered"/>
+                <div class="login-findpw text-sm p-1">
+                    <span class="text">비밀번호를 잊으셨나요?
+                        <a th:href="@{/members/findpw}" class="text findpw-link" style="color: #78C4BA">비밀번호 찾기</a>
+                    </span>
+                </div>
             </div>
             <!-- 에러 메시지 -->
             <span th:if="${error}">
-                    <p id="valid" class="alert alert-danger text-sm" style="background-color: #FEF2F2; color: #991B1B" th:text="${exception}"></p>
-                </span>
+                <p id="valid" class="alert alert-danger text-sm" style="background-color: #FEF2F2; color: #991B1B" th:text="${exception}"></p>
+            </span>
             <!-- 로그인 버튼 -->
             <button id="btn-login-1" class="flex justify-center rounded bg-[#78C4BA] gap-1 text-white">
                 <span class="p-3">로그인</span>
             </button>
             <!-- 회원가입 링크 -->
-            <div class="login-signup">
+            <div class="login-signup text-sm">
                 <span class="text">계정이 없으신가요?
                     <a th:href="@{/members/join}" class="text signup-link" style="color: #78C4BA">회원가입</a>
                 </span>
