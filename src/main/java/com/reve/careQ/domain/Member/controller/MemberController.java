@@ -7,12 +7,15 @@ import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -84,15 +87,42 @@ public class MemberController {
     }
 
     @PreAuthorize("isAnonymous()")
-    @GetMapping("/findpw")
-    public String findPassword() {
-        return "members/findpw";
+    @GetMapping("/passwords")
+    public String showFindPassword() {
+        return "members/passwords";
     }
 
     @PreAuthorize("isAnonymous()")
-    @GetMapping("/findpw-email")
-    public String findPasswordemail() {
-        return "members/findpw-email";
+    @PostMapping("/passwords")
+    public String findPassword(String username, String email, HttpServletRequest request) {
+        RsData<Member> findPasswordRs = memberService.findPassword(username, email);
+
+        if (findPasswordRs.isFail()) {
+            return rq.historyBack(findPasswordRs);
+        }
+
+        HttpSession session = request.getSession();
+        session.setAttribute("findPasswordRs", findPasswordRs);
+
+        return rq.redirectWithMsg("/members/passwords/mail", findPasswordRs);
+    }
+
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/passwords/mail")
+    public ModelAndView findPasswordemail(HttpServletRequest request) {
+        ModelAndView mv = new ModelAndView();
+
+        HttpSession session = request.getSession();
+        RsData<Member> findPasswordRs = (RsData<Member>) session.getAttribute("findPasswordRs");
+
+        if (findPasswordRs != null) {
+            mv.addObject("email", findPasswordRs.getData().getEmail());
+            mv.setViewName("members/passwords-mail");
+
+            memberService.modifyPassword(findPasswordRs.getData().getEmail());
+        }
+
+        return mv;
     }
 
 }

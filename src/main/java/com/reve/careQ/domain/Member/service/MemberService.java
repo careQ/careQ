@@ -4,8 +4,12 @@ import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
+import com.reve.careQ.global.mail.EmailException;
+import com.reve.careQ.global.mail.TempPasswordMail;
 import com.reve.careQ.global.rsData.RsData;
+import groovy.transform.Undefined;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.DataException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +19,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +29,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
     private final ReservationRepository reservationRepository;
+    private final TempPasswordMail tempPasswordMail;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -36,6 +42,8 @@ public class MemberService {
     private Optional<Member> findByEmail(String email) {
         return memberRepository.findByEmail(email);
     }
+
+    private Optional<Member> findByUsernameAndEmail(String username, String email) { return memberRepository.findByUsernameAndEmail(username, email); }
 
     @Transactional
     public RsData<Member> join(String providerTypeCode, String username, String password, String email) {
@@ -92,5 +100,33 @@ public class MemberService {
 
     public List<Reservation> getReservationsForMember(Member currentUser) {
         return reservationRepository.findByMember(currentUser);
+    }
+
+    @Transactional
+    public RsData<Member> findPassword(String username, String email) {
+        Optional<Member> memberOptional = findByUsernameAndEmail(username, email);
+
+        if (memberOptional.isEmpty()) {
+            return RsData.of("F-4", "해당 계정은 존재하지 않습니다.");
+        }
+
+        if (!"careQ".equals(memberOptional.get().getProviderTypeCode())){
+            String type = memberOptional.get().getProviderTypeCode();
+            return RsData.of("F-4", "해당 계정은 %s와 연동된 계정입니다. %s로 로그인 해주세요".formatted(type, type));
+        }
+
+        return RsData.of("S-3", "입력하신 이메일로 임시 비밀번호를 전송했습니다.", memberOptional.get());
+    }
+
+    @Transactional
+    public void modifyPassword(String email) throws EmailException {
+        String tempPassword = UUID.randomUUID().toString().substring(0, 6);
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailException("해당 이메일의 유저가 없습니다."));
+        member.setPassword(passwordEncoder.encode(tempPassword));
+        memberRepository.save(member);
+
+        tempPasswordMail.sendSimpleMessage(email, tempPassword);
     }
 }
