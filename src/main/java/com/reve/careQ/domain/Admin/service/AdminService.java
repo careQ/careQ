@@ -12,6 +12,7 @@ import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.domain.Subject.service.SubjectService;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,14 +30,10 @@ import java.util.Optional;
 public class AdminService {
 
     private final PasswordEncoder passwordEncoder;
-
     private final AdminRepository adminRepository;
-
     private final HospitalService hospitalService;
-
     private final SubjectService subjectService;
     private final ReservationRepository reservationRepository;
-
     private final RegisterChartRepository registerChartRepository;
 
     public Optional<Admin> findById(Long id) {
@@ -56,23 +53,31 @@ public class AdminService {
     }
 
     public List<String> selectAllStates(String subjectCode){
-        return adminRepository.selectAllStates(subjectCode);
+        return adminRepository.findDistinctHospitalStateBySubjectCode(subjectCode);
     }
 
     public List<String> selectAllCities(String subjectCode, String state){
-        return adminRepository.selectAllCities(subjectCode, state);
+        return adminRepository.findDistinctHospitalCityBySubjectCodeAndHospitalState(subjectCode, state);
     }
 
     public List<Hospital> selectHospitalsByStateAndCity(String subjectCode, String state, String city, String name){
-        return adminRepository.selectHospitalsByStateAndCity(subjectCode, state, city, name);
+        return adminRepository.findBySubjectCodeAndHospitalStateContainingAndHospitalCityContainingAndHospitalNameContaining(subjectCode, state, city, name);
+    }
+
+    public List<Reservation> getReservationsForAdmin(Admin admin) {
+        return reservationRepository.findByAdmin(admin);
+    }
+
+    public List<RegisterChart> getRegisterChartByAdminAndMemberName(Admin admin, String name) {
+        return registerChartRepository.getRegisterChartByAdminAndMemberName(admin, name);
     }
 
     @Transactional
     public RsData<Admin> join(String hospitalCode, String subjectCode,String username, String password, String email) {
-        Optional<Hospital> hospital = hospitalService.findByCode(hospitalCode);
-        Optional<Subject> subject = subjectService.findByCode(subjectCode);
+        Optional<Hospital> hospitalOptional = hospitalService.findByCode(hospitalCode);
+        Optional<Subject> subjectOptional = subjectService.findByCode(subjectCode);
 
-        if ((hospital.isPresent())&&(findByHospitalIdAndSubjectId(hospital.get().getId(), subject.get().getId()).isPresent())){
+        if ((hospitalOptional.isPresent())&&(findByHospitalIdAndSubjectId(hospitalOptional.get().getId(), subjectOptional.get().getId()).isPresent())){
             return RsData.of("F-1", "%s %s 관리자는 이미 사용중입니다.".formatted(hospitalCode, subjectCode));
         }
 
@@ -80,11 +85,15 @@ public class AdminService {
             return RsData.of("F-1", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username));
         }
 
-        if (subjectService.findByCode(subjectCode).isEmpty()){
+        if (subjectOptional.isEmpty()){
             return RsData.of("F-1", "해당 과목코드(%s)는 존재하지 않습니다.".formatted(subjectCode));
         }
 
-        if (hospitalService.findByCode(hospitalCode).isEmpty()){
+        if(findByEmail(email).isPresent()) {
+            return RsData.of("F-1", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email));
+        }
+
+        if (hospitalOptional.isEmpty()){
             String xmlData = hospitalService.useHospitalApi(hospitalCode).getData();
             String[] parseXml = hospitalService.parseXml(xmlData).getData();
 
@@ -92,27 +101,18 @@ public class AdminService {
                 return RsData.of("F-1", "존재하지 않는 병원코드 입니다.");
             }
 
-
             hospitalService.insert(parseXml[0], parseXml[1], parseXml[2], parseXml[3]);
+            hospitalOptional = hospitalService.findByCode(hospitalCode);
         }
 
-        if(findByEmail(email).isPresent()) {
-            return RsData.of("F-1", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email));
-        }
-
-        if (StringUtils.hasText(password)) {
-            password = passwordEncoder.encode(password);
-        }
-
-        Hospital inputhospital = hospitalService.findByCode(hospitalCode).get();
-        Subject inputsubject = subjectService.findByCode(subjectCode).get();
+        String encodedPassword = StringUtils.hasText(password) ? passwordEncoder.encode(password) : null;
 
         Admin admin = Admin
                 .builder()
-                .hospital(inputhospital)
-                .subject(inputsubject)
+                .hospital(hospitalOptional.get())
+                .subject(subjectOptional.get())
                 .username(username)
-                .password(password)
+                .password(encodedPassword)
                 .email(email)
                 .build();
 
@@ -124,56 +124,42 @@ public class AdminService {
 
     @Transactional
     public RsData<Admin> findAdmin(String subjectName, String hospitalName){
-        if (subjectService.findByName(subjectName).isEmpty()){
+        Optional<Subject> subjectOptional = subjectService.findByName(subjectName);
+        Optional<Hospital> hospitalOptional = hospitalService.findByName(hospitalName);
+
+        if (subjectOptional.isEmpty()){
             return RsData.of("F-1", ("해당 진료과목(%s)은 존재하지 않습니다.\n 진료과목명을 정확하게 입력해주세요.").formatted(subjectName));
         }
 
-        if(hospitalService.findByName(hospitalName).isEmpty()){
+        if(hospitalOptional.isEmpty()){
             return RsData.of("F-1", "해당 병원명(%s)은 존재하지 않습니다.\n 병원명을 정확하게 입력해주세요.".formatted(hospitalName));
         }
 
         Long subjectId = subjectService.findByName(subjectName).get().getId();
         Long hospitalId = hospitalService.findByName(hospitalName).get().getId();
 
-        Optional<Admin> admin = adminRepository.findByHospitalIdAndSubjectId(hospitalId, subjectId);
+        Optional<Admin> adminOptional = adminRepository.findByHospitalIdAndSubjectId(hospitalId, subjectId);
 
-        if(admin.isEmpty()){
-            return RsData.of("F-1", ("해당 관리자(%s %s)가 존재하지 않습니다.\n 다른 병원으로 검색해주세요.").formatted(hospitalName, subjectName));
-        }
-
-        return RsData.of("S-1", "해당 관리자가 존재합니다.", admin.get());
+        return adminOptional.map(admin -> RsData.of("S-1", "해당 관리자가 존재합니다.", admin))
+                .orElse(RsData.of("F-1", "해당 관리자가 존재하지 않습니다.\n다른 병원으로 검색해주세요."));
     }
 
     public RsData<Admin> getCurrentAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null) {
-            Object principal = authentication.getPrincipal();
-
-            if (principal instanceof UserDetails) {
-                UserDetails userDetails = (UserDetails) principal;
-                String username = userDetails.getUsername();
-
-                // username을 이용해 현재 로그인한 관리자 찾기
-                Optional<Admin> currentAdmin = findByUsername(username);
-
-                if (currentAdmin.isPresent()) {
-                    return RsData.of("S-1", "현재 로그인한 관리자 정보를 가져왔습니다.", currentAdmin.get());
-                } else {
-                    return RsData.of("F-1", "현재 로그인한 관리자 정보를 찾을 수 없습니다.");
-                }
-            }
+        if (authentication == null) {
+            return RsData.of("F-2", "로그인한 사용자 정보를 가져오지 못했습니다.");
         }
 
-        return RsData.of("F-2", "로그인한 사용자 정보를 가져오지 못했습니다.");
+        Object principal = authentication.getPrincipal();
+        String username = getUsernameFromPrincipal(principal);
+
+        return findByUsername(username)
+                .map(admin -> RsData.of("S-1", "현재 로그인한 관리자 정보를 가져왔습니다.", admin))
+                .orElse(RsData.of("F-1", "현재 로그인한 관리자 정보를 찾을 수 없습니다."));
     }
 
-    public List<Reservation> getReservationsForAdmin(Admin admin) {
-        return reservationRepository.findByAdmin(admin);
+    private String getUsernameFromPrincipal(Object principal) {
+        return (principal instanceof UserDetails) ? ((UserDetails) principal).getUsername() : null;
     }
-
-    public List<RegisterChart> getRegisterChartByAdminAndMemberName(Admin admin, String name) {
-        return registerChartRepository.getRegisterChartByAdminAndMemberName(admin, name);
-    }
-
 }
