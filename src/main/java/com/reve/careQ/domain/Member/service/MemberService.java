@@ -7,9 +7,7 @@ import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.mail.EmailException;
 import com.reve.careQ.global.mail.TempPasswordMail;
 import com.reve.careQ.global.rsData.RsData;
-import groovy.transform.Undefined;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.exception.DataException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -76,6 +74,10 @@ public class MemberService {
     @Transactional
     public RsData<Member> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null){
+            return RsData.of("F-3", "현재 로그인되어 있지 않습니다.");
+        }
+
         String username = authentication.getName();
         Optional<Member> memberOptional = findByUsername(username);
 
@@ -84,18 +86,6 @@ public class MemberService {
         }
 
         return RsData.of("S-3", "현재 로그인한 사용자를 가져왔습니다.", memberOptional.get());
-    }
-
-
-    public RsData<List<Reservation>> getReservationsForCurrentUser() {
-        RsData<Member> currentUserData = getCurrentUser();
-        if (currentUserData.isSuccess()) {
-            Member currentUser = currentUserData.getData();
-            List<Reservation> reservations = reservationRepository.findByMember(currentUser);
-            return RsData.of("S-3", "현재 로그인한 사용자의 예약 목록을 가져왔습니다.", reservations);
-        } else {
-            return RsData.of("F-4", "현재 로그인한 사용자를 찾을 수 없습니다.", null);
-        }
     }
 
     public List<Reservation> getReservationsForMember(Member currentUser) {
