@@ -39,21 +39,19 @@ public class MemberController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
     public String showMembersHome(Model model) {
+        RsData<Member> currentUserRs = memberService.getCurrentUser();
 
-        RsData<Member> currentUserData = memberService.getCurrentUser();
-
-        if (currentUserData.isSuccess()) {
-            Member currentUser = currentUserData.getData();
-
-            List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
-
-            model.addAttribute("reservations", reservations);
-
-            return "members/members-home";
-        } else {
+        if (currentUserRs.isFail()){
             return "redirect:/";
         }
 
+        Member currentUser = currentUserRs.getData();
+
+        List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
+
+        model.addAttribute("reservations", reservations);
+
+        return "members/members-home";
     }
 
     @PreAuthorize("isAnonymous()")
@@ -68,7 +66,6 @@ public class MemberController {
         RsData<Member> joinRs = memberService.join("careQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
 
         if (joinRs.isFail()) {
-
             return rq.historyBack(joinRs);
         }
 
@@ -121,8 +118,6 @@ public class MemberController {
 
             memberService.modifyPassword(findPasswordRs.getData().getEmail());
         }
-
         return mv;
     }
-
 }
