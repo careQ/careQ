@@ -44,14 +44,13 @@ public class RegisterChartService {
     public boolean existsByAdminIdAndMemberId(Long adminId, Long memberId){
         return registerChartRepository.existsByAdminIdAndMemberId(adminId,memberId);
     }
-
     @Transactional
     public RsData<RegisterChart> insert(Long hospitalId, Long subjectId){
         // 사용자 정보 가져오기
-        RsData<Member> currentUserData = memberService.getCurrentUser();
+        Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
-        if (currentUserData.isSuccess()) {
-            Member currentUser = currentUserData.getData();
+        if (currentUserOptional.isPresent()) {
+            Member currentUser = currentUserOptional.get();
             Optional<Admin> adminOptional = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId);
 
             if (adminOptional.isEmpty()) {
@@ -65,7 +64,7 @@ public class RegisterChartService {
                 return RsData.of("F-4", "이미 접수되었습니다.");
             }
 
-            Optional<Reservation> reservationOptional = reservationService.findByIdAdminIdAndIdMemberId(adminOptional.get().getId(), currentUser.getId());
+            Optional<Reservation> reservationOptional = reservationService.findByAdminIdAndMemberId(adminOptional.get().getId(), currentUser.getId());
 
             //당일 예약 확인
             if ((reservationOptional.isPresent()) && (LocalDate.now().isEqual(reservationOptional.get().getDate().toLocalDate()))) {
@@ -97,6 +96,7 @@ public class RegisterChartService {
             return RsData.of("F-3", "현재 로그인한 사용자 정보를 가져오지 못했습니다.");
         }
     }
+
 
     // 줄서기 정보 삭제
     @Transactional

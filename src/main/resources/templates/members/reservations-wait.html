@@ -22,7 +22,6 @@
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <script>
         var stompClient = null;
-
         function connect() {
             var socket = new SockJS('/ws/reservation');
             stompClient = Stomp.over(socket);
@@ -33,7 +32,7 @@
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
                     if((JSON.parse(message.body).userType == 'ADMIN')&&(JSON.parse(message.body).status == 'CONFIRMED')){
                         console.log(JSON.parse(message.body));
-                        window.location.href = window.location.href + "confirm";
+                        window.location.href = window.location.href + "/confirm";
                     }
                 });
             });
@@ -90,12 +89,8 @@
         <p style="font-size: 14px;" th:text="'예약 병원 : ' + ${hospital.name}"></p>
         <p style="font-size: 14px;" th:text="'예약 진료과 : ' + ${subject.name}"></p>
         <p style="font-size: 14px;" th:text="'예약 일자 : ' + ${date}"></p>
-<!--        <button type="submit" id="btn-reservation" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; margin: 10px; border: 1px solid #F83758; box-shadow: none;">-->
-<!--            <span class="text-white" style="font-size: 15px;">예약 취소</span>-->
-<!--        </button>-->
-        <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/'}" method="post">
-             <input type="hidden" name="_method" value="delete"/>
-             <button id="delete-btn">삭제</button>
+        <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/' + ${reservationId}}" method="post">
+            <button id="delete-btn">삭제</button>
         </form>
     </div>
 </main>

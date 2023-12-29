@@ -72,7 +72,7 @@ public class RegisterChartController {
     //줄서기 삭제
     @DeleteMapping
     public String deleteRegister(@PathVariable("subject-id") Long subjectId,
-                                    @PathVariable("hospital-id") Long hospitalId) {
+                                 @PathVariable("hospital-id") Long hospitalId) {
 
         Optional<Admin> adminOptional = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId);
 
@@ -81,10 +81,10 @@ public class RegisterChartController {
         } else {
             Admin admin = adminOptional.get();
 
-            RsData<Member> currentUserData = memberService.getCurrentUser();
+            Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
-            if (currentUserData.isSuccess()) {
-                Member currentUser = currentUserData.getData();
+            if (currentUserOptional.isPresent()) {
+                Member currentUser = currentUserOptional.get();
 
                 CompositePKEntity id = new CompositePKEntity();
                 id.setAdminId(admin.getId());
@@ -99,8 +99,9 @@ public class RegisterChartController {
                     return rq.historyBack(deleteResult);
                 }
             } else {
-                return rq.historyBack(currentUserData);
+                return "redirect:/members"; // 혹은 적절한 에러 페이지로 리디렉션
             }
         }
     }
+
 }

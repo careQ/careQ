@@ -85,28 +85,10 @@ public class MemberService {
     }
 
     @Transactional
-    public RsData<Member> getCurrentUser() {
+    public Optional<Member> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        Optional<Member> memberOptional = findByUsername(username);
-
-        if (memberOptional.isEmpty()) {
-            return RsData.of("F-4", "현재 로그인한 사용자를 찾을 수 없습니다.");
-        }
-
-        return RsData.of("S-3", "현재 로그인한 사용자를 가져왔습니다.", memberOptional.get());
-    }
-
-
-    public RsData<List<Reservation>> getReservationsForCurrentUser() {
-        RsData<Member> currentUserData = getCurrentUser();
-        if (currentUserData.isSuccess()) {
-            Member currentUser = currentUserData.getData();
-            List<Reservation> reservations = reservationRepository.findByMember(currentUser);
-            return RsData.of("S-3", "현재 로그인한 사용자의 예약 목록을 가져왔습니다.", reservations);
-        } else {
-            return RsData.of("F-4", "현재 로그인한 사용자를 찾을 수 없습니다.", null);
-        }
+        return findByUsername(username);
     }
 
     public List<Reservation> getReservationsForMember(Member currentUser) {

@@ -3,13 +3,10 @@ package com.reve.careQ.domain.Reservation.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
-import com.reve.careQ.domain.Member.entity.Member;
-import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.Reservation.entity.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Optional;
-
 @Controller
 @RequestMapping("/members/subjects/{subject-id}/hospitals/{hospital-id}/reservations")
 @RequiredArgsConstructor
@@ -33,11 +28,9 @@ public class ReservationController {
     private final ReservationService reservationService;
     private final Rq rq;
     private final AdminService adminService;
-    private final MemberService memberService;
 
     private final SimpMessageSendingOperations sendingOperations;
 
-    // 예약 신청페이지
     @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ModelAndView showReservation(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId, Model model) {
@@ -49,7 +42,6 @@ public class ReservationController {
         return mv;
     }
 
-    // 예약하기 버튼
     @PreAuthorize("isAuthenticated()")
     @PostMapping
     public String createReservation(@PathVariable("subject-id") Long subjectId,
@@ -57,23 +49,19 @@ public class ReservationController {
                                     @RequestParam("selectedDate") String selectedDate,
                                     @RequestParam("selectedTime") String selectedTime
     ) {
-
-        RsData<Reservation> reservationRs = reservationService.insert(hospitalId, subjectId, selectedDate, selectedTime);
-
-        if (reservationRs.isSuccess()) {
-            // 예약 생성 성공
-
-            return "redirect:/members/subjects/" + subjectId + "/hospitals/" + hospitalId + "/reservations/";
-        } else {
+        try {
+            String redirectUrl = reservationService.createReservationAndReturnRedirectUrl(hospitalId, subjectId, selectedDate, selectedTime);
+            return "redirect:" + redirectUrl;
+        } catch (Exception e) {
             // 예약 생성 실패
-            return rq.historyBack(reservationRs);
+            return rq.historyBack(e.getMessage());
         }
     }
 
-    // 예약 대기 페이지
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/")
-    public ModelAndView waitReservation(@PathVariable("subject-id") Long subjectId,
+    @GetMapping("/{reservationId}")
+    public ModelAndView waitReservation(@PathVariable("reservationId") Long reservationId,
+                                        @PathVariable("subject-id") Long subjectId,
                                         @PathVariable("hospital-id") Long hospitalId,
                                         Model model) {
         ModelAndView mv = new ModelAndView();
@@ -84,45 +72,22 @@ public class ReservationController {
         return mv;
     }
 
-    @DeleteMapping("/")
-    public String deleteReservation(@PathVariable("subject-id") Long subjectId,
-                                    @PathVariable("hospital-id") Long hospitalId) {
+    @PostMapping("/{reservationId}")
+    public String deleteReservation(@PathVariable("reservationId") Long reservationId) {
+        RsData<String> deleteResult = reservationService.deleteReservation(reservationId);
 
-        Optional<Admin> adminOptional = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId);
-
-        if (adminOptional.isEmpty()) {
+        if (deleteResult.isSuccess()) {
             return "redirect:/members";
-
         } else {
-            Admin admin = adminOptional.get();
-
-            RsData<Member> currentUserData = memberService.getCurrentUser();
-
-            if (currentUserData.isSuccess()) {
-                Member currentUser = currentUserData.getData();
-
-                CompositePKEntity id = new CompositePKEntity();
-                id.setAdminId(admin.getId());
-                id.setMemberId(currentUser.getId());
-
-                // 예약 정보 삭제
-                RsData<String> deleteResult = reservationService.deleteReservation(id);
-
-                if (deleteResult.isSuccess()) {
-                    return "redirect:/members";
-                } else {
-                    return rq.historyBack(deleteResult);
-                }
-            } else {
-                return rq.historyBack(currentUserData);
-            }
+            return rq.historyBack(deleteResult);
         }
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/confirm")
-    public ModelAndView confirmReservation(@PathVariable("subject-id") Long subjectId,
-                                     @PathVariable("hospital-id") Long hospitalId){
+    @GetMapping("/{reservationId}/confirm")
+    public ModelAndView confirmReservation(@PathVariable("reservationId") Long reservationId,
+                                           @PathVariable("subject-id") Long subjectId,
+                                           @PathVariable("hospital-id") Long hospitalId){
         ModelAndView mv= new ModelAndView();
 
         mv.addObject("subjectName",subjectService.findById(subjectId).get().getName());
@@ -137,7 +102,7 @@ public class ReservationController {
         Thread.sleep(1000); // simulated delay
 
         Admin admin = adminService.findByHospitalIdAndSubjectId(reservationDto.getHospitalId(),reservationDto.getSubjectId()).get();
-        Reservation reservation = reservationService.findByIdAdminIdAndIdMemberId(admin.getId(), reservationDto.getMemberId()).get();
+        Reservation reservation = reservationService.findByAdminIdAndMemberId(admin.getId(), reservationDto.getMemberId()).get();
         if((reservationDto.getUserType() == ReservationDto.UserType.ADMIN)&&(reservation.getStatus() != reservationDto.getStatus())){
             reservationService.updateStatus(reservation, reservationDto.getStatus());
         }
@@ -145,5 +110,5 @@ public class ReservationController {
         sendingOperations.convertAndSend("/topic/members/"+reservationDto.getMemberId()+"/subjects/"+reservationDto.getSubjectId()
                 +"/hospitals/"+reservationDto.getHospitalId(), reservationDto);
     }
-
 }
+

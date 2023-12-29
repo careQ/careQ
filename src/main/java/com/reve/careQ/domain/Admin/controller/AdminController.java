@@ -3,14 +3,11 @@ package com.reve.careQ.domain.Admin.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Admin.dto.JoinFormDto;
-import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartDto;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
@@ -80,7 +77,6 @@ public class AdminController {
         return adminRq.redirectWithMsg("/admins/login", joinRs);
     }
 
-
     @GetMapping("/reservations")
     public String showAdminReservations(Model model) {
         // 현재 로그인한 관리자 정보 가져오기
@@ -105,7 +101,7 @@ public class AdminController {
                                      @RequestParam("memberId") Long memberId,
                                      HttpSession session) {
         // 예약 정보 가져오기
-        Optional<Reservation> reservationOptional = reservationRepository.findByIdAdminIdAndIdMemberId(adminId, memberId);
+        Optional<Reservation> reservationOptional = reservationRepository.findByAdminIdAndMemberId(adminId, memberId);
 
         if (reservationOptional.isPresent()) {
             Reservation reservation = reservationOptional.get();
@@ -163,92 +159,92 @@ public class AdminController {
         return registerChartDto;
     }
 
-    @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/queues")
-    public String deleteRegister(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
-
-        Member member = memberService.findById(memberId).get();
-
-        if (currentAdminData.isSuccess()) {
-            Admin admin = currentAdminData.getData();
-
-            CompositePKEntity id = new CompositePKEntity();
-            id.setAdminId(admin.getId());
-            id.setMemberId(member.getId());
-
-            //줄서기에서 진료 삭제
-            if(kind.equals("queue")){
-                // 줄서기 정보 삭제
-                RsData<String> deleteRegisterRs = registerChartService.deleteRegister(id);
-
-                if (deleteRegisterRs.isSuccess()) {
-                    return "redirect:/admins/queues";
-                } else {
-                    return adminRq.historyBack(deleteRegisterRs);
-                }
-            }
-            //당일 예약에서 진료 후 예약 삭제
-            else{
-                RsData<String> deleteReservationRs = reservationService.deleteReservation(id);
-
-                if (deleteReservationRs.isSuccess()) {
-                    return "redirect:/admins/queues";
-                } else {
-                    return adminRq.historyBack(deleteReservationRs);
-                }
-            }
-
-        } else {
-            return adminRq.historyBack(currentAdminData);
-        }
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/queues")
-    public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
-
-        Member member = memberService.findById(memberId).get();
-
-        if (currentAdminData.isSuccess()) {
-            Admin admin = currentAdminData.getData();
-
-            //줄서기에서 진료 상태 변경
-            if(kind.equals("queue")){
-                // 줄서기 정보 가져오기
-                Optional<RegisterChart> registerChartOptional = registerChartService.findByIdAdminIdAndIdMemberId(admin.getId(), member.getId());
-
-                RegisterChart registerChart = registerChartOptional.get();
-
-                RsData<RegisterChart> updateStatusRs = registerChartService.updateStatus(registerChart, RegisterChartStatus.ENTER);
-
-                if (updateStatusRs.isSuccess()) {
-                    return "redirect:/admins/queues";
-                }else{
-                    return adminRq.historyBack(updateStatusRs);
-                }
-            }
-            //당일 예약에서 진료 상태 변경
-            else{
-                // 예약 정보 가져오기
-                Optional<Reservation> reservationOptional = reservationRepository.findByIdAdminIdAndIdMemberId(admin.getId(), memberId);
-
-                Reservation reservation = reservationOptional.get();
-
-                //예약 정보 상태에 따라 처리
-                RsData<Reservation> updateRegisterStatus = reservationService.updateRegisterStatus(reservation, RegisterChartStatus.ENTER);
-
-                if (updateRegisterStatus.isSuccess()) {
-                    return "redirect:/admins/queues";
-                }else{
-                    return adminRq.historyBack(updateRegisterStatus);
-                }
-            }
-
-        }else {
-            return adminRq.historyBack(currentAdminData);
-        }
-    }
+//    @PreAuthorize("isAuthenticated()")
+//    @DeleteMapping("/queues")
+//    public String deleteRegister(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
+//        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+//
+//        Member member = memberService.findById(memberId).get();
+//
+//        if (currentAdminData.isSuccess()) {
+//            Admin admin = currentAdminData.getData();
+//
+//            CompositePKEntity id = new CompositePKEntity();
+//            id.setAdminId(admin.getId());
+//            id.setMemberId(member.getId());
+//
+//            //줄서기에서 진료 삭제
+//            if(kind.equals("queue")){
+//                // 줄서기 정보 삭제
+//                RsData<String> deleteRegisterRs = registerChartService.deleteRegister(id);
+//
+//                if (deleteRegisterRs.isSuccess()) {
+//                    return "redirect:/admins/queues";
+//                } else {
+//                    return adminRq.historyBack(deleteRegisterRs);
+//                }
+//            }
+//            //당일 예약에서 진료 후 예약 삭제
+//            else{
+//                RsData<String> deleteReservationRs = reservationService.deleteReservation(id);
+//
+//                if (deleteReservationRs.isSuccess()) {
+//                    return "redirect:/admins/queues";
+//                } else {
+//                    return adminRq.historyBack(deleteReservationRs);
+//                }
+//            }
+//
+//        } else {
+//            return adminRq.historyBack(currentAdminData);
+//        }
+//    }
+//
+//    @PreAuthorize("isAuthenticated()")
+//    @PostMapping("/queues")
+//    public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
+//        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+//
+//        Member member = memberService.findById(memberId).get();
+//
+//        if (currentAdminData.isSuccess()) {
+//            Admin admin = currentAdminData.getData();
+//
+//            //줄서기에서 진료 상태 변경
+//            if(kind.equals("queue")){
+//                // 줄서기 정보 가져오기
+//                Optional<RegisterChart> registerChartOptional = registerChartService.findByIdAdminIdAndIdMemberId(admin.getId(), member.getId());
+//
+//                RegisterChart registerChart = registerChartOptional.get();
+//
+//                RsData<RegisterChart> updateStatusRs = registerChartService.updateStatus(registerChart, RegisterChartStatus.ENTER);
+//
+//                if (updateStatusRs.isSuccess()) {
+//                    return "redirect:/admins/queues";
+//                }else{
+//                    return adminRq.historyBack(updateStatusRs);
+//                }
+//            }
+//            //당일 예약에서 진료 상태 변경
+//            else{
+//                // 예약 정보 가져오기
+//                Optional<Reservation> reservationOptional = reservationRepository.findByIdAdminIdAndIdMemberId(admin.getId(), memberId);
+//
+//                Reservation reservation = reservationOptional.get();
+//
+//                //예약 정보 상태에 따라 처리
+//                RsData<Reservation> updateRegisterStatus = reservationService.updateRegisterStatus(reservation, RegisterChartStatus.ENTER);
+//
+//                if (updateRegisterStatus.isSuccess()) {
+//                    return "redirect:/admins/queues";
+//                }else{
+//                    return adminRq.historyBack(updateRegisterStatus);
+//                }
+//            }
+//
+//        }else {
+//            return adminRq.historyBack(currentAdminData);
+//        }
+//    }
 
 }
