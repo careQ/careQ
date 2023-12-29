@@ -81,5 +81,4 @@ public class MemberController {
 
         return "members/searches";
     }
-
 }

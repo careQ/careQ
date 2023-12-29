@@ -33,7 +33,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Transactional(readOnly = true)
     public Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId){
-        return reservationRepository.findByAdminIdAndMemberId(adminId, memberId);
+        return reservationRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
     }
 
     @Transactional(readOnly = true)
@@ -66,9 +66,9 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Transactional(readOnly = true)
     public RsData<String> checkDuplicateReservation(Long adminId, Long memberId) {
-        boolean isDuplicateReservation = reservationRepository.existsByAdminIdAndMemberId(adminId, memberId);
+        boolean isDuplicateActiveReservation = reservationRepository.existsByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
 
-        if (isDuplicateReservation) {
+        if (isDuplicateActiveReservation) {
             return RsData.of("F-4", "이미 예약한 병원입니다.");
         }
 
@@ -86,7 +86,9 @@ public class ReservationServiceImpl implements ReservationService {
         Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
 
         if (optionalReservation.isPresent()) {
-            reservationRepository.delete(optionalReservation.get());
+            Reservation reservation = optionalReservation.get();
+            reservation.markAsDeleted(true);
+            reservationRepository.save(reservation);
             return RsData.of("S-2", "예약 정보가 삭제되었습니다.");
         } else {
             return RsData.of("F-5", "예약 정보를 찾을 수 없습니다.");
@@ -116,6 +118,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .registerStatus(RegisterChartStatus.WAITING)
                 .admin(admin)
                 .member(member)
+                .isDeleted(false)
                 .build();
         return reservationRepository.save(reservation);
     }

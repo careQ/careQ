@@ -43,7 +43,7 @@
             <div th:unless="${#lists.isEmpty(reservations)}">
                 <div id="carouselExampleControls" class="carousel slide" data-bs-interval="false">
                     <div class="carousel-inner">
-                        <div th:each="reservation : ${reservations}"class="carousel-item">
+                        <div th:each="reservation : ${reservations}" th:if="${!reservation.isDeleted}" class="carousel-item">
                             <div class="block rounded-lg bg-[#f4f4f4] text-center w-64 h-33 p-2 my-2">
                                 <div class="h-32 flex flex-col justify-center">
                                     <a th:if="${#strings.equals(reservation.status,'PENDING')}" th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/reservations/{reservationId}(subjectId=${reservation.admin.subject.id}, hospitalId=${reservation.admin.hospital.id}, reservationId=${reservation.id})}">

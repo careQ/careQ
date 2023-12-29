@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -28,6 +29,10 @@ public class Reservation extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime date;
 
+    @ColumnDefault("FALSE")
+    @Column(nullable = false)
+    private Boolean isDeleted;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
@@ -36,6 +41,9 @@ public class Reservation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RegisterChartStatus registerStatus;
 
+    public void markAsDeleted(Boolean b) {
+        this.isDeleted = b;
+    }
     public void setStatus(ReservationStatus status) {
         this.status = status;
     }
