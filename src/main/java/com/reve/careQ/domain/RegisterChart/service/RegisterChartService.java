@@ -8,7 +8,7 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.service.ReservationService;
+import com.reve.careQ.domain.Reservation.service.ReservationServiceImpl;
 import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rsData.RsData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +27,14 @@ public class RegisterChartService {
     private final AdminService adminService;
     private final MemberService memberService;
 
-    private final ReservationService reservationService;
+    private final ReservationServiceImpl reservationServiceImpl;
 
     @Autowired
-    public RegisterChartService(RegisterChartRepository registerChartRepository, AdminService adminService, MemberService memberService, ReservationService reservationService) {
+    public RegisterChartService(RegisterChartRepository registerChartRepository, AdminService adminService, MemberService memberService, ReservationServiceImpl reservationServiceImpl) {
         this.registerChartRepository = registerChartRepository;
         this.adminService = adminService;
         this.memberService = memberService;
-        this.reservationService = reservationService;
+        this.reservationServiceImpl = reservationServiceImpl;
     }
 
     public Optional<RegisterChart> findByIdAdminIdAndIdMemberId(Long adminId, Long memberId){
@@ -64,7 +64,7 @@ public class RegisterChartService {
                 return RsData.of("F-4", "이미 접수되었습니다.");
             }
 
-            Optional<Reservation> reservationOptional = reservationService.findByAdminIdAndMemberId(adminOptional.get().getId(), currentUser.getId());
+            Optional<Reservation> reservationOptional = reservationServiceImpl.findByAdminIdAndMemberId(adminOptional.get().getId(), currentUser.getId());
 
             //당일 예약 확인
             if ((reservationOptional.isPresent()) && (LocalDate.now().isEqual(reservationOptional.get().getDate().toLocalDate()))) {

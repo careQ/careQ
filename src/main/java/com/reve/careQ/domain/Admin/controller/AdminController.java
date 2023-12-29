@@ -7,7 +7,7 @@ import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
-import com.reve.careQ.domain.Reservation.service.ReservationService;
+import com.reve.careQ.domain.Reservation.service.ReservationServiceImpl;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
@@ -43,7 +43,7 @@ public class AdminController {
 
     private final RegisterChartService registerChartService;
 
-    private final ReservationService reservationService;
+    private final ReservationServiceImpl reservationServiceImpl;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -129,7 +129,7 @@ public class AdminController {
             Admin currentAdmin = currentAdminData.getData();
 
             // 관리자에 해당하는 예약 목록 가져오기
-            List<Reservation> reservations = reservationService.getTodayReservation(currentAdmin);
+            List<Reservation> reservations = reservationServiceImpl.getTodayReservation(currentAdmin);
 
             model.addAttribute("reservations", reservations);
 

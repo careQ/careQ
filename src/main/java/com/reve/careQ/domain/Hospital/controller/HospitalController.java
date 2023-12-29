@@ -7,7 +7,7 @@ import com.reve.careQ.domain.Hospital.entity.HospitalDto;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
-import com.reve.careQ.domain.Reservation.service.ReservationService;
+import com.reve.careQ.domain.Reservation.service.ReservationServiceImpl;
 import com.reve.careQ.domain.Subject.service.SubjectService;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -30,7 +30,7 @@ public class HospitalController {
     private final HospitalService hospitalService;
     private final AdminService adminService;
     private final MemberService memberService;
-    private final ReservationService reservationService;
+    private final ReservationServiceImpl reservationServiceImpl;
     private final Rq rq;
 
     @PreAuthorize("isAuthenticated()")
@@ -96,7 +96,7 @@ public class HospitalController {
             Admin admin = adminOptional.get();
             Member currentUser = currentUserOptional.get();
 
-            RsData<String> reservationStatus = reservationService.checkDuplicateReservation(admin.getId(), currentUser.getId());
+            RsData<String> reservationStatus = reservationServiceImpl.checkDuplicateReservation(admin.getId(), currentUser.getId());
 
             if (reservationStatus.isSuccess()) {
                 rq.historyBack(reservationStatus.getData());
