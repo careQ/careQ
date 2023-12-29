@@ -1,4 +1,4 @@
-INSERT INTO SUBJECT(code, name, create_date, modify_date) VALUES ('D001', '내과', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+INSERT INTO subject(code, name, create_date, modify_date) VALUES ('D001', '내과', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                                                                  ('D002', '소아청소년과', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                                                                  ('D003', '신경과', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                                                                  ('D004', '정신건강의학과', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
