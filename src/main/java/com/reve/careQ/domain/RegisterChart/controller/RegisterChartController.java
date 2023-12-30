@@ -7,10 +7,10 @@ import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
+import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.domain.Subject.service.SubjectService;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ public class RegisterChartController {
     private final MemberService memberService;
     private final RegisterChartService registerChartService;
     private final Rq rq;
+    private final RegisterChartRepository registerChartRepository;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
@@ -42,7 +43,7 @@ public class RegisterChartController {
         Hospital hospital = hospitalService.findById(hospitalId).get();
         Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId).get();
 
-        Optional<RegisterChart> registerChart = registerChartService.findByIdAdminIdAndIdMemberId(admin.getId(), rq.getMember().getId());
+        Optional<RegisterChart> registerChart = registerChartService.findByAdminIdAndMemberId(admin.getId(), rq.getMember().getId());
 
         mv.addObject("register", registerChart);
         mv.addObject("subject",subject);
@@ -86,22 +87,28 @@ public class RegisterChartController {
             if (currentUserOptional.isPresent()) {
                 Member currentUser = currentUserOptional.get();
 
-                CompositePKEntity id = new CompositePKEntity();
-                id.setAdminId(admin.getId());
-                id.setMemberId(currentUser.getId());
+                Optional<RegisterChart> registerChartOptional = registerChartRepository.findRegisterChartByAdminIdAndMemberId(admin.getId(), currentUser.getId());
 
-                // 줄서기 정보 삭제
-                RsData<String> deleteResult = registerChartService.deleteRegister(id);
+                if (registerChartOptional.isPresent()) {
+                    RegisterChart registerChart = registerChartOptional.get();
+                    Long registerChartId = registerChart.getId();
+                    // 줄서기 정보 삭제
+                    RsData<String> deleteResult = registerChartService.deleteRegister(registerChartId);
 
-                if (deleteResult.isSuccess()) {
-                    return "redirect:/members";
+                    if (deleteResult.isSuccess()) {
+                        return "redirect:/members";
+                    } else {
+                        return rq.historyBack(deleteResult);
+                    }
                 } else {
-                    return rq.historyBack(deleteResult);
+                    return "redirect:/members"; // 혹은 적절한 에러 페이지로 리디렉션
                 }
             } else {
                 return "redirect:/members"; // 혹은 적절한 에러 페이지로 리디렉션
             }
         }
     }
+
+
 
 }

@@ -9,9 +9,8 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationServiceImpl;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rsData.RsData;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,30 +19,30 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class RegisterChartService {
 
     private final RegisterChartRepository registerChartRepository;
-
     private final AdminService adminService;
     private final MemberService memberService;
-
     private final ReservationServiceImpl reservationServiceImpl;
 
-    @Autowired
-    public RegisterChartService(RegisterChartRepository registerChartRepository, AdminService adminService, MemberService memberService, ReservationServiceImpl reservationServiceImpl) {
-        this.registerChartRepository = registerChartRepository;
-        this.adminService = adminService;
-        this.memberService = memberService;
-        this.reservationServiceImpl = reservationServiceImpl;
-    }
-
-    public Optional<RegisterChart> findByIdAdminIdAndIdMemberId(Long adminId, Long memberId){
-        return registerChartRepository.findByIdAdminIdAndIdMemberId(adminId, memberId);
+    public Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId){
+        return registerChartRepository.findByAdminIdAndMemberId(adminId, memberId);
     }
 
     public boolean existsByAdminIdAndMemberId(Long adminId, Long memberId){
         return registerChartRepository.existsByAdminIdAndMemberId(adminId,memberId);
     }
+
+    public Optional<RegisterChart> findById(Long id){
+        return registerChartRepository.findById(id);
+    }
+
+    public boolean existsById(Long id){
+        return registerChartRepository.existsById(id);
+    }
+
     @Transactional
     public RsData<RegisterChart> insert(Long hospitalId, Long subjectId){
         // 사용자 정보 가져오기
@@ -75,33 +74,24 @@ public class RegisterChartService {
             Admin admin = adminOptional.get();
             Member member = currentUser;
 
-            // 복합 키 생성
-            CompositePKEntity id = new CompositePKEntity();
-            id.setAdminId(admin.getId());
-            id.setMemberId(member.getId());
-
             RegisterChart registerChart = RegisterChart.builder()
-                    .id(id)
                     .status(RegisterChartStatus.WAITING)
                     .admin(admin)
                     .member(member)
                     .build();
 
-            registerChartRepository.save(registerChart);
-
-            RegisterChart savedRegisterChart = findByIdAdminIdAndIdMemberId(admin.getId(), member.getId()).get();
+            RegisterChart savedRegisterChart = registerChartRepository.save(registerChart);
 
             return RsData.of("S-1", "접수 테이블에 삽입되었습니다.", savedRegisterChart);
-        }else {
+        } else {
             return RsData.of("F-3", "현재 로그인한 사용자 정보를 가져오지 못했습니다.");
         }
     }
 
-
     // 줄서기 정보 삭제
     @Transactional
-    public RsData<String> deleteRegister(CompositePKEntity id) {
-        Optional<RegisterChart> registerChartOptional = registerChartRepository.findByIdAdminIdAndIdMemberId(id.getAdminId(), id.getMemberId());
+    public RsData<String> deleteRegister(Long id) {
+        Optional<RegisterChart> registerChartOptional = registerChartRepository.findById(id);
 
         if (registerChartOptional.isPresent()) {
             registerChartRepository.delete(registerChartOptional.get());
