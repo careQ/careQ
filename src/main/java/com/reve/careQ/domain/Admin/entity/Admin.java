@@ -3,7 +3,6 @@ package com.reve.careQ.domain.Admin.entity;
 import com.reve.careQ.domain.Chat.entity.Chat;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
@@ -20,7 +19,6 @@ import java.util.List;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -46,9 +44,6 @@ public class Admin extends BaseEntity {
     @OneToMany(mappedBy = "admin", fetch = LAZY)
     private List<RegisterChart> registerChartList;
 
-    @OneToMany(mappedBy = "admin", fetch = LAZY)
-    private List<Reservation> reservationList;
-
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "hospitalId")
     private Hospital hospital;
@@ -65,5 +60,4 @@ public class Admin extends BaseEntity {
         return grantedAuthorities;
 
     }
-
 }

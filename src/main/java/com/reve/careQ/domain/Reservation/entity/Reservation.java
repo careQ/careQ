@@ -5,17 +5,18 @@ import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
-@Getter
-@RequiredArgsConstructor
 @Entity
-@SuperBuilder
+@Getter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -41,6 +42,12 @@ public class Reservation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RegisterChartStatus registerStatus;
 
+    public void setMember(Member member) {
+        this.member = member;
+    }
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
     public void markAsDeleted(Boolean b) {
         this.isDeleted = b;
     }

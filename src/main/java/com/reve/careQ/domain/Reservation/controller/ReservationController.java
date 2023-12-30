@@ -5,7 +5,7 @@ import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Reservation.entity.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.service.ReservationServiceImpl;
+import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -25,7 +25,7 @@ public class ReservationController {
 
     private final SubjectService subjectService;
     private final HospitalService hospitalService;
-    private final ReservationServiceImpl reservationServiceImpl;
+    private final ReservationService reservationService;
     private final Rq rq;
     private final AdminService adminService;
 
@@ -50,7 +50,7 @@ public class ReservationController {
                                     @RequestParam("selectedTime") String selectedTime
     ) {
         try {
-            String redirectUrl = reservationServiceImpl.createReservationAndReturnRedirectUrl(hospitalId, subjectId, selectedDate, selectedTime);
+            String redirectUrl = reservationService.createReservationAndReturnRedirectUrl(hospitalId, subjectId, selectedDate, selectedTime);
             return "redirect:" + redirectUrl;
         } catch (Exception e) {
             // 예약 생성 실패
@@ -74,7 +74,7 @@ public class ReservationController {
 
     @PostMapping("/{reservationId}")
     public String deleteReservation(@PathVariable("reservationId") Long reservationId) {
-        RsData<String> deleteResult = reservationServiceImpl.deleteReservation(reservationId);
+        RsData<String> deleteResult = reservationService.deleteReservation(reservationId);
 
         if (deleteResult.isSuccess()) {
             return "redirect:/members";
@@ -102,9 +102,9 @@ public class ReservationController {
         Thread.sleep(1000); // simulated delay
 
         Admin admin = adminService.findByHospitalIdAndSubjectId(reservationDto.getHospitalId(),reservationDto.getSubjectId()).get();
-        Reservation reservation = reservationServiceImpl.findByAdminIdAndMemberId(admin.getId(), reservationDto.getMemberId()).get();
+        Reservation reservation = reservationService.findByAdminIdAndMemberId(admin.getId(), reservationDto.getMemberId()).get();
         if((reservationDto.getUserType() == ReservationDto.UserType.ADMIN)&&(reservation.getStatus() != reservationDto.getStatus())){
-            reservationServiceImpl.updateStatus(reservation, reservationDto.getStatus());
+            reservationService.updateStatus(reservation, reservationDto.getStatus());
         }
 
         sendingOperations.convertAndSend("/topic/members/"+reservationDto.getMemberId()+"/subjects/"+reservationDto.getSubjectId()

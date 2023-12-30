@@ -2,7 +2,6 @@ package com.reve.careQ.domain.Member.entity;
 
 import com.reve.careQ.domain.Chat.entity.Chat;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,7 +17,6 @@ import java.util.List;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -46,9 +44,6 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", fetch = LAZY)
     private List<RegisterChart> registerCharts;
-
-    @OneToMany(mappedBy = "member", fetch = LAZY)
-    private List<Reservation> reservations;
 
     @OneToMany(mappedBy = "member", fetch = LAZY)
     private List<Chat> chatList;
