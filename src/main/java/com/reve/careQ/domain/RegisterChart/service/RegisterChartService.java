@@ -3,13 +3,19 @@ package com.reve.careQ.domain.RegisterChart.service;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 
+import com.reve.careQ.domain.Hospital.entity.Hospital;
+import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
+import com.reve.careQ.domain.RegisterChart.exception.ResourceNotFoundException;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationServiceImpl;
+import com.reve.careQ.domain.Subject.entity.Subject;
+import com.reve.careQ.domain.Subject.service.SubjectService;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,11 +28,12 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class RegisterChartService {
-
     private final RegisterChartRepository registerChartRepository;
     private final AdminService adminService;
     private final MemberService memberService;
     private final ReservationServiceImpl reservationServiceImpl;
+    private final HospitalService hospitalService;
+    private final SubjectService subjectService;
 
     public Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId){
         return registerChartRepository.findByAdminIdAndMemberId(adminId, memberId);
@@ -34,6 +41,39 @@ public class RegisterChartService {
 
     public Optional<RegisterChart> findById(Long id){
         return registerChartRepository.findById(id);
+    }
+
+    public RegisterChartInfoDto getRegisterChartInfo(Long hospitalId, Long subjectId){
+        Admin admin = findAdmin(hospitalId, subjectId);
+        Member currentUser = getCurrentUser();
+        RegisterChart registerChart = findRegisterChart(admin, currentUser);
+        Subject subject = findSubject(subjectId);
+        Hospital hospital = findHospital(hospitalId);
+
+        return RegisterChartInfoDto.of(registerChart, subject, hospital, admin);
+    }
+
+    private Admin findAdmin(Long hospitalId, Long subjectId) {
+        return adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
+    }
+
+    private Member getCurrentUser() {
+        return memberService.getCurrentUser()
+                .orElseThrow(() -> new IllegalArgumentException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
+    }
+
+    private RegisterChart findRegisterChart(Admin admin, Member currentUser) {
+        Optional<RegisterChart> registerChart = registerChartRepository.findByAdminIdAndMemberId(admin.getId(), currentUser.getId());
+        return registerChart.orElse(null);
+    }
+
+    private Subject findSubject(Long subjectId) {
+        return subjectService.findById(subjectId).orElseThrow(() -> new ResourceNotFoundException("진료 과목을 찾을 수 없습니다."));
+    }
+
+    private Hospital findHospital(Long hospitalId) {
+        return hospitalService.findById(hospitalId).orElseThrow(() -> new ResourceNotFoundException("해당 병원을 찾을 수 없습니다."));
     }
 
     @Transactional
@@ -97,5 +137,26 @@ public class RegisterChartService {
         registerChart.setStatus(status);
         registerChartRepository.save(registerChart);
         return RsData.of("S-1", "줄서기 상태가 업데이트 되었습니다.", registerChart);
+    }
+
+    @Transactional
+    public void processRegisterChart(Long hospitalId, Long subjectId) {
+        RegisterChart registerChart = findRegisterChart(hospitalId, subjectId);
+        deleteRegisterChart(registerChart);
+    }
+
+    private RegisterChart findRegisterChart(Long hospitalId, Long subjectId) {
+        Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
+
+        Member currentUser = memberService.getCurrentUser()
+                .orElseThrow(() -> new IllegalArgumentException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
+
+        return registerChartRepository.findByAdminIdAndMemberId(admin.getId(), currentUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("등록 차트를 찾을 수 없습니다."));
+    }
+
+    private void deleteRegisterChart(RegisterChart registerChart) {
+        registerChartRepository.delete(registerChart);
     }
 }
