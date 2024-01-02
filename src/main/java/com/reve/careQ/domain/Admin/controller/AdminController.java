@@ -173,7 +173,7 @@ public class AdminController {
 
                 if(kind.equals("queue")){
                     // 줄서기 정보 삭제
-                    Optional<RegisterChart> registerChartOptional = registerChartRepository.findRegisterChartByAdminIdAndMemberId(admin.getId(), member.getId());
+                    Optional<RegisterChart> registerChartOptional = registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), member.getId());
 
                     if (registerChartOptional.isPresent()) {
                         RsData<String> deleteRegisterRs = registerChartService.deleteRegister(registerChartOptional.get().getId());

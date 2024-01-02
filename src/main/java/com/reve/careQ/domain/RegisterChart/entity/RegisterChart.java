@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,10 @@ public class RegisterChart extends BaseEntity {
     @CreationTimestamp
     private LocalDateTime time;
 
+    @ColumnDefault("FALSE")
+    @Column(nullable = false)
+    private Boolean isDeleted;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RegisterChartStatus status;
@@ -51,6 +56,9 @@ public class RegisterChart extends BaseEntity {
     }
     public void setAdmin(Admin admin) {
         this.admin = admin;
+    }
+    public void markAsDeleted(Boolean b) {
+        this.isDeleted = b;
     }
     public void setStatus(RegisterChartStatus status) {
         this.status = status;

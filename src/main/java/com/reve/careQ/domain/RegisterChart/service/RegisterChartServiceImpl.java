@@ -36,7 +36,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     private final SubjectService subjectService;
 
     public Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId){
-        return registerChartRepository.findByAdminIdAndMemberId(adminId, memberId);
+        return registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
     }
 
     public Optional<RegisterChart> findById(Long id){
@@ -64,7 +64,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private RegisterChart findRegisterChart(Admin admin, Member currentUser) {
-        Optional<RegisterChart> registerChart = registerChartRepository.findByAdminIdAndMemberId(admin.getId(), currentUser.getId());
+        Optional<RegisterChart> registerChart = registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId());
         return registerChart.orElse(null);
     }
 
@@ -92,7 +92,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private RsData<RegisterChart> checkForDuplicatesAndInsert(Member currentUser, Admin admin) {
-        boolean isDuplicated = registerChartRepository.existsByAdminIdAndMemberId(admin.getId(), currentUser.getId());
+        boolean isDuplicated = registerChartRepository.existsByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId());
 
         if (isDuplicated) {
             return RsData.of("F-4", "이미 접수되었습니다.");
@@ -116,21 +116,23 @@ public class RegisterChartServiceImpl implements RegisterChartService {
                 .status(RegisterChartStatus.WAITING)
                 .admin(admin)
                 .member(currentUser)
+                .isDeleted(false)
                 .build();
 
         RegisterChart savedRegisterChart = registerChartRepository.save(registerChart);
 
         return RsData.of("S-1", "접수 테이블에 삽입되었습니다.", savedRegisterChart);
     }
-
     @Transactional
     public RsData<String> deleteRegister(Long id) {
         RegisterChart registerChart = registerChartRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("줄서기 정보를 찾을 수 없습니다."));
 
-        registerChartRepository.delete(registerChart);
+        registerChart.markAsDeleted(true);
+        registerChartRepository.save(registerChart);
         return RsData.of("S-2", "줄서기 정보가 삭제되었습니다.");
     }
+
 
     @Transactional
     public RsData<RegisterChart> updateStatus(RegisterChart registerChart, RegisterChartStatus status){
@@ -152,11 +154,12 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         Member currentUser = memberService.getCurrentUser()
                 .orElseThrow(() -> new IllegalArgumentException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
 
-        return registerChartRepository.findByAdminIdAndMemberId(admin.getId(), currentUser.getId())
+        return registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("등록 차트를 찾을 수 없습니다."));
     }
 
     private void deleteRegisterChart(RegisterChart registerChart) {
-        registerChartRepository.delete(registerChart);
+        registerChart.markAsDeleted(true);
+        registerChartRepository.save(registerChart);
     }
 }
