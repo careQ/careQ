@@ -159,13 +159,11 @@ public class AdminController {
         List<RegisterChart> registerCharts = adminService.getRegisterChartByAdminAndMemberName(currentAdmin, name);
 
         List<RegisterChartDto> registerChartDto = registerCharts.stream()
-                .map(registerChart -> new RegisterChartDto(registerChart.getAdmin().getId(), registerChart.getMember().getId(),
-                        registerChart.getAdmin().getSubject().getId(), registerChart.getAdmin().getHospital().getId(),
-                        registerChart.getMember().getUsername(), registerChart.getTime(), registerChart.getStatus()))
+                .map(RegisterChart::toResponse)
                 .collect(Collectors.toList());
+
         return registerChartDto;
     }
-
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/queues")

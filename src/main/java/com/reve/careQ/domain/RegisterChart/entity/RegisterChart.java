@@ -34,6 +34,18 @@ public class RegisterChart extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RegisterChartStatus status;
 
+    public RegisterChartDto toResponse() {
+        return RegisterChartDto.builder()
+                .adminId(this.admin.getId())
+                .memberId(this.member.getId())
+                .subjectId(this.admin.getSubject().getId())
+                .hospitalId(this.admin.getHospital().getId())
+                .memberUsername(this.member.getUsername())
+                .time(this.time)
+                .status(this.status)
+                .build();
+    }
+
     public void setMember(Member member) {
         this.member = member;
     }
