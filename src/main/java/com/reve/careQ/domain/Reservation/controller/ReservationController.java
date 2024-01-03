@@ -7,9 +7,10 @@ import com.reve.careQ.domain.Reservation.entity.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
-import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.net.URI;
 
 @Controller
 @RequestMapping("/members/subjects/{subject-id}/hospitals/{hospital-id}/reservations")
@@ -26,7 +29,6 @@ public class ReservationController {
     private final SubjectService subjectService;
     private final HospitalService hospitalService;
     private final ReservationService reservationService;
-    private final Rq rq;
     private final AdminService adminService;
 
     private final SimpMessageSendingOperations sendingOperations;
@@ -44,17 +46,19 @@ public class ReservationController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public String createReservation(@PathVariable("subject-id") Long subjectId,
-                                    @PathVariable("hospital-id") Long hospitalId,
-                                    @RequestParam("selectedDate") String selectedDate,
-                                    @RequestParam("selectedTime") String selectedTime
+    public ResponseEntity<?> createReservation(@PathVariable("subject-id") Long subjectId,
+                                               @PathVariable("hospital-id") Long hospitalId,
+                                               @RequestParam("selectedDate") String selectedDate,
+                                               @RequestParam("selectedTime") String selectedTime
     ) {
         try {
             String redirectUrl = reservationService.createReservationAndReturnRedirectUrl(hospitalId, subjectId, selectedDate, selectedTime);
-            return "redirect:" + redirectUrl;
+            return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                    .location(URI.create(redirectUrl))
+                    .build();
         } catch (Exception e) {
-            // 예약 생성 실패
-            return rq.historyBack(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
     }
 
@@ -73,13 +77,16 @@ public class ReservationController {
     }
 
     @PostMapping("/{reservationId}")
-    public String deleteReservation(@PathVariable("reservationId") Long reservationId) {
+    public ResponseEntity<?> deleteReservation(@PathVariable("reservationId") Long reservationId) {
         RsData<String> deleteResult = reservationService.deleteReservation(reservationId);
 
         if (deleteResult.isSuccess()) {
-            return "redirect:/members";
+            return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                    .location(URI.create("/members"))
+                    .build();
         } else {
-            return rq.historyBack(deleteResult);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(deleteResult);
         }
     }
 
