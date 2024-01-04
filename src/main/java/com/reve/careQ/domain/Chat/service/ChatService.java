@@ -46,23 +46,38 @@ public class ChatService {
 
     @Transactional
     public RsData<Chat> insert(Long memberId, Long adminId) {
-        if (findByMemberIdAndAdminId(memberId, adminId).isPresent()) {
-            return RsData.of("S-1", "채팅방이 이미 존재합니다.", findByMemberIdAndAdminId(memberId, adminId).get());
+        RsData<Chat> validationData = isChatAlreadyExistRs(memberId, adminId);
+
+        if (validationData.isSuccess()) {
+            return validationData;
         }
 
         Member member= memberService.findById(memberId).get();
         Admin admin = adminService.findById(adminId).get();
 
+
+        Chat chat = createChat(createChatName(member, admin), member, admin);
+
+        return RsData.of("S-1", "새로운 채팅방이 생성되었습니다.", chat);
+    }
+
+    private String createChatName(Member member, Admin admin){
+        return member.getUsername()+"_"+admin.getHospital().getName()+"_"+admin.getSubject().getName();
+    }
+
+    private Chat createChat(String name, Member member, Admin admin){
         Chat chat = Chat
                 .builder()
-                .name(member.getUsername()+"_"+admin.getHospital().getName()+"_"+admin.getSubject().getName())
+                .name(name)
                 .member(member)
                 .admin(admin)
                 .build();
 
-        chatRepository.save(chat);
+        return chatRepository.save(chat);
+    }
 
-        return RsData.of("S-1", "새로운 채팅방이 생성되었습니다.", chat);
-
+    private RsData<Chat> isChatAlreadyExistRs (Long memberId, Long adminId) {
+        return findByMemberIdAndAdminId(memberId, adminId).map(chat -> RsData.of("S-1", "채팅방이 이미 존재합니다.", chat))
+                .orElse(RsData.failOf("F-1","채팅방이 존재하지 않습니다."));
     }
 }
