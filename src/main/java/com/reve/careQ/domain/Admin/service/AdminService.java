@@ -22,4 +22,5 @@ public interface AdminService {
     Optional<Admin> getCurrentAdmin();
     RsData<Admin> join(String hospitalCode, String subjectCode, String username, String password, String email);
     RsData<Admin> findAdmin(String subjectName, String hospitalName);
+    List<Reservation> getReservationsForCurrentAdmin();
 }

@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -126,5 +127,14 @@ public class ReservationServiceImpl implements ReservationService {
     private RsData<Reservation> saveAndReturnRsData(Reservation reservation, String msg){
         reservationRepository.save(reservation);
         return RsData.of("S-1", msg, reservation);
+    }
+
+    @Override
+    public Reservation confirmReservation(Long adminId, Long memberId) {
+        Reservation reservation = reservationRepository.findByAdminIdAndMemberId(adminId, memberId)
+                .orElseThrow(() -> new NoSuchElementException("해당하는 예약 정보를 찾을 수 없습니다."));
+
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        return reservationRepository.save(reservation);
     }
 }

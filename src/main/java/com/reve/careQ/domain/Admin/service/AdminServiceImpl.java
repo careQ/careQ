@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -236,5 +237,12 @@ public class AdminServiceImpl implements AdminService{
 
     private Authentication getAuthentication(){
         return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    public List<Reservation> getReservationsForCurrentAdmin() {
+        Admin currentAdmin = getCurrentAdmin()
+                .orElseThrow(() -> new NoSuchElementException("현재 관리자를 찾을 수 없습니다."));
+
+        return getReservationsForAdmin(currentAdmin);
     }
 }

@@ -14,7 +14,6 @@ import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
-import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.rsData.RsData;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,7 +41,6 @@ public class AdminController {
     private final AdminService adminService;
     private final MemberService memberService;
     private final AdminRq adminRq;
-    private final ReservationRepository reservationRepository;
     private final RegisterChartService registerChartService;
     private final ReservationService reservationService;
     private final RegisterChartRepository registerChartRepository;
@@ -86,44 +85,28 @@ public class AdminController {
 
     @GetMapping("/reservations")
     public String showAdminReservations(Model model) {
-        // 현재 로그인한 관리자 정보 가져오기
-        Optional<Admin> currentAdminOptional = adminService.getCurrentAdmin();
-
-        if (!currentAdminOptional.isPresent()) {
+        try {
+            List<Reservation> reservations = adminService.getReservationsForCurrentAdmin();
+            model.addAttribute("reservations", reservations);
+            return "admins/reservation";
+        } catch (NoSuchElementException e) {
             return "redirect:/";
         }
-
-        Admin currentAdmin = currentAdminOptional.get();
-
-        // 관리자에 해당하는 예약 목록 가져오기
-        List<Reservation> reservations = adminService.getReservationsForAdmin(currentAdmin);
-
-        model.addAttribute("reservations", reservations);
-
-        return "admins/reservation";
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/reservations")
     public String confirmReservation(@RequestParam("adminId") Long adminId,
                                      @RequestParam("memberId") Long memberId,
-                                     HttpSession session) {
-        // 예약 정보 가져오기
-        Optional<Reservation> reservationOptional = reservationRepository.findByAdminIdAndMemberId(adminId, memberId);
-
-        if (!reservationOptional.isPresent()) {
-            return "redirect:/";
+                                     HttpSession session, Model model) {
+        try {
+            reservationService.confirmReservation(adminId, memberId);
+            session.setAttribute("reservationStatus", ReservationStatus.CONFIRMED.name());
+            model.addAttribute("message", "예약이 성공적으로 확인되었습니다.");
+        } catch (NoSuchElementException e) {
+            model.addAttribute("errorMessage", "해당하는 예약 정보를 찾을 수 없습니다.");
         }
 
-        Reservation reservation = reservationOptional.get();
-        reservation.setStatus(ReservationStatus.CONFIRMED);
-
-        reservationRepository.save(reservation);
-
-        // 승인 되면 세션에 승인 상태 저장
-        session.setAttribute("reservationStatus", ReservationStatus.CONFIRMED.name());
-
-        // 승인 되면 현재 페이지 다시 보여주고,
         return "redirect:/admins/reservations";
     }
 
