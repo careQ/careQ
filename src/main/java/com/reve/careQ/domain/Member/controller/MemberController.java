@@ -7,7 +7,6 @@ import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/members")
@@ -65,20 +65,13 @@ public class MemberController {
     public String join(@Valid JoinFormDto joinFormDto) {
         RsData<Member> joinRs = memberService.join("careQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
 
-        if (joinRs.isFail()) {
-            return rq.historyBack(joinRs);
-        }
-
-        // 아래 링크로 리다이렉트(302, 이동) 하고 그 페이지에서 메세지 보여줌
-        return rq.redirectWithMsg("/members/login", joinRs);
+        return redirectToPageWithMsg("/members/login", joinRs);
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/searches")
     public String searches(Model model) {
-        model.addAttribute("mapKey", apiKeys.getmapKey());
-        model.addAttribute("pharmacyApiKey", apiKeys.getPharmacyApiKey());
-        model.addAttribute("hospitalApiKey", apiKeys.getHospitalApiKey());
+        addApiKeysToModel(model);
 
         return "members/searches";
     }
@@ -91,33 +84,44 @@ public class MemberController {
 
     @PreAuthorize("isAnonymous()")
     @PostMapping("/passwords")
-    public String findPassword(String username, String email, HttpServletRequest request) {
+    public String findPassword(String username, String email, HttpSession session) {
         RsData<Member> findPasswordRs = memberService.findPassword(username, email);
 
-        if (findPasswordRs.isFail()) {
-            return rq.historyBack(findPasswordRs);
-        }
-
-        HttpSession session = request.getSession();
         session.setAttribute("findPasswordRs", findPasswordRs);
 
-        return rq.redirectWithMsg("/members/passwords/mail", findPasswordRs);
+        return redirectToPageWithMsg("/members/passwords/mail", findPasswordRs);
     }
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/passwords/mail")
-    public ModelAndView findPasswordemail(HttpServletRequest request) {
+    public ModelAndView findPasswordEmail(HttpSession session) {
         ModelAndView mv = new ModelAndView();
 
-        HttpSession session = request.getSession();
         RsData<Member> findPasswordRs = (RsData<Member>) session.getAttribute("findPasswordRs");
 
         if (findPasswordRs != null) {
-            mv.addObject("email", findPasswordRs.getData().getEmail());
+            String email = findPasswordRs.getData().getEmail();
+            mv.addObject("email", email);
             mv.setViewName("members/passwords-mail");
 
-            memberService.modifyPassword(findPasswordRs.getData().getEmail());
+            modifyPasswordAndSendEmail(email);
         }
         return mv;
+    }
+
+    private String redirectToPageWithMsg(String page, RsData<Member> rsData) {
+        return rsData.isFail() ? rq.historyBack(rsData) : rq.redirectWithMsg(page, rsData);
+    }
+
+    private void modifyPasswordAndSendEmail(String email){
+        memberService.modifyPassword(email);
+    }
+
+    private void addApiKeysToModel(Model model) {
+        model.addAllAttributes(Map.of(
+                "mapKey", apiKeys.getmapKey(),
+                "pharmacyApiKey", apiKeys.getPharmacyApiKey(),
+                "hospitalApiKey", apiKeys.getHospitalApiKey()
+        ));
     }
 }
