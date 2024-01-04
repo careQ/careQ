@@ -1,97 +1,20 @@
 package com.reve.careQ.domain.Member.service;
 
-import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
-import com.reve.careQ.domain.Member.repository.MemberRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
+import com.reve.careQ.global.mail.EmailException;
 import com.reve.careQ.global.rsData.RsData;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-@Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class MemberService {
+public interface MemberService{
+    Optional<Member> findById(Long id);
+    Optional<Member> findByUsername(String username);
+    RsData<Member> join(String providerTypeCode, String username, String password, String email);
+    RsData<Member> getCurrentUser();
+    List<Reservation> getReservationsForMember(Member currentUser);
+    RsData<Member> findPassword(String username, String email);
+    void modifyPassword(String email) throws EmailException;
 
-    private final PasswordEncoder passwordEncoder;
-
-    private final MemberRepository memberRepository;
-    private final ReservationRepository reservationRepository;
-
-    public Optional<Member> findById(Long id) {
-        return memberRepository.findById(id);
-    }
-
-    public Optional<Member> findByUsername(String username) {
-        return memberRepository.findByUsername(username);
-    }
-
-    private List<Member> findByEmail(String email) {
-        return memberRepository.findByEmail(email);
-    }
-
-    private Optional<Member> findByEmailAndProviderTypeCode(String providerTypeCode, String email) {
-        return memberRepository.findByEmailAndProviderTypeCode(providerTypeCode, email);
-    }
-
-    @Transactional
-    public RsData<Member> join(String providerTypeCode, String username, String password, String email) {
-        if (findByUsername(username).isPresent()) {
-            return RsData.of("F-1", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username));
-        }
-
-        if (StringUtils.hasText(password)) {
-            password = passwordEncoder.encode(password);
-        }
-
-        if ((!findByEmail(email).isEmpty()) && (providerTypeCode.equals("careQ"))){
-            return RsData.of("F-2", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email));
-        }
-
-        Member member = Member
-                .builder()
-                .providerTypeCode(providerTypeCode)
-                .username(username)
-                .password(password)
-                .email(email)
-                .build();
-
-        memberRepository.save(member);
-
-        return RsData.of("S-1", "회원가입이 완료되었습니다.", member);
-
-    }
-
-    @Transactional
-    public RsData<Member> whenSocialLogin(String providerTypeCode, String username, String email) {
-
-        Optional<Member> socialMember = findByEmailAndProviderTypeCode(email, providerTypeCode);
-
-        if (socialMember.isPresent()) return RsData.of("S-2", "로그인 되었습니다.", socialMember.get());
-
-        String password = UUID.randomUUID().toString().substring(0, 6);
-
-        return join(providerTypeCode, username, password, email);
-    }
-
-    @Transactional
-    public Optional<Member> getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        return findByUsername(username);
-    }
-
-    public List<Reservation> getReservationsForMember(Member currentUser) {
-        return reservationRepository.findByMember(currentUser);
-    }
 }

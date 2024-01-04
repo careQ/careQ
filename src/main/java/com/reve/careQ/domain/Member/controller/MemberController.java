@@ -7,14 +7,17 @@ import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -28,28 +31,32 @@ public class MemberController {
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
-    public String showLogin() {
+    public String showLogin(@RequestParam(value = "error", required = false)String error, @RequestParam(value = "exception", required = false)String exception, Model model) {
+        model.addAttribute("error", error);
+        model.addAttribute("exception", exception);
         return "members/login";
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
     public String showMembersHome(Model model) {
+//         RsData<Member> currentUserRs = memberService.getCurrentUser();
 
+//         if (currentUserRs.isFail()){
+//             return "redirect:/";
+//         }
+
+//         Member currentUser = currentUserRs.getData();
         Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
         if (currentUserOptional.isPresent()) {
             Member currentUser = currentUserOptional.get();
 
-            List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
+        List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
 
-            model.addAttribute("reservations", reservations);
+        model.addAttribute("reservations", reservations);
 
-            return "members/members-home";
-        } else {
-            return "redirect:/";
-        }
-
+        return "members/members-home";
     }
 
     @PreAuthorize("isAnonymous()")
@@ -63,22 +70,63 @@ public class MemberController {
     public String join(@Valid JoinFormDto joinFormDto) {
         RsData<Member> joinRs = memberService.join("careQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
 
-        if (joinRs.isFail()) {
-
-            return rq.historyBack(joinRs);
-        }
-
-        // 아래 링크로 리다이렉트(302, 이동) 하고 그 페이지에서 메세지 보여줌
-        return rq.redirectWithMsg("/members/login", joinRs);
+        return redirectToPageWithMsg("/members/login", joinRs);
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/searches")
     public String searches(Model model) {
-        model.addAttribute("mapKey", apiKeys.getmapKey());
-        model.addAttribute("pharmacyApiKey", apiKeys.getPharmacyApiKey());
-        model.addAttribute("hospitalApiKey", apiKeys.getHospitalApiKey());
+        addApiKeysToModel(model);
 
         return "members/searches";
+    }
+
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/passwords")
+    public String showFindPassword() {
+        return "members/passwords";
+    }
+
+    @PreAuthorize("isAnonymous()")
+    @PostMapping("/passwords")
+    public String findPassword(String username, String email, HttpSession session) {
+        RsData<Member> findPasswordRs = memberService.findPassword(username, email);
+
+        session.setAttribute("findPasswordRs", findPasswordRs);
+
+        return redirectToPageWithMsg("/members/passwords/mail", findPasswordRs);
+    }
+
+    @PreAuthorize("isAnonymous()")
+    @GetMapping("/passwords/mail")
+    public ModelAndView findPasswordEmail(HttpSession session) {
+        ModelAndView mv = new ModelAndView();
+
+        RsData<Member> findPasswordRs = (RsData<Member>) session.getAttribute("findPasswordRs");
+
+        if (findPasswordRs != null) {
+            String email = findPasswordRs.getData().getEmail();
+            mv.addObject("email", email);
+            mv.setViewName("members/passwords-mail");
+
+            modifyPasswordAndSendEmail(email);
+        }
+        return mv;
+    }
+
+    private String redirectToPageWithMsg(String page, RsData<Member> rsData) {
+        return rsData.isFail() ? rq.historyBack(rsData) : rq.redirectWithMsg(page, rsData);
+    }
+
+    private void modifyPasswordAndSendEmail(String email){
+        memberService.modifyPassword(email);
+    }
+
+    private void addApiKeysToModel(Model model) {
+        model.addAllAttributes(Map.of(
+                "mapKey", apiKeys.getmapKey(),
+                "pharmacyApiKey", apiKeys.getPharmacyApiKey(),
+                "hospitalApiKey", apiKeys.getHospitalApiKey()
+        ));
     }
 }

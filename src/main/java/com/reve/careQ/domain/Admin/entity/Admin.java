@@ -34,7 +34,7 @@ public class Admin extends BaseEntity {
     @Column
     private String password;
 
-    @Column
+    @Column(unique = true)
     private String email;
 
     @OneToMany(mappedBy = "admin", fetch = LAZY)

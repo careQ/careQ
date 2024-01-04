@@ -26,10 +26,16 @@ public class Member extends BaseEntity {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Column(unique = true)
     private String username;
+
+    @Column
     private String password;
+
+    @Column(unique = true)
     private String email;
-    private String role;
+
+    @Column
     private String providerTypeCode; // 소셜 회원 (KAKAO, NAVER, GOOGLE) , 일반 회원 (careQ)
 
     public List<? extends GrantedAuthority> getGrantedAuthorities() {

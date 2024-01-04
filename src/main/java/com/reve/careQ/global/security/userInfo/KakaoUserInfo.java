@@ -4,13 +4,13 @@ import java.util.Map;
 
 public class KakaoUserInfo implements OAuth2UserInfo {
     private Map<String, Object> attributes;
-    private Map<String, Object> attributesResponse;
-    // private Map<String, Object> attributesProperties; -> nickname 설정 처리
+    private Map<String, Object> attributesAccount;
+    private Map<String, Object> attributesProfile;
 
     public KakaoUserInfo(Map<String, Object> attributes) {
         this.attributes = attributes;
-        this.attributesResponse = (Map<String, Object>) attributes.get("kakao_account");
-    // this.attributesProperties = (Map<String, Object>) attributes.get("properties"); -> nickname 설정 처리
+        this.attributesAccount = (Map<String, Object>) attributes.get("kakao_account");
+        this.attributesProfile = (Map<String, Object>) attributesAccount.get("profile");
     }
 
     @Override
@@ -25,12 +25,12 @@ public class KakaoUserInfo implements OAuth2UserInfo {
 
     @Override
     public String getEmail() {
-        return attributesResponse.get("email").toString();
+        return attributesAccount.get("email").toString();
     }
 
     @Override
     public String getUsername() {
-        return attributes.get("name").toString();
+        return attributesProfile.get("nickname").toString();
     }
 
 }

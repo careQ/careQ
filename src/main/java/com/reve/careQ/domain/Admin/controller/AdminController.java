@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -65,10 +67,16 @@ public class AdminController {
     @PreAuthorize("isAnonymous()")
     @PostMapping("/join")
     public String join(@Valid JoinFormDto joinFormDto) {
-        RsData<Admin> joinRs = adminService.join(joinFormDto.getHospitalCode(), joinFormDto.getSubjectCode(), joinFormDto.getUsername(), joinFormDto.getPassword());
+
+        RsData<Admin> joinRs = adminService.join(
+                joinFormDto.getHospitalCode(),
+                joinFormDto.getSubjectCode(),
+                joinFormDto.getUsername(),
+                joinFormDto.getPassword(),
+                joinFormDto.getEmail()
+        );
 
         if (joinRs.isFail()) {
-
             return adminRq.historyBack(joinRs);
         }
 
@@ -80,18 +88,19 @@ public class AdminController {
     public String showAdminReservations(Model model) {
         // 현재 로그인한 관리자 정보 가져오기
         RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
-        if (currentAdminData.isSuccess()) {
-            Admin currentAdmin = currentAdminData.getData();
 
-            // 관리자에 해당하는 예약 목록 가져오기
-            List<Reservation> reservations = adminService.getReservationsForAdmin(currentAdmin);
-
-            model.addAttribute("reservations", reservations);
-
-            return "admins/reservation";
-        } else {
+        if (!currentAdminData.isSuccess()) {
             return "redirect:/";
         }
+
+        Admin currentAdmin = currentAdminData.getData();
+
+        // 관리자에 해당하는 예약 목록 가져오기
+        List<Reservation> reservations = adminService.getReservationsForAdmin(currentAdmin);
+
+        model.addAttribute("reservations", reservations);
+
+        return "admins/reservation";
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -102,20 +111,20 @@ public class AdminController {
         // 예약 정보 가져오기
         Optional<Reservation> reservationOptional = reservationRepository.findByAdminIdAndMemberId(adminId, memberId);
 
-        if (reservationOptional.isPresent()) {
-            Reservation reservation = reservationOptional.get();
-            reservation.setStatus(ReservationStatus.CONFIRMED);
-
-            reservationRepository.save(reservation);
-
-            // 승인 되면 세션에 승인 상태 저장
-            session.setAttribute("reservationStatus", "CONFIRMED");
-
-            // 승인 되면 현재 페이지 다시 보여주고,
-            return "redirect:/admins/reservations";
-        } else {
+        if (!reservationOptional.isPresent()) {
             return "redirect:/";
         }
+
+        Reservation reservation = reservationOptional.get();
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+
+        reservationRepository.save(reservation);
+
+        // 승인 되면 세션에 승인 상태 저장
+        session.setAttribute("reservationStatus", ReservationStatus.CONFIRMED.name());
+
+        // 승인 되면 현재 페이지 다시 보여주고,
+        return "redirect:/admins/reservations";
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -124,32 +133,38 @@ public class AdminController {
         // 현재 로그인한 관리자 정보 가져오기
         RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
 
-        if (currentAdminData.isSuccess()) {
-            Admin currentAdmin = currentAdminData.getData();
-
-            // 관리자에 해당하는 예약 목록 가져오기
-            List<Reservation> reservations = reservationService.getTodayReservation(currentAdmin);
-
-            model.addAttribute("reservations", reservations);
-
-            return "admins/queues";
-        } else {
+        if (!currentAdminData.isSuccess()) {
             return "redirect:/";
         }
+
+        Admin currentAdmin = currentAdminData.getData();
+
+        // 관리자에 해당하는 예약 목록 가져오기
+        List<Reservation> reservations = reservationService.getTodayReservation(currentAdmin);
+
+        model.addAttribute("reservations", reservations);
+
+        return "admins/queues";
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping(value ="/queues", params = {"name"})
     @ResponseBody
-    public List<RegisterChartDto> showAdminQueues(@RequestParam(name="name",required=false,defaultValue="") String name, Model model) {
+    public List<RegisterChartDto> showAdminQueues(@RequestParam(name="name",required=false,defaultValue="") String name) {
         // 현재 로그인한 관리자 정보 가져오기
         RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+
+        if (!currentAdminData.isSuccess()) {
+            // 로그인한 관리자 정보를 가져오지 못한 경우 빈 목록 반환
+            return Collections.emptyList();
+        }
 
         Admin currentAdmin = currentAdminData.getData();
 
         // 관리자에 해당하는 줄서기 목록 가져오기
         List<RegisterChart> registerCharts = adminService.getRegisterChartByAdminAndMemberName(currentAdmin, name);
 
+        // RegisterChart를 RegisterChartDto로 변환
         List<RegisterChartDto> registerChartDto = registerCharts.stream()
                 .map(RegisterChart::toResponse)
                 .collect(Collectors.toList());
@@ -160,7 +175,7 @@ public class AdminController {
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/queues")
     public String deleteRegister(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+        RsData<Admin> currentAdminRs = adminService.getCurrentAdmin();
 
         if (currentAdminData.isSuccess()) {
             Admin admin = currentAdminData.getData();
@@ -209,15 +224,17 @@ public class AdminController {
 
             }
 
+        if (deleteRegisterRs.isSuccess()) {
+            return "redirect:/admins/queues";
         } else {
-            return adminRq.historyBack(currentAdminData);
+            return adminRq.historyBack(deleteRegisterRs);
         }
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/queues")
     public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+        RsData<Admin> currentAdminRs = adminService.getCurrentAdmin();
 
         if (currentAdminData.isSuccess()) {
             Admin admin = currentAdminData.getData();
@@ -270,7 +287,5 @@ public class AdminController {
             return adminRq.historyBack(currentAdminData);
         }
     }
-
-
 
 }
