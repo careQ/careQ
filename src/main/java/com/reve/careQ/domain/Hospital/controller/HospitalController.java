@@ -90,11 +90,11 @@ public class HospitalController {
     public String handleSelect(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId) {
 
         Optional<Admin> adminOptional = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId);
-        RsData<Member> currentUserData = memberService.getCurrentUser();
+        Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
-        if (adminOptional.isPresent() && currentUserData.isSuccess()) {
+        if (adminOptional.isPresent() && currentUserOptional.isPresent()) {
             Admin admin = adminOptional.get();
-            Member currentUser = currentUserData.getData();
+            Member currentUser = currentUserOptional.get();
 
             RsData<String> reservationStatus = reservationService.checkDuplicateReservation(admin.getId(), currentUser.getId());
 
@@ -107,5 +107,6 @@ public class HospitalController {
         }
         return "redirect:/";
     }
+
 
 }

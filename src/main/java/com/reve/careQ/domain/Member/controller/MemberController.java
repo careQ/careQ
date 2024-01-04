@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/members")
@@ -35,10 +36,10 @@ public class MemberController {
     @GetMapping()
     public String showMembersHome(Model model) {
 
-        RsData<Member> currentUserData = memberService.getCurrentUser();
+        Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
-        if (currentUserData.isSuccess()) {
-            Member currentUser = currentUserData.getData();
+        if (currentUserOptional.isPresent()) {
+            Member currentUser = currentUserOptional.get();
 
             List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
 
@@ -80,5 +81,4 @@ public class MemberController {
 
         return "members/searches";
     }
-
 }

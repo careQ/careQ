@@ -3,47 +3,36 @@ package com.reve.careQ.domain.Reservation.entity;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
+import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.FetchType.LAZY;
-
-@Getter
-@RequiredArgsConstructor
 @Entity
-@SuperBuilder
-public class Reservation {
+@Getter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Reservation extends BaseEntity {
 
-    @CreatedDate
-    private LocalDateTime createDate;
-
-    @LastModifiedDate
-    private LocalDateTime modifyDate;
-
-    private LocalDateTime deleteDate;
-
-    @EmbeddedId
-    private CompositePKEntity id;
-
-    @MapsId("memberId")
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     private Member member;
 
-    @MapsId("adminId")
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
     private Admin admin;
 
     @Column(nullable = false)
     private LocalDateTime date;
+
+    @ColumnDefault("FALSE")
+    @Column(nullable = false)
+    private Boolean isDeleted;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -53,11 +42,19 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private RegisterChartStatus registerStatus;
 
+    public void setMember(Member member) {
+        this.member = member;
+    }
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+    public void markAsDeleted(Boolean b) {
+        this.isDeleted = b;
+    }
     public void setStatus(ReservationStatus status) {
         this.status = status;
     }
     public void setRegisterStatus(RegisterChartStatus registerStatus) {
         this.registerStatus = registerStatus;
     }
-
 }
