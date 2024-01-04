@@ -25,8 +25,13 @@ public class MessageService {
     public Optional<LocalDateTime> findLastMessage(Long chatId){return messageRepository.findLastMessage(chatId);}
 
     @Transactional
-    public RsData<Message> insert(MessageDto messageDto,Chat chat) {
+    public RsData<Message> insert(MessageDto messageDto, Chat chat) {
+        Message message = createMessage(messageDto, chat);
 
+        return RsData.of("S-1", "메세지가 저장되었습니다.", message);
+    }
+
+    private Message createMessage(MessageDto messageDto, Chat chat){
         Message message = Message
                 .builder()
                 .chat(chat)
@@ -34,8 +39,6 @@ public class MessageService {
                 .userType(messageDto.getUserType().toString())
                 .build();
 
-        messageRepository.save(message);
-
-        return RsData.of("S-1", "메세지가 저장되었습니다.", message);
+        return messageRepository.save(message);
     }
 }
