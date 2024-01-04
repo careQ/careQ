@@ -2,46 +2,65 @@ package com.reve.careQ.domain.RegisterChart.entity;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
+import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.FetchType.LAZY;
-
-@Getter
-@RequiredArgsConstructor
 @Entity
-@SuperBuilder
-public class RegisterChart {
+@Getter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class RegisterChart extends BaseEntity {
 
-    @EmbeddedId
-    private CompositePKEntity id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
 
     @Column(nullable = false)
     @CreationTimestamp
     private LocalDateTime time;
 
+    @ColumnDefault("FALSE")
+    @Column(nullable = false)
+    private Boolean isDeleted;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RegisterChartStatus status;
 
-    @MapsId("memberId")
-    @JoinColumn(name = "member_id")
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    private Member member;
+    public RegisterChartDto toResponse() {
+        return RegisterChartDto.builder()
+                .adminId(this.admin.getId())
+                .memberId(this.member.getId())
+                .subjectId(this.admin.getSubject().getId())
+                .hospitalId(this.admin.getHospital().getId())
+                .memberUsername(this.member.getUsername())
+                .time(this.time)
+                .status(this.status)
+                .build();
+    }
 
-    @MapsId("adminId")
-    @JoinColumn(name = "admin_id")
-    @ManyToOne(fetch = LAZY, cascade = CascadeType.PERSIST)
-    private Admin admin;
-
+    public void setMember(Member member) {
+        this.member = member;
+    }
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+    public void markAsDeleted(Boolean b) {
+        this.isDeleted = b;
+    }
     public void setStatus(RegisterChartStatus status) {
         this.status = status;
     }
-
 }

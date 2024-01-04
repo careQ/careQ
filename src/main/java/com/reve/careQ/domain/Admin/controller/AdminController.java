@@ -8,9 +8,9 @@ import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
+import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
-import com.reve.careQ.global.compositePKEntity.CompositePKEntity;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
@@ -39,16 +39,12 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final AdminService adminService;
-
     private final MemberService memberService;
-
     private final AdminRq adminRq;
-
     private final ReservationRepository reservationRepository;
-
     private final RegisterChartService registerChartService;
-
     private final ReservationService reservationService;
+    private final RegisterChartRepository registerChartRepository;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -88,7 +84,6 @@ public class AdminController {
         return adminRq.redirectWithMsg("/admins/login", joinRs);
     }
 
-
     @GetMapping("/reservations")
     public String showAdminReservations(Model model) {
         // 현재 로그인한 관리자 정보 가져오기
@@ -114,7 +109,7 @@ public class AdminController {
                                      @RequestParam("memberId") Long memberId,
                                      HttpSession session) {
         // 예약 정보 가져오기
-        Optional<Reservation> reservationOptional = reservationRepository.findByIdAdminIdAndIdMemberId(adminId, memberId);
+        Optional<Reservation> reservationOptional = reservationRepository.findByAdminIdAndMemberId(adminId, memberId);
 
         if (!reservationOptional.isPresent()) {
             return "redirect:/";
@@ -171,14 +166,7 @@ public class AdminController {
 
         // RegisterChart를 RegisterChartDto로 변환
         List<RegisterChartDto> registerChartDto = registerCharts.stream()
-                .map(registerChart -> new RegisterChartDto(
-                        registerChart.getAdmin().getId(),
-                        registerChart.getMember().getId(),
-                        registerChart.getAdmin().getSubject().getId(),
-                        registerChart.getAdmin().getHospital().getId(),
-                        registerChart.getMember().getUsername(),
-                        registerChart.getTime(),
-                        registerChart.getStatus()))
+                .map(RegisterChart::toResponse)
                 .collect(Collectors.toList());
 
         return registerChartDto;
@@ -189,25 +177,52 @@ public class AdminController {
     public String deleteRegister(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
         RsData<Admin> currentAdminRs = adminService.getCurrentAdmin();
 
-        if (currentAdminRs.isFail()) {
-            return adminRq.historyBack(currentAdminRs);
-        }
+        if (currentAdminData.isSuccess()) {
+            Admin admin = currentAdminData.getData();
+            Optional<Member> memberOptional = memberService.findById(memberId);
 
-        Admin admin = currentAdminRs.getData();
-        Member member = memberService.findById(memberId).get();
+            if(memberOptional.isEmpty()) {
+                return adminRq.historyBack(RsData.of("F-5", "멤버 정보를 찾을 수 없습니다."));
+            } else {
+                Member member = memberOptional.get();
 
-        CompositePKEntity id = new CompositePKEntity();
-        id.setAdminId(admin.getId());
-        id.setMemberId(member.getId());
+                if(kind.equals("queue")){
+                    // 줄서기 정보 삭제
+                    Optional<RegisterChart> registerChartOptional = registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), member.getId());
 
-        RsData<String> deleteRegisterRs;
+                    if (registerChartOptional.isPresent()) {
+                        RsData<String> deleteRegisterRs = registerChartService.deleteRegister(registerChartOptional.get().getId());
 
-        // 종류에 따라 다른 메서드 호출
-        if ("queue".equals(kind)) {
-            deleteRegisterRs = registerChartService.deleteRegister(id);
-        } else {
-            deleteRegisterRs = reservationService.deleteReservation(id);
-        }
+                        if (deleteRegisterRs.isSuccess()) {
+                            return "redirect:/admins/queues";
+                        } else {
+                            return adminRq.historyBack(deleteRegisterRs);
+                        }
+                    } else {
+                        return adminRq.historyBack(RsData.of("F-5", "줄서기 정보를 찾을 수 없습니다."));
+                    }
+                }
+                //당일 예약에서 진료 후 예약 삭제
+                else {
+                    Optional<Reservation> reservationOptional = reservationService.findByAdminIdAndMemberId(admin.getId(), member.getId());
+
+                    if (reservationOptional.isPresent()) {
+                        Reservation reservation = reservationOptional.get();
+                        Long reservationId = reservation.getId();
+
+                        RsData<String> deleteReservationRs = reservationService.deleteReservation(reservationId);
+
+                        if (deleteReservationRs.isSuccess()) {
+                            return "redirect:/admins/queues";
+                        } else {
+                            return adminRq.historyBack(deleteReservationRs);
+                        }
+                    } else {
+                        return adminRq.historyBack(RsData.of("F-5", "예약 정보를 찾을 수 없습니다."));
+                    }
+                }
+
+            }
 
         if (deleteRegisterRs.isSuccess()) {
             return "redirect:/admins/queues";
@@ -221,36 +236,56 @@ public class AdminController {
     public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
         RsData<Admin> currentAdminRs = adminService.getCurrentAdmin();
 
-        if (currentAdminRs.isFail()) {
-            return adminRq.historyBack(currentAdminRs);
-        }
+        if (currentAdminData.isSuccess()) {
+            Admin admin = currentAdminData.getData();
+            Optional<Member> memberOptional = memberService.findById(memberId);
 
-        Admin admin = currentAdminRs.getData();
-        Member member = memberService.findById(memberId).get();
+            if(memberOptional.isEmpty()) {
+                return adminRq.historyBack(RsData.of("F-5", "멤버 정보를 찾을 수 없습니다."));
+            } else {
+                Member member = memberOptional.get();
 
-        RsData<?> updateStatusRs;
+                //줄서기에서 진료 상태 변경
+                if(kind.equals("queue")){
+                    // 줄서기 정보 가져오기
+                    Optional<RegisterChart> registerChartOptional = registerChartService.findByAdminIdAndMemberId(admin.getId(), member.getId());
 
-        if("queue".equals(kind)){
-            // 줄서기 정보 가져오기
-            Optional<RegisterChart> registerChartOptional = registerChartService.findByIdAdminIdAndIdMemberId(admin.getId(), member.getId());
+                    if (registerChartOptional.isPresent()) {
+                        RegisterChart registerChart = registerChartOptional.get();
+                        RsData<RegisterChart> updateStatusRs = registerChartService.updateStatus(registerChart, RegisterChartStatus.ENTER);
 
-            RegisterChart registerChart = registerChartOptional.get();
+                        if (updateStatusRs.isSuccess()) {
+                            return "redirect:/admins/queues";
+                        }else{
+                            return adminRq.historyBack(updateStatusRs);
+                        }
+                    } else {
+                        return adminRq.historyBack(RsData.of("F-5", "줄서기 정보를 찾을 수 없습니다."));
+                    }
+                }
+                //당일 예약에서 진료 상태 변경
+                else{
+                    // 예약 정보 가져오기
+                    Optional<Reservation> reservationOptional = reservationService.findByAdminIdAndMemberId(admin.getId(), memberId);
 
-            updateStatusRs = registerChartService.updateStatus(registerChart, RegisterChartStatus.ENTER);
+                    if (reservationOptional.isPresent()) {
+                        Reservation reservation = reservationOptional.get();
+                        RsData<Reservation> updateRegisterStatus = reservationService.updateRegisterStatus(reservation, RegisterChartStatus.ENTER);
+
+                        if (updateRegisterStatus.isSuccess()) {
+                            return "redirect:/admins/queues";
+                        }else{
+                            return adminRq.historyBack(updateRegisterStatus);
+                        }
+                    } else {
+                        return adminRq.historyBack(RsData.of("F-5", "예약 정보를 찾을 수 없습니다."));
+                    }
+                }
+            }
+
         } else {
-            // 예약 정보 가져오기
-            Optional<Reservation> reservationOptional = reservationRepository.findByIdAdminIdAndIdMemberId(admin.getId(), memberId);
-
-            Reservation reservation = reservationOptional.get();
-
-            updateStatusRs = reservationService.updateRegisterStatus(reservation, RegisterChartStatus.ENTER);
-
-        }
-
-        if (updateStatusRs.isSuccess()) {
-            return "redirect:/admins/queues";
-        } else {
-            return adminRq.historyBack(updateStatusRs);
+            return adminRq.historyBack(currentAdminData);
         }
     }
+
 }

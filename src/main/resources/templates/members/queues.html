@@ -43,7 +43,8 @@
                 <div class="flex justify-between">
                     <div class="w-1/2 h-25 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
                         <div class="text-[#78C4BA]">현재 대기</div>
-                        <div class="text-black style=" style="font-size: 1.15rem;">N명</div>
+                        <div class="text-black" style="font-size: 1.15rem;">N명</div>
+
                     </div>
                     <div class="w-1/2 h-25 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
                         <div class="text-[#78C4BA]">예상시간</div>
@@ -54,12 +55,12 @@
         </div>
         <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
-            <form th:if="${register.isEmpty()}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+            <form th:if="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
                 <button type="submit" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
                 </button>
             </form>
-            <form th:unless="${register.isEmpty()}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+            <form th:unless="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
                 <input type="hidden" name="_method" value="delete"/>
                 <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 취소</span>

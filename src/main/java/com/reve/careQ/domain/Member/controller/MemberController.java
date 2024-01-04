@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/members")
@@ -39,13 +40,17 @@ public class MemberController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
     public String showMembersHome(Model model) {
-        RsData<Member> currentUserRs = memberService.getCurrentUser();
+//         RsData<Member> currentUserRs = memberService.getCurrentUser();
 
-        if (currentUserRs.isFail()){
-            return "redirect:/";
-        }
+//         if (currentUserRs.isFail()){
+//             return "redirect:/";
+//         }
 
-        Member currentUser = currentUserRs.getData();
+//         Member currentUser = currentUserRs.getData();
+        Optional<Member> currentUserOptional = memberService.getCurrentUser();
+
+        if (currentUserOptional.isPresent()) {
+            Member currentUser = currentUserOptional.get();
 
         List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
 

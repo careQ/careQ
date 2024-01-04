@@ -12,15 +12,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
     properties:
       hibernate:
         show_sql: true
         format_sql: true
         use_sql_comments: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
   security:
     oauth2:
       client:

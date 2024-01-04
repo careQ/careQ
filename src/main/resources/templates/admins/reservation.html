@@ -122,12 +122,13 @@
                 <td th:text="${reservation.date}"></td>
                 <td th:text="${reservation.status}"></td>
                 <td>
-<!--                    <form id="reservation-confirm" th:action="@{'/admins/reservations'}" method="post">-->
-                    <input type="hidden" name="_method" value="post"/>
-                    <input type="hidden" name="adminId" th:value="${reservation.admin.id}"/>
-                    <input type="hidden" name="memberId" th:value="${reservation.member.id}"/>
-                    <button id="confirm-btn" th:value="${reservation.member.id}">승인</button>
-<!--                    </form>-->
+                    <th:block th:if="${reservation.isDeleted}">
+                        <button id="cancel-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">환자취소</button>
+                    </th:block>
+
+                    <th:block th:if="${!reservation.isDeleted}">
+                        <button id="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
+                    </th:block>
                 </td>
             </tr>
             </tbody>
