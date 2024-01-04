@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,49 +76,17 @@ public class AdminService {
         Optional<Hospital> hospitalOptional = hospitalService.findByCode(hospitalCode);
         Optional<Subject> subjectOptional = subjectService.findByCode(subjectCode);
 
-        if ((hospitalOptional.isPresent())&&(findByHospitalIdAndSubjectId(hospitalOptional.get().getId(), subjectOptional.get().getId()).isPresent())){
-            return RsData.of("F-1", "%s %s 관리자는 이미 사용중입니다.".formatted(hospitalCode, subjectCode));
+        RsData<Admin> validationData = validateJoinRequest(hospitalOptional, subjectOptional, hospitalCode, subjectCode, username, email);
+
+        if (validationData.isFail()) {
+            return validationData;
         }
 
-        if (findByUsername(username).isPresent()) {
-            return RsData.of("F-1", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username));
-        }
-
-        if (subjectOptional.isEmpty()){
-            return RsData.of("F-1", "해당 과목코드(%s)는 존재하지 않습니다.".formatted(subjectCode));
-        }
-
-        if(findByEmail(email).isPresent()) {
-            return RsData.of("F-1", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email));
-        }
-
-        if (hospitalOptional.isEmpty()){
-            String xmlData = hospitalService.useHospitalApi(hospitalCode).getData();
-            String[] parseXml = hospitalService.parseXml(xmlData).getData();
-
-            if (parseXml == null){
-                return RsData.of("F-1", "존재하지 않는 병원코드 입니다.");
-            }
-
-            hospitalService.insert(parseXml[0], parseXml[1], parseXml[2], parseXml[3]);
-            hospitalOptional = hospitalService.findByCode(hospitalCode);
-        }
-
-        String encodedPassword = StringUtils.hasText(password) ? passwordEncoder.encode(password) : null;
-
-        Admin admin = Admin
-                .builder()
-                .hospital(hospitalOptional.get())
-                .subject(subjectOptional.get())
-                .username(username)
-                .password(encodedPassword)
-                .email(email)
-                .build();
-
-        adminRepository.save(admin);
+        Hospital hospital = hospitalService.findByCode(hospitalCode).get();
+        String encodedPassword = encodePassword(password);
+        Admin admin = createAdmin(hospital, subjectOptional.get(), username, encodedPassword, email);
 
         return RsData.of("S-1", "회원가입이 완료되었습니다.", admin);
-
     }
 
     @Transactional
@@ -127,12 +94,10 @@ public class AdminService {
         Optional<Subject> subjectOptional = subjectService.findByName(subjectName);
         Optional<Hospital> hospitalOptional = hospitalService.findByName(hospitalName);
 
-        if (subjectOptional.isEmpty()){
-            return RsData.of("F-1", ("해당 진료과목(%s)은 존재하지 않습니다.\n 진료과목명을 정확하게 입력해주세요.").formatted(subjectName));
-        }
+        RsData<Admin> validationData = validateFindAdminRequest(subjectOptional, hospitalOptional, subjectName, hospitalName);
 
-        if(hospitalOptional.isEmpty()){
-            return RsData.of("F-1", "해당 병원명(%s)은 존재하지 않습니다.\n 병원명을 정확하게 입력해주세요.".formatted(hospitalName));
+        if (validationData.isFail()) {
+            return validationData;
         }
 
         Long subjectId = subjectService.findByName(subjectName).get().getId();
@@ -145,21 +110,142 @@ public class AdminService {
     }
 
     public RsData<Admin> getCurrentAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = getAuthentication();
 
-        if (authentication == null) {
-            return RsData.of("F-2", "로그인한 사용자 정보를 가져오지 못했습니다.");
+        RsData<Admin> authenticationValidation = isAuthenticatedRs(authentication);
+        if (!authenticationValidation.isSuccess()) {
+            return authenticationValidation;
         }
 
-        Object principal = authentication.getPrincipal();
-        String username = getUsernameFromPrincipal(principal);
+        String username = authentication.getName();
+        Admin admin = findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("현재 로그인한 관리자를 찾을 수 없습니다."));
 
-        return findByUsername(username)
-                .map(admin -> RsData.of("S-1", "현재 로그인한 관리자 정보를 가져왔습니다.", admin))
-                .orElse(RsData.of("F-1", "현재 로그인한 관리자 정보를 찾을 수 없습니다."));
+        return RsData.of("S-3", "현재 로그인한 관리자를 가져왔습니다.", admin);
     }
 
-    private String getUsernameFromPrincipal(Object principal) {
-        return (principal instanceof UserDetails) ? ((UserDetails) principal).getUsername() : null;
+    private Admin createAdmin(Hospital hospital, Subject subject, String username, String password, String email){
+        Admin admin = Admin.builder()
+                .hospital(hospital)
+                .subject(subject)
+                .username(username)
+                .password(password)
+                .email(email)
+                .build();
+
+        return adminRepository.save(admin);
+    }
+
+    private String encodePassword(String password){
+        return StringUtils.hasText(password) ? passwordEncoder.encode(password) : null;
+    }
+
+    private RsData<Admin> validateJoinRequest(Optional<Hospital> hospitalOptional, Optional<Subject> subjectOptional, String hospitalCode, String subjectCode,String username, String email) {
+
+        RsData<Admin> adminValidation = isAdminAlreadyExistRs(hospitalOptional, subjectOptional);
+        if (!adminValidation.isSuccess()) {
+            return adminValidation;
+        }
+
+        RsData<Admin> usernameValidation = isUsernameAlreadyUsedRs(username);
+        if (!usernameValidation.isSuccess()) {
+            return usernameValidation;
+        }
+
+        RsData<Admin> emailValidation = isEmailAlreadyUsedRs(email);
+        if (!emailValidation.isSuccess()) {
+            return emailValidation;
+        }
+
+        RsData<Admin> subjectValidation = isSubjectAlreadyExistRs(subjectCode);
+        if (!subjectValidation.isSuccess()) {
+            return subjectValidation;
+        }
+
+        RsData<Admin> hospitalIfNotExistRs = createHospitalIfNotExists(hospitalCode, hospitalOptional);
+        if (hospitalIfNotExistRs.isFail()) {
+            return hospitalIfNotExistRs;
+        }
+
+        return RsData.success();
+    }
+
+    private RsData<Admin> isUsernameAlreadyUsedRs (String username) {
+        return findByUsername(username).map(admin -> RsData.<Admin>of("F-1", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username)))
+                .orElse(RsData.success());
+    }
+
+    private RsData<Admin> isEmailAlreadyUsedRs (String email) {
+        return findByEmail(email).map(admin -> RsData.<Admin>of("F-1", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email)))
+                .orElse(RsData.success());
+    }
+
+    private boolean isSubjectAlreadyExist(String subjectCode){
+        return subjectService.findByCode(subjectCode).isPresent();
+    }
+
+    private RsData<Admin> isSubjectAlreadyExistRs(String subjectCode){
+        return isSubjectAlreadyExist(subjectCode) ? RsData.success() : RsData.of("F-1", "해당 과목코드(%s)는 존재하지 않습니다.".formatted(subjectCode));
+    }
+
+    private boolean isAdminAlreadyExist(Optional<Hospital> hospitalOptional, Optional<Subject> subjectOptional) {
+        return hospitalOptional.isPresent() &&
+                subjectOptional.isPresent() &&
+                findByHospitalIdAndSubjectId(hospitalOptional.get().getId(), subjectOptional.get().getId()).isPresent();
+    }
+
+    private RsData<Admin> isAdminAlreadyExistRs(Optional<Hospital> hospitalOptional, Optional<Subject> subjectOptional){
+        return isAdminAlreadyExist(hospitalOptional, subjectOptional) ? RsData.of("F-1", "%s %s 관리자는 이미 사용중입니다.".formatted(hospitalOptional.get().getCode(), subjectOptional.get().getCode())) : RsData.success();
+    }
+
+    private RsData<Admin> createHospitalIfNotExists(String hospitalCode, Optional<Hospital> hospitalOptional) {
+        if (hospitalOptional.isEmpty()) {
+            String xmlData = hospitalService.useHospitalApi(hospitalCode).getData();
+            String[] parseXml = hospitalService.parseXml(xmlData).getData();
+
+            if (parseXml == null) {
+                return RsData.of("F-1", "존재하지 않는 병원코드 입니다.");
+            }
+
+            hospitalService.insert(parseXml[0], parseXml[1], parseXml[2], parseXml[3]);
+        }
+        return RsData.success();
+    }
+
+    private RsData<Admin> validateFindAdminRequest(Optional<Subject> subjectOptional, Optional<Hospital> hospitalOptional,
+                                                   String subjectName, String hospitalName) {
+        RsData<Admin> subjectNameValidation = isSubjectAlreadyExistByNameRs(subjectOptional, subjectName);
+        if (!subjectNameValidation.isSuccess()) {
+            return subjectNameValidation;
+        }
+
+        RsData<Admin> hospitalNameValidation = isHospitalAlreadyExistByNameRs(hospitalOptional, hospitalName);
+        if (!hospitalNameValidation.isSuccess()) {
+            return hospitalNameValidation;
+        }
+
+        return RsData.success();
+    }
+
+    private RsData<Admin> isSubjectAlreadyExistByNameRs(Optional<Subject> subjectOptional, String subjectName) {
+        return subjectOptional.map(subject -> RsData.<Admin>success())
+                .orElse(RsData.of("F-1", "해당 진료과목(%s)은 존재하지 않습니다.\n진료과목명을 정확하게 입력해주세요.".formatted(subjectName)));
+    }
+
+    private RsData<Admin> isHospitalAlreadyExistByNameRs(Optional<Hospital> hospitalOptional, String hospitalName) {
+        return hospitalOptional.map(subject -> RsData.<Admin>success())
+                .orElse(RsData.of("F-1", "해당 병원명(%s)은 존재하지 않습니다.\n 병원명을 정확하게 입력해주세요.".formatted(hospitalName)));
+    }
+
+    private Authentication getAuthentication(){
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    private boolean isAuthenticated(Authentication authentication){
+        return authentication != null;
+    }
+
+    private RsData<Admin> isAuthenticatedRs(Authentication authentication){
+        return isAuthenticated(authentication) ? RsData.success() : RsData.of("F-2", "로그인한 관리자 정보를 가져오지 못했습니다.");
     }
 }
