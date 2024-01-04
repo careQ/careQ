@@ -52,15 +52,15 @@ public class AdminService {
     }
 
     public List<String> selectAllStates(String subjectCode){
-        return adminRepository.findDistinctHospitalStateBySubjectCode(subjectCode);
+        return adminRepository.selectAllStates(subjectCode);
     }
 
     public List<String> selectAllCities(String subjectCode, String state){
-        return adminRepository.findDistinctHospitalCityBySubjectCodeAndHospitalState(subjectCode, state);
+        return adminRepository.selectAllCities(subjectCode, state);
     }
 
     public List<Hospital> selectHospitalsByStateAndCity(String subjectCode, String state, String city, String name){
-        return adminRepository.findBySubjectCodeAndHospitalStateContainingAndHospitalCityContainingAndHospitalNameContaining(subjectCode, state, city, name);
+        return adminRepository.selectHospitalsByStateAndCity(subjectCode, state, city, name);
     }
 
     public List<Reservation> getReservationsForAdmin(Admin admin) {
@@ -109,19 +109,16 @@ public class AdminService {
                 .orElse(RsData.of("F-1", "해당 관리자가 존재하지 않습니다.\n다른 병원으로 검색해주세요."));
     }
 
-    public RsData<Admin> getCurrentAdmin() {
+    public Optional<Admin> getCurrentAdmin() {
         Authentication authentication = getAuthentication();
 
-        RsData<Admin> authenticationValidation = isAuthenticatedRs(authentication);
-        if (!authenticationValidation.isSuccess()) {
-            return authenticationValidation;
+        if (authentication == null) {
+            throw new RuntimeException("인증되지 않은 관리자입니다.");
         }
 
         String username = authentication.getName();
-        Admin admin = findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("현재 로그인한 관리자를 찾을 수 없습니다."));
 
-        return RsData.of("S-3", "현재 로그인한 관리자를 가져왔습니다.", admin);
+        return findByUsername(username);
     }
 
     private Admin createAdmin(Hospital hospital, Subject subject, String username, String password, String email){
@@ -239,13 +236,5 @@ public class AdminService {
 
     private Authentication getAuthentication(){
         return SecurityContextHolder.getContext().getAuthentication();
-    }
-
-    private boolean isAuthenticated(Authentication authentication){
-        return authentication != null;
-    }
-
-    private RsData<Admin> isAuthenticatedRs(Authentication authentication){
-        return isAuthenticated(authentication) ? RsData.success() : RsData.of("F-2", "로그인한 관리자 정보를 가져오지 못했습니다.");
     }
 }

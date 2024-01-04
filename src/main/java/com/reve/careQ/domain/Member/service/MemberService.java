@@ -12,9 +12,8 @@ public interface MemberService{
     Optional<Member> findById(Long id);
     Optional<Member> findByUsername(String username);
     RsData<Member> join(String providerTypeCode, String username, String password, String email);
-    RsData<Member> getCurrentUser();
+    Optional<Member> getCurrentUser();
     List<Reservation> getReservationsForMember(Member currentUser);
     RsData<Member> findPassword(String username, String email);
     void modifyPassword(String email) throws EmailException;
-
 }
