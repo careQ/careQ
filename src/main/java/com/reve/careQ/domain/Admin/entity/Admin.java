@@ -6,7 +6,8 @@ import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.experimental.SuperBuilder;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,13 +18,10 @@ import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Builder
+@Getter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Admin extends BaseEntity {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

@@ -40,21 +40,13 @@ public class MemberController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
     public String showMembersHome(Model model) {
-//         RsData<Member> currentUserRs = memberService.getCurrentUser();
 
-//         if (currentUserRs.isFail()){
-//             return "redirect:/";
-//         }
-
-//         Member currentUser = currentUserRs.getData();
         Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
-        if (currentUserOptional.isPresent()) {
-            Member currentUser = currentUserOptional.get();
-
-        List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
-
-        model.addAttribute("reservations", reservations);
+        currentUserOptional.ifPresent(currentUser -> {
+            List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
+            model.addAttribute("reservations", reservations);
+        });
 
         return "members/members-home";
     }

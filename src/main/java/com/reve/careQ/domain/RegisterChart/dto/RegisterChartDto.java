@@ -1,5 +1,6 @@
-package com.reve.careQ.domain.RegisterChart.entity;
+package com.reve.careQ.domain.RegisterChart.dto;
 
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;

@@ -4,7 +4,7 @@ import com.reve.careQ.domain.Chat.entity.Chat;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.experimental.SuperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,13 +15,10 @@ import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Builder
+@Getter
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -49,4 +46,12 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", fetch = LAZY)
     private List<Chat> chatList;
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setProviderTypeCode(String providerTypeCode) {
+        this.providerTypeCode = providerTypeCode;
+    }
 }

@@ -1,4 +1,4 @@
-package com.reve.careQ.domain.Chat.entity;
+package com.reve.careQ.domain.Chat.dto;
 
 import java.time.LocalDateTime;
 

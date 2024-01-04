@@ -1,5 +1,6 @@
-package com.reve.careQ.domain.Reservation.entity;
+package com.reve.careQ.domain.Reservation.dto;
 
+import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
 import lombok.Getter;
 import lombok.Setter;
 

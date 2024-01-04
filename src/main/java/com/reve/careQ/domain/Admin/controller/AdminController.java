@@ -1,12 +1,12 @@
 package com.reve.careQ.domain.Admin.controller;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
-import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Admin.dto.JoinFormDto;
+import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChartDto;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
@@ -87,13 +87,13 @@ public class AdminController {
     @GetMapping("/reservations")
     public String showAdminReservations(Model model) {
         // 현재 로그인한 관리자 정보 가져오기
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+        Optional<Admin> currentAdminOptional = adminService.getCurrentAdmin();
 
-        if (!currentAdminData.isSuccess()) {
+        if (!currentAdminOptional.isPresent()) {
             return "redirect:/";
         }
 
-        Admin currentAdmin = currentAdminData.getData();
+        Admin currentAdmin = currentAdminOptional.get();
 
         // 관리자에 해당하는 예약 목록 가져오기
         List<Reservation> reservations = adminService.getReservationsForAdmin(currentAdmin);
@@ -131,13 +131,13 @@ public class AdminController {
     @GetMapping(value ="/queues")
     public String showAdminQueues(Model model){
         // 현재 로그인한 관리자 정보 가져오기
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+        Optional<Admin> currentAdminOptional = adminService.getCurrentAdmin();
 
-        if (!currentAdminData.isSuccess()) {
+        if (!currentAdminOptional.isPresent()) {
             return "redirect:/";
         }
 
-        Admin currentAdmin = currentAdminData.getData();
+        Admin currentAdmin = currentAdminOptional.get();
 
         // 관리자에 해당하는 예약 목록 가져오기
         List<Reservation> reservations = reservationService.getTodayReservation(currentAdmin);
@@ -152,14 +152,14 @@ public class AdminController {
     @ResponseBody
     public List<RegisterChartDto> showAdminQueues(@RequestParam(name="name",required=false,defaultValue="") String name) {
         // 현재 로그인한 관리자 정보 가져오기
-        RsData<Admin> currentAdminData = adminService.getCurrentAdmin();
+        Optional<Admin> currentAdminOptional = adminService.getCurrentAdmin();
 
-        if (!currentAdminData.isSuccess()) {
+        if (!currentAdminOptional.isPresent()) {
             // 로그인한 관리자 정보를 가져오지 못한 경우 빈 목록 반환
             return Collections.emptyList();
         }
 
-        Admin currentAdmin = currentAdminData.getData();
+        Admin currentAdmin = currentAdminOptional.get();
 
         // 관리자에 해당하는 줄서기 목록 가져오기
         List<RegisterChart> registerCharts = adminService.getRegisterChartByAdminAndMemberName(currentAdmin, name);
@@ -175,18 +175,18 @@ public class AdminController {
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/queues")
     public String deleteRegister(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        RsData<Admin> currentAdminRs = adminService.getCurrentAdmin();
+        Optional<Admin> currentAdminOptional = adminService.getCurrentAdmin();
 
-        if (currentAdminData.isSuccess()) {
-            Admin admin = currentAdminData.getData();
+        if (currentAdminOptional.isPresent()) {
+            Admin admin = currentAdminOptional.get();
             Optional<Member> memberOptional = memberService.findById(memberId);
 
-            if(memberOptional.isEmpty()) {
+            if (memberOptional.isEmpty()) {
                 return adminRq.historyBack(RsData.of("F-5", "멤버 정보를 찾을 수 없습니다."));
             } else {
                 Member member = memberOptional.get();
 
-                if(kind.equals("queue")){
+                if (kind.equals("queue")) {
                     // 줄서기 정보 삭제
                     Optional<RegisterChart> registerChartOptional = registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), member.getId());
 
@@ -221,23 +221,19 @@ public class AdminController {
                         return adminRq.historyBack(RsData.of("F-5", "예약 정보를 찾을 수 없습니다."));
                     }
                 }
-
             }
-
-        if (deleteRegisterRs.isSuccess()) {
-            return "redirect:/admins/queues";
         } else {
-            return adminRq.historyBack(deleteRegisterRs);
+            return adminRq.historyBack(RsData.of("F-5", "관리자 정보를 찾을 수 없습니다."));
         }
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/queues")
     public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        RsData<Admin> currentAdminRs = adminService.getCurrentAdmin();
+            Optional<Admin> currentAdminOptional = adminService.getCurrentAdmin();
 
-        if (currentAdminData.isSuccess()) {
-            Admin admin = currentAdminData.getData();
+        if (currentAdminOptional.isPresent()) {
+            Admin admin = currentAdminOptional.get();
             Optional<Member> memberOptional = memberService.findById(memberId);
 
             if(memberOptional.isEmpty()) {
@@ -284,7 +280,7 @@ public class AdminController {
             }
 
         } else {
-            return adminRq.historyBack(currentAdminData);
+            return adminRq.historyBack(RsData.of("F-5", "관리자 정보를 찾을 수 없습니다."));
         }
     }
 

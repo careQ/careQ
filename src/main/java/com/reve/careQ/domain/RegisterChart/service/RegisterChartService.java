@@ -1,7 +1,7 @@
 package com.reve.careQ.domain.RegisterChart.service;
 
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChartInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.global.rsData.RsData;
 

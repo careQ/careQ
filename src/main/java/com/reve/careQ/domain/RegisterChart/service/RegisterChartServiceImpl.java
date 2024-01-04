@@ -1,14 +1,14 @@
 package com.reve.careQ.domain.RegisterChart.service;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
-import com.reve.careQ.domain.Admin.service.AdminService;
 
+import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChartInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
 import com.reve.careQ.domain.RegisterChart.exception.ResourceNotFoundException;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;

@@ -58,19 +58,15 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Transactional
-    public RsData<Member> getCurrentUser() {
+    public Optional<Member> getCurrentUser() {
         Authentication authentication = getAuthentication();
 
-        RsData<Member> authenticationValidation = isAuthenticatedRs(authentication);
-        if (!authenticationValidation.isSuccess()) {
-            return authenticationValidation;
+        if (authentication == null) {
+            throw new RuntimeException("인증되지 않은 사용자입니다.");
         }
 
         String username = authentication.getName();
-        Member member = findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("현재 로그인한 사용자를 찾을 수 없습니다."));
-
-        return RsData.of("S-3", "현재 로그인한 사용자를 가져왔습니다.", member);
+        return findByUsername(username);
     }
 
     public List<Reservation> getReservationsForMember(Member currentUser) {
@@ -154,10 +150,6 @@ public class MemberServiceImpl implements MemberService{
 
     private boolean isAuthenticated(Authentication authentication){
         return authentication != null;
-    }
-
-    private RsData<Member> isAuthenticatedRs(Authentication authentication){
-        return isAuthenticated(authentication) ? RsData.success() : RsData.of("F-3", "현재 로그인되어 있지 않습니다.");
     }
 
     private RsData<Member> findExistingMemberRs(String username, String email){

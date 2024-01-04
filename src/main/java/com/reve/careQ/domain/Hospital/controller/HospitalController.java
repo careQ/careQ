@@ -3,7 +3,7 @@ package com.reve.careQ.domain.Hospital.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
-import com.reve.careQ.domain.Hospital.entity.HospitalDto;
+import com.reve.careQ.domain.Hospital.dto.HospitalDto;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
