@@ -1,7 +1,8 @@
-package com.reve.careQ.domain.RegisterChart.entity;
+package com.reve.careQ.domain.RegisterChart.dto;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import lombok.*;
 

@@ -3,7 +3,7 @@ package com.reve.careQ.domain.Chat.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Chat.entity.Chat;
-import com.reve.careQ.domain.Chat.entity.ChatDto;
+import com.reve.careQ.domain.Chat.dto.ChatDto;
 import com.reve.careQ.domain.Chat.service.ChatService;
 import com.reve.careQ.domain.Message.service.MessageService;
 import com.reve.careQ.global.rq.AdminRq;

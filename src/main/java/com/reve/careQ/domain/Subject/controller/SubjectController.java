@@ -1,7 +1,7 @@
 package com.reve.careQ.domain.Subject.controller;
 
 import com.reve.careQ.domain.Subject.entity.Subject;
-import com.reve.careQ.domain.Subject.entity.SubjectDto;
+import com.reve.careQ.domain.Subject.dto.SubjectDto;
 import com.reve.careQ.domain.Subject.service.SubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

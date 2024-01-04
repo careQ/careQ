@@ -2,7 +2,7 @@ package com.reve.careQ.domain.Message.service;
 
 import com.reve.careQ.domain.Chat.entity.Chat;
 import com.reve.careQ.domain.Message.entity.Message;
-import com.reve.careQ.domain.Message.entity.MessageDto;
+import com.reve.careQ.domain.Message.dto.MessageDto;
 import com.reve.careQ.domain.Message.repository.MessageRepository;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;

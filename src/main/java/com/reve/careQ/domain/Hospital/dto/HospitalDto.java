@@ -1,4 +1,4 @@
-package com.reve.careQ.domain.Hospital.entity;
+package com.reve.careQ.domain.Hospital.dto;
 
 public class HospitalDto {
     private Long id;

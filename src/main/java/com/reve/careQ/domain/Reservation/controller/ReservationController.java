@@ -3,7 +3,7 @@ package com.reve.careQ.domain.Reservation.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
-import com.reve.careQ.domain.Reservation.entity.ReservationDto;
+import com.reve.careQ.domain.Reservation.dto.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;

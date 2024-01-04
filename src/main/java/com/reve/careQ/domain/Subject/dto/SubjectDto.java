@@ -1,4 +1,4 @@
-package com.reve.careQ.domain.Subject.entity;
+package com.reve.careQ.domain.Subject.dto;
 
 public class SubjectDto {
     private Long id;

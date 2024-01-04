@@ -8,7 +8,7 @@ import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChartInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
 import com.reve.careQ.domain.RegisterChart.exception.ResourceNotFoundException;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;

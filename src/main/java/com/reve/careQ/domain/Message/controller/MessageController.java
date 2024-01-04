@@ -1,7 +1,7 @@
 package com.reve.careQ.domain.Message.controller;
 
 import com.reve.careQ.domain.Chat.service.ChatService;
-import com.reve.careQ.domain.Message.entity.MessageDto;
+import com.reve.careQ.domain.Message.dto.MessageDto;
 import com.reve.careQ.domain.Message.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;

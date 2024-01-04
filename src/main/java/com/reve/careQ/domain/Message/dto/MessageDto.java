@@ -1,4 +1,4 @@
-package com.reve.careQ.domain.Message.entity;
+package com.reve.careQ.domain.Message.dto;
 
 import lombok.Getter;
 import lombok.Setter;
