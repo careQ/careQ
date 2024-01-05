@@ -42,7 +42,6 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.getTodayReservation(admin);
     }
 
-    @Transactional
     public Reservation createReservation(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         Member currentUser = getCurrentUser();
         Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
@@ -54,17 +53,21 @@ public class ReservationServiceImpl implements ReservationService {
         return saveReservation(dateTime, admin, currentUser);
     }
 
+    @Override
     @Transactional
     public RsData<Reservation> insert(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         Reservation reservation = createReservation(hospitalId, subjectId, selectedDate, selectedTime);
         return RsData.of("S-1", "예약이 성공적으로 등록되었습니다.", reservation);
     }
 
+    @Override
+    @Transactional
     public String createReservationAndReturnRedirectUrl(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         Reservation reservation = createReservation(hospitalId, subjectId, selectedDate, selectedTime);
         return generateRedirectUrl(subjectId, hospitalId, reservation.getId());
     }
 
+    @Override
     @Transactional(readOnly = true)
     public RsData<String> checkDuplicateReservation(Long adminId, Long memberId) {
         boolean isDuplicateActiveReservation = reservationRepository.existsByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
@@ -82,29 +85,45 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
-    @Transactional
-    public RsData<String> deleteReservation(Long reservationId) {
-        Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
+    @Override
+    public RsData<String> deleteReservation(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
 
-        if (optionalReservation.isPresent()) {
-            Reservation reservation = optionalReservation.get();
-            reservation.markAsDeleted(true);
-            reservationRepository.save(reservation);
-            return RsData.of("S-2", "예약 정보가 삭제되었습니다.");
-        } else {
-            return RsData.of("F-5", "예약 정보를 찾을 수 없습니다.");
+        reservation.markAsDeleted(true);
+        reservationRepository.save(reservation);
+        return RsData.of("S-2", "예약 정보가 삭제되었습니다.");
+    }
+
+    @Override
+    @Transactional
+    public void deleteReservationByAdminAndMember(Admin admin, Long memberId) {
+        Reservation reservation = findByAdminIdAndMemberId(admin.getId(), memberId)
+                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
+        RsData<String> deleteReservationRs = deleteReservation(reservation.getId());
+        checkResult(deleteReservationRs);
+    }
+
+    private void checkResult(RsData<String> result) {
+        if (!result.isSuccess()) {
+            throw new IllegalArgumentException(result.getMsg());
         }
     }
 
+    @Override
     @Transactional
     public RsData<Reservation> updateStatus(Reservation reservation, ReservationStatus status){
         reservation.setStatus(status);
         return saveAndReturnRsData(reservation, "예약 상태가 업데이트 되었습니다.");
     }
 
+    @Override
     @Transactional
-    public RsData<Reservation> updateRegisterStatus(Reservation reservation, RegisterChartStatus registerStatus){
-        reservation.setRegisterStatus(registerStatus);
+    public RsData<Reservation> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status) {
+        Reservation reservation = reservationRepository.findReservationByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId)
+                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
+
+        reservation.setRegisterStatus(status);
         return saveAndReturnRsData(reservation, "진료 상태가 업데이트 되었습니다.");
     }
 
@@ -130,6 +149,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Transactional
     public Reservation confirmReservation(Long adminId, Long memberId) {
         Reservation reservation = reservationRepository.findByAdminIdAndMemberId(adminId, memberId)
                 .orElseThrow(() -> new NoSuchElementException("해당하는 예약 정보를 찾을 수 없습니다."));
