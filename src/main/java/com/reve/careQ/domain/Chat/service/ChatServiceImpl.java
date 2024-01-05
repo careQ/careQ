@@ -77,7 +77,7 @@ public class ChatServiceImpl implements ChatService{
     }
 
     private RsData<Chat> isChatAlreadyExistRs (Long memberId, Long adminId) {
-        return findByMemberIdAndAdminId(memberId, adminId).map(chat -> RsData.of("S-1", "채팅방이 이미 존재합니다.", chat))
+        return findByMemberIdAndAdminId(memberId, adminId).map(chat -> RsData.of("S-2", "채팅방이 이미 존재합니다.", chat))
                 .orElse(RsData.failOf("F-1","채팅방이 존재하지 않습니다."));
     }
 }
