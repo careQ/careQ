@@ -75,6 +75,7 @@ public class AdminController {
         return adminRq.redirectWithMsg("/admins/login", joinRs);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/reservations")
     public String showAdminReservations(Model model) {
         try {
@@ -126,27 +127,14 @@ public class AdminController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/queues")
-    public String deleteRegister(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
-        Admin admin = adminService.getCurrentAdmin().get();
-
-        if (kind.equals("queue")) {
-            registerChartService.deleteRegisterByAdminAndMember(admin, memberId);
-        } else {
-            reservationService.deleteReservationByAdminAndMember(admin, memberId);
-        }
-        return "redirect:/admins/queues";
-    }
-
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/queues")
-    public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind) {
+    public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind, @RequestParam("status") RegisterChartStatus status) {
         Admin admin = adminService.getCurrentAdmin().get();
 
         if (kind.equals("queue")) {
-            registerChartService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
+            registerChartService.updateStatusByAdminAndMember(admin, memberId, status);
         } else {
-            reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
+            reservationService.updateStatusByAdminAndMember(admin, memberId, status);
         }
         return "redirect:/admins/queues";
     }

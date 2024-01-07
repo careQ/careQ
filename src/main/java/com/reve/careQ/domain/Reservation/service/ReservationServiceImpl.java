@@ -91,23 +91,9 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
 
         reservation.markAsDeleted(true);
+        reservation.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
         return RsData.of("S-2", "예약 정보가 삭제되었습니다.");
-    }
-
-    @Override
-    @Transactional
-    public void deleteReservationByAdminAndMember(Admin admin, Long memberId) {
-        Reservation reservation = findByAdminIdAndMemberId(admin.getId(), memberId)
-                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
-        RsData<String> deleteReservationRs = deleteReservation(reservation.getId());
-        checkResult(deleteReservationRs);
-    }
-
-    private void checkResult(RsData<String> result) {
-        if (!result.isSuccess()) {
-            throw new IllegalArgumentException(result.getMsg());
-        }
     }
 
     @Override

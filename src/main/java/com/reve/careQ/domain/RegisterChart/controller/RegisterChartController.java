@@ -21,6 +21,7 @@ import java.net.URI;
 public class RegisterChartController {
     private final RegisterChartService registerChartService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId, Model model){
         ModelAndView mv = new ModelAndView();
@@ -52,6 +53,7 @@ public class RegisterChartController {
         }
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping
     public ResponseEntity<?> deleteRegister(@PathVariable("subject-id") Long subjectId,
                                             @PathVariable("hospital-id") Long hospitalId) {

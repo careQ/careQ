@@ -12,9 +12,7 @@ public interface RegisterChartService {
     Optional<RegisterChart> findById(Long id);
     RegisterChartInfoDto getRegisterChartInfo(Long hospitalId, Long subjectId);
     RsData<RegisterChart> insert(Long hospitalId, Long subjectId);
-    RsData<String> deleteRegister(Long id);
     RsData<RegisterChart> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);
     void processRegisterChart(Long hospitalId, Long subjectId);
-    void deleteRegisterByAdminAndMember(Admin admin, Long memberId);
 }
 

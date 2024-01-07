@@ -124,37 +124,19 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         return RsData.of("S-1", "접수 테이블에 삽입되었습니다.", savedRegisterChart);
     }
 
-    public RsData<String> deleteRegister(Long id) {
-        RegisterChart registerChart = registerChartRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("줄서기 정보를 찾을 수 없습니다."));
-        registerChart.markAsDeleted(true);
-        registerChartRepository.save(registerChart);
-        return RsData.of("S-2", "줄서기 정보가 삭제되었습니다.");
-    }
-
-    @Override
-    @Transactional
-    public void deleteRegisterByAdminAndMember(Admin admin, Long memberId) {
-        RegisterChart registerChart = registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId)
-                .orElseThrow(() -> new IllegalArgumentException("줄서기 정보를 찾을 수 없습니다."));
-
-        RsData<String> deleteRegisterRs = deleteRegister(registerChart.getId());
-        checkResult(deleteRegisterRs);
-    }
-
-    private void checkResult(RsData<String> result) {
-        if (!result.isSuccess()) {
-            throw new IllegalArgumentException(result.getMsg());
-        }
-    }
-
     @Override
     @Transactional
     public RsData<RegisterChart> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status) {
         RegisterChart registerChart = registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId)
                 .orElseThrow(() -> new IllegalArgumentException("줄서기 정보를 찾을 수 없습니다."));
 
-        registerChart.setStatus(status);
+        if(status.equals(RegisterChartStatus.CANCEL) || status.equals(RegisterChartStatus.COMPLETE)){
+            registerChart.markAsDeleted(true);
+            registerChart.setStatus(status);
+        } else {
+            registerChart.setStatus(status);
+        }
+
         registerChartRepository.save(registerChart);
         return RsData.of("S-1", "줄서기 상태가 업데이트 되었습니다.", registerChart);
     }
@@ -179,6 +161,11 @@ public class RegisterChartServiceImpl implements RegisterChartService {
 
     private void deleteRegisterChart(RegisterChart registerChart) {
         registerChart.markAsDeleted(true);
+        if(registerChart.getStatus().equals(RegisterChartStatus.CANCEL) || registerChart.getStatus().equals(RegisterChartStatus.COMPLETE)){
+            registerChart.setStatus(registerChart.getStatus());
+        } else {
+            registerChart.setStatus(RegisterChartStatus.CANCEL);
+        }
         registerChartRepository.save(registerChart);
     }
 }
