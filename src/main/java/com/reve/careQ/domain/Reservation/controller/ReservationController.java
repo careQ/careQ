@@ -114,7 +114,7 @@ public class ReservationController {
             reservationService.updateStatus(reservation, reservationDto.getStatus());
         }
 
-        sendingOperations.convertAndSend("/topic/members/"+reservationDto.getMemberId()+"/subjects/"+reservationDto.getSubjectId()
+        sendingOperations.convertAndSend("/topic/reservations/members/"+reservationDto.getMemberId()+"/subjects/"+reservationDto.getSubjectId()
                 +"/hospitals/"+reservationDto.getHospitalId(), reservationDto);
     }
 }
