@@ -82,23 +82,25 @@
                         </td>
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex flex-row justify-center">
-                            <form class="mb-0 mr-3" action="/admins/queues" method="POST">
+                            <form class="m-0" action='/admins/queues' method="POST">
                                 <input type="hidden" name="_csrf" value='`+token+`'/>
                                 <input type="hidden" name="kind" value="queue"/>
+                                <input type="hidden" name="status" value="ENTER"/>
                                 <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #4392F9; width: 90px;">진료 시작</button>
+                                <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">진료 시작</button>
                             </form>
                             <form class="m-0" action='/admins/queues' method="POST">
                                 <input type="hidden" name="_csrf" value='`+token+`'/>
                                 <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="_method" value="delete"/>
+                                <input type="hidden" name="status" value="CANCEL"/>
                                 <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
                                 <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">줄서기 취소</button>
                             </form>
+
                         </div>
                     </td>
                 </tr>`;
-                        } else{
+                        } else if (registerChart.status == 'ENTER') {
                             row += `<td class="border-t border-b py-2 px-4 text-sm text-center">
                                         <div class="flex justify-center">
                                             <div class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">진료 중</div>
@@ -109,7 +111,7 @@
                             <form class="mb-0" action="/admins/queues" method="POST">
                                 <input type="hidden" name="_csrf" value='`+token+`'/>
                                 <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="_method" value="delete"/>
+                                 <input type="hidden" name="status" value="COMPLETE"/>
                                 <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
                                 <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
                             </form>
@@ -270,28 +272,50 @@
             </tr>
             </thead>
             <tbody id="t_body2">
-                <tr th:each="reservation, reservationStat : ${reservations}">
-                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservationStat.count}"></td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.member.username}"></td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.date}"></td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.status}"></td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.registerStatus}"></td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center">
-                        <form th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}" class="mb-0" action="/admins/queues" method="POST">
-                            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="kind" value="reservation"/>
-                            <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
-                            <button class="text-white py-1 px-2 rounded" style="background-color: #4392F9; width: 90px;">진료 시작</button>
-                        </form>
-                        <form th:if="${#strings.equals(reservation.registerStatus, 'ENTER')}" class="mb-0" action="/admins/queues" method="POST">
-                            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-                            <input type="hidden" name="_method" value="delete"/>
-                            <input type="hidden" name="kind" value="reservation"/>
-                            <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
-                            <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
-                        </form>
-                    </td>
-                </tr>
+            <tr th:each="reservation, reservationStat : ${reservations}">
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservationStat.count}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.member.username}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.date}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">
+                    <!-- 예약 상태 표시 -->
+                    <span th:if="${#strings.equals(reservation.status, 'PENDING')}" class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 신청</span>
+                    <span th:if="${#strings.equals(reservation.status, 'CONFIRMED')}">예약 확정</span>
+                    <span th:if="${#strings.equals(reservation.status, 'CANCELLED')}" class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">예약 취소</span>
+                </td>
+
+                <td class="border-t border-b py-2 px-4 text-sm text-center">
+                    <!-- 진료 상태 표시 -->
+                    <span th:if="${#strings.equals(reservation.registerStatus, 'ENTER')}" class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">진료 중</span>
+                    <span th:if="${#strings.equals(reservation.registerStatus, 'COMPLETE')}">진료 완료</span>
+                    <span th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}" class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">대기 중</span>
+                </td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">
+                    <form
+                            th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}"
+                            class="mb-0"
+                            action="/admins/queues"
+                            method="POST">
+
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="kind" value="reservation"/>
+                        <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
+                        <input type="hidden" name="status" value="ENTER"/>
+
+                        <button
+                                class="text-white py-1 px-2 rounded"
+                                th:style="${#strings.equals(reservation.status, 'CONFIRMED')} ? 'background-color: #4392F9; width: 90px;' : 'background-color: #D3D3D3; width: 90px;'"
+                                th:disabled="${!#strings.equals(reservation.status, 'CONFIRMED')}">진료 시작</button>
+
+                    </form>
+                    <form th:if="${#strings.equals(reservation.registerStatus, 'ENTER')}" class="mb-0" action="/admins/queues" method="POST">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                        <input type="hidden" name="kind" value="reservation"/>
+                        <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
+                        <input type="hidden" name="status" value="COMPLETE"/>
+                        <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
+                    </form>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>

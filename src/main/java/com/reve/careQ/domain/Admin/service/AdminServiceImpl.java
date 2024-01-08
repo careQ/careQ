@@ -4,6 +4,7 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.repository.AdminRepository;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
@@ -21,11 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AdminServiceImpl implements AdminService{
 
     private final PasswordEncoder passwordEncoder;
@@ -71,6 +73,14 @@ public class AdminServiceImpl implements AdminService{
         return registerChartRepository.getRegisterChartByAdminAndMemberName(admin, name);
     }
 
+    @Override
+    public List<RegisterChartDto> getRegisterChartDtoByMemberName(String name) {
+        Admin currentAdmin = getCurrentAdmin().orElseThrow(() -> new RuntimeException("인증되지 않은 관리자입니다."));
+        List<RegisterChart> registerCharts = getRegisterChartByAdminAndMemberName(currentAdmin, name);
+        return registerCharts.stream().map(RegisterChart::toResponse).collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public RsData<Admin> join(String hospitalCode, String subjectCode,String username, String password, String email) {
         Optional<Hospital> hospitalOptional = hospitalService.findByCode(hospitalCode);
@@ -89,6 +99,7 @@ public class AdminServiceImpl implements AdminService{
         return RsData.of("S-1", "회원가입이 완료되었습니다.", admin);
     }
 
+    @Override
     @Transactional
     public RsData<Admin> findAdmin(String subjectName, String hospitalName){
         Optional<Subject> subjectOptional = subjectService.findByName(subjectName);
@@ -117,7 +128,6 @@ public class AdminServiceImpl implements AdminService{
         }
 
         String username = authentication.getName();
-
         return findByUsername(username);
     }
 
@@ -236,5 +246,14 @@ public class AdminServiceImpl implements AdminService{
 
     private Authentication getAuthentication(){
         return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    @Override
+    @Transactional
+    public List<Reservation> getReservationsForCurrentAdmin() {
+        Admin currentAdmin = getCurrentAdmin()
+                .orElseThrow(() -> new NoSuchElementException("현재 관리자를 찾을 수 없습니다."));
+
+        return getReservationsForAdmin(currentAdmin);
     }
 }

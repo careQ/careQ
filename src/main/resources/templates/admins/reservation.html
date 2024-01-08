@@ -120,12 +120,18 @@
                 <td th:text="${reservation.member.username}"></td>
                 <td th:text="${reservation.admin.username}"></td>
                 <td th:text="${reservation.date}"></td>
-                <td th:text="${reservation.status}"></td>
                 <td>
-                    <th:block th:if="${reservation.isDeleted}">
+                    <span th:if="${#strings.equals(reservation.status, 'PENDING')}" class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 신청</span>
+                    <span th:if="${#strings.equals(reservation.status, 'CONFIRMED')}">예약 확정</span>
+                    <span th:if="${#strings.equals(reservation.status, 'CANCELLED')}" class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">예약 취소</span>
+                </td>
+                <td>
+                    <th:block th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'COMPLETE')}">
+                        <button id="complete-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">진료 완료</button>
+                    </th:block>
+                    <th:block th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'CANCELLED')}">
                         <button id="cancel-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">환자취소</button>
                     </th:block>
-
                     <th:block th:if="${!reservation.isDeleted}">
                         <button id="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
                     </th:block>

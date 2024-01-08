@@ -17,5 +17,6 @@ public interface ReservationService {
     RsData<String> checkDuplicateReservation(Long adminId, Long memberId);
     RsData<String> deleteReservation(Long reservationId);
     RsData<Reservation> updateStatus(Reservation reservation, ReservationStatus status);
-    RsData<Reservation> updateRegisterStatus(Reservation reservation, RegisterChartStatus registerStatus);
+    RsData<Reservation> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);
+    Reservation confirmReservation(Long adminId, Long memberId);
 }
