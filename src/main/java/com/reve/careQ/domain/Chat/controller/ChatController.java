@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,19 +43,14 @@ public class ChatController {
     @GetMapping(params = {"name"})
     @ResponseBody
     public List<ChatDto> getChatrooms(@PathVariable("user-type") String userType, @RequestParam(name="name",required=false,defaultValue="") String name) {
-        List<Chat> chats;
-
-        if (userType.equals("members")){
-            chats = chatService.findByMemberId(rq.getMember().getId());
-        }else{
-            chats = chatService.selectChatByAdminIdAndMemberName(adminRq.getAdmin().getId(), name);
-        }
+        List<Chat> chats = (userType.equals("members"))
+                ? chatService.findByMemberId(rq.getMember().getId())
+                : chatService.selectChatByAdminIdAndMemberName(adminRq.getAdmin().getId(), name);
 
         List<ChatDto> chatDto = chats.stream()
-                .map(chat -> new ChatDto(chat.getId(), chat.getName(),chat.getMember().getUsername(), chat.getCreateDate(),
-                        messageService.findLastMessage(chat.getId()).isPresent()?messageService.findLastMessage(chat.getId()).get():chat.getCreateDate(),
-                        chat.getAdmin().getHospital().getName(),chat.getAdmin().getSubject().getName()))
+                .map(chat -> chat.toResponse(getModifyDate(chat)))
                 .collect(Collectors.toList());
+
         return chatDto;
     }
 
@@ -92,4 +88,9 @@ public class ChatController {
         return mv;
     }
 
+    private LocalDateTime getModifyDate(Chat chat){
+        return messageService.findLastMessage(chat.getId()).isPresent()
+                ? messageService.findLastMessage(chat.getId()).get()
+                : chat.getCreateDate();
+    }
 }
