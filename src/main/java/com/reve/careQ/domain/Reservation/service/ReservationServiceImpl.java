@@ -92,6 +92,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         reservation.markAsDeleted(true);
         reservation.setStatus(ReservationStatus.CANCELLED);
+        reservation.setRegisterStatus(RegisterChartStatus.CANCELLED);
         reservationRepository.save(reservation);
         return RsData.of("S-2", "예약 정보가 삭제되었습니다.");
     }
@@ -109,7 +110,16 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findReservationByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId)
                 .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
 
-        reservation.setRegisterStatus(status);
+        if(status.equals(RegisterChartStatus.ENTER)){
+            reservation.setRegisterStatus(RegisterChartStatus.ENTER);
+        } else if(status.equals(RegisterChartStatus.COMPLETE)){
+            reservation.setRegisterStatus(RegisterChartStatus.COMPLETE);
+            reservation.markAsDeleted(true);
+        } else if(status.equals(RegisterChartStatus.CANCELLED)){
+            reservation.setRegisterStatus(RegisterChartStatus.CANCELLED);
+            reservation.markAsDeleted(true);
+        }
+
         return saveAndReturnRsData(reservation, "진료 상태가 업데이트 되었습니다.");
     }
 
