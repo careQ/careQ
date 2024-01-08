@@ -5,6 +5,10 @@
     <meta name="_csrf" th:content="${_csrf.token}">
     <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <style>
         table {
             border-collapse: collapse;
@@ -82,13 +86,7 @@
                         </td>
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex flex-row justify-center">
-                            <form class="m-0" action='/admins/queues' method="POST">
-                                <input type="hidden" name="_csrf" value='`+token+`'/>
-                                <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="status" value="ENTER"/>
-                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">진료 시작</button>
-                            </form>
+                            <button class="start-btn" data-member-id="${registerChart.memberId}" class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">진료 시작</button>
                             <form class="m-0" action='/admins/queues' method="POST">
                                 <input type="hidden" name="_csrf" value='`+token+`'/>
                                 <input type="hidden" name="kind" value="queue"/>
@@ -152,6 +150,54 @@
             $( "#modalCloseButton" ).click(function() { toggleModal(); });
         });
     </script>
+    <script>
+        var stompClient = null;
+
+
+        function connect(memberId, status) {
+            console.log('memberId', memberId);
+            var socket = new SockJS('/ws/queue');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/queues/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                    +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                    console.log(JSON.parse(message.body));
+                    window.location.reload();
+                });
+                send(memberId, status);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function send(memberId, status) {
+            let msg = {
+                'userType': 'ADMIN',
+                'memberId': memberId,
+                'hospitalId': document.getElementById('hospitalId').value,
+                'subjectId': document.getElementById('subjectId').value,
+                'status': status
+            }
+
+            stompClient.send("/app/queue", {}, JSON.stringify(msg));
+        }
+
+        $(document).ready(function () {
+            $(document).on("click", ".start-btn", function() {
+                console.log("버튼 클릭 이벤트 발생!");
+                var memberId = $(this).data('member-id');
+                console.log("Member ID:", memberId);
+                connect(memberId, "ENTER");
+            });
+            $( "#disconnect" ).click(function() { disconnect(); });
+        });
+    </script>
 </head>
 <body>
 <main layout:fragment="main">
@@ -190,6 +236,8 @@
     <div class="container h-2/5 mx-auto p-5">
         <div class="flex justify-between items-center">
             <div class="flex flex-row">
+                <input type="hidden" id="hospitalId" th:value="${@adminRq.getAdmin().getHospital().getId()}"/>
+                <input type="hidden" id="subjectId" th:value="${@adminRq.getAdmin().getSubject().getId()}"/>
                 <h1 class="font-semibold text-lg text-[#78C4BA]">줄서기 관리</h1>
                 <!-- 현장 접수 버튼 -->
                 <button id="modalOpenButton" data-modal-toggle="popup-modal" class="text-white py-1 px-2 rounded bg-[#78C4BA] ml-3">현장 접수</button>

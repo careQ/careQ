@@ -14,5 +14,7 @@ public interface RegisterChartService {
     RsData<RegisterChart> insert(Long hospitalId, Long subjectId);
     RsData<RegisterChart> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);
     void processRegisterChart(Long hospitalId, Long subjectId);
+    Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId);
+    RsData<RegisterChart> updateStatus(RegisterChart registerChart, RegisterChartStatus status);
 }
 

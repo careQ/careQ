@@ -13,6 +13,7 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
 import com.reve.careQ.domain.RegisterChart.exception.ResourceNotFoundException;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.domain.Subject.service.SubjectService;
@@ -50,6 +51,11 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         Hospital hospital = findHospital(hospitalId);
 
         return RegisterChartInfoDto.of(registerChart, subject, hospital, admin);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId){
+        return registerChartRepository.findByAdminIdAndMemberId(adminId, memberId);
     }
 
     private Admin findAdmin(Long hospitalId, Long subjectId) {
@@ -167,5 +173,16 @@ public class RegisterChartServiceImpl implements RegisterChartService {
             registerChart.setStatus(RegisterChartStatus.CANCEL);
         }
         registerChartRepository.save(registerChart);
+    }
+
+    @Transactional
+    public RsData<RegisterChart> updateStatus(RegisterChart registerChart, RegisterChartStatus status){
+        registerChart.setStatus(status);
+        return saveAndReturnRsData(registerChart, "예약 상태가 업데이트 되었습니다.");
+    }
+
+    private RsData<RegisterChart> saveAndReturnRsData(RegisterChart registerChart, String msg){
+        registerChartRepository.save(registerChart);
+        return RsData.of("S-1", msg, registerChart);
     }
 }
