@@ -16,4 +16,6 @@ public interface MemberService{
     List<Reservation> getReservationsForMember(Member currentUser);
     RsData<Member> findPassword(String username, String email);
     void modifyPassword(String email) throws EmailException;
+    Member createMember(String providerTypeCode, String username, String password, String email);
+    RsData<Member> validateJoinRequest(String providerTypeCode, String username, String email);
 }

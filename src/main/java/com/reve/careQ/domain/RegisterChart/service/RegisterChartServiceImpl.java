@@ -168,4 +168,26 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         }
         registerChartRepository.save(registerChart);
     }
+
+    @Override
+    public RegisterChart registerNewMember(String providerType, String username, String tempPassword, String email) {
+        Admin currentAdmin = adminService.getCurrentAdmin()
+                .orElseThrow(() -> new RuntimeException("로그인한 관리자가 아닙니다."));
+
+        RsData<Member> validation = memberService.validateJoinRequest(providerType, username, email);
+        if (!validation.isSuccess()) {
+            throw new RuntimeException(validation.getMsg());
+        }
+
+        Member newMember = memberService.createMember(providerType, username, tempPassword, email);
+
+        RegisterChart newRegisterChart = RegisterChart.builder()
+                .status(RegisterChartStatus.WAITING)
+                .admin(currentAdmin)
+                .member(newMember)
+                .isDeleted(false)
+                .build();
+
+        return registerChartRepository.save(newRegisterChart);
+    }
 }

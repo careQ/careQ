@@ -4,6 +4,7 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.dto.JoinFormDto;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/admins")
@@ -136,6 +138,17 @@ public class AdminController {
         } else {
             reservationService.updateStatusByAdminAndMember(admin, memberId, status);
         }
+        return "redirect:/admins/queues";
+    }
+
+    @PostMapping("/on-site")
+    public String onSiteRegister(@RequestParam("username") String username,
+                                 @RequestParam("email") String email) {
+
+        String tempPassword = UUID.randomUUID().toString();
+
+        RegisterChart newRegisterChart = registerChartService.registerNewMember("careQ", username, tempPassword, email);
+
         return "redirect:/admins/queues";
     }
 }
