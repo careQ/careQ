@@ -16,4 +16,7 @@ public interface RegisterChartRepository extends JpaRepository<RegisterChart, Lo
     @Query("SELECT registerchart FROM RegisterChart registerchart WHERE registerchart.admin = :admin and registerchart.isDeleted = false " +
             "and registerchart.member.username like %:name% order by registerchart.time")
     List<RegisterChart> getRegisterChartByAdminAndMemberName(@Param("admin") Admin admin, @Param("name") String name);
+    Optional<RegisterChart> findByMemberIdAndIsDeletedFalse(Long memberId);
+    Long countByIdLessThanAndIsDeletedFalse(Long id);
 }
+

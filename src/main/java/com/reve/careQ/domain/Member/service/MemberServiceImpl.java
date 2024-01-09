@@ -1,7 +1,11 @@
 package com.reve.careQ.domain.Member.service;
 
+import com.reve.careQ.domain.Member.dto.MemberHomeDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
+import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.mail.EmailException;
@@ -28,6 +32,7 @@ public class MemberServiceImpl implements MemberService{
     private final MemberRepository memberRepository;
     private final ReservationRepository reservationRepository;
     private final TempPasswordMail tempPasswordMail;
+    private final RegisterChartRepository registerChartRepository;
 
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
@@ -175,4 +180,34 @@ public class MemberServiceImpl implements MemberService{
 
         return existingMemberValidation;
     }
+
+    @Override
+    public MemberHomeDto getMemberHomeData(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("해당 회원 ID를 찾을 수 없습니다:" + memberId));
+
+        List<Reservation> reservations = getReservationsForMember(member);
+        Long waitingCount = getWaitingCount(memberId);
+        RegisterChartStatus currentStatus = getCurrentStatus(memberId);
+
+        return new MemberHomeDto(reservations, waitingCount, currentStatus);
+    }
+
+    @Override
+    public Long getWaitingCount(Long memberId) {
+        return getRegisterChartByMemberId(memberId)
+                .map(registerChart -> registerChartRepository.countByIdLessThanAndIsDeletedFalse(registerChart.getId()))
+                .orElse(null);
+    }
+
+    @Override
+    public RegisterChartStatus getCurrentStatus(Long memberId) {
+        return getRegisterChartByMemberId(memberId)
+                .map(RegisterChart::getStatus)
+                .orElse(null);
+    }
+
+    private Optional<RegisterChart> getRegisterChartByMemberId(Long memberId) {
+        return registerChartRepository.findByMemberIdAndIsDeletedFalse(memberId);
+    }
+
 }

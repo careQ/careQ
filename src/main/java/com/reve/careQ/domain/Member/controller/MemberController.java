@@ -1,9 +1,9 @@
 package com.reve.careQ.domain.Member.controller;
 
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
+import com.reve.careQ.domain.Member.dto.MemberHomeDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
-import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -40,12 +40,14 @@ public class MemberController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
     public String showMembersHome(Model model) {
-
         Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
         currentUserOptional.ifPresent(currentUser -> {
-            List<Reservation> reservations = memberService.getReservationsForMember(currentUser);
-            model.addAttribute("reservations", reservations);
+            MemberHomeDto memberHomeData = memberService.getMemberHomeData(currentUser.getId());
+
+            model.addAttribute("reservations", memberHomeData.getReservations());
+            model.addAttribute("waitingCount", memberHomeData.getWaitingCount());
+            model.addAttribute("currentStatus", memberHomeData.getCurrentStatus());
         });
 
         return "members/members-home";
