@@ -109,9 +109,9 @@
                             <form class="mb-0" action="/admins/queues" method="POST">
                                 <input type="hidden" name="_csrf" value='`+token+`'/>
                                 <input type="hidden" name="kind" value="queue"/>
-                                 <input type="hidden" name="status" value="COMPLETE"/>
+                                <input type="hidden" name="status" value="COMPLETE"/>
                                 <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
+                                <button class="complete-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #F83758; width: 90px;">진료 완료</button>
                             </form>
                         </div>
                     </td>
@@ -192,6 +192,10 @@
             $(document).on("click", ".start-btn", function() {
                 var memberId = $(this).data('member-id');
                 connect(memberId, "ENTER");
+            });
+            $(document).on("click", ".complete-btn", function() {
+                var memberId = $(this).data('member-id');
+                connect(memberId, "COMPLETE");
             });
             $( "#disconnect" ).click(function() { disconnect(); });
         });
