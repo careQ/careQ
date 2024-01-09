@@ -19,10 +19,22 @@
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
                     if((JSON.parse(message.body).userType == 'ADMIN')){
                         console.log(JSON.parse(message.body));
-                        window.location.reload();
+                        changeStatus(JSON.parse(message.body).status);
                     }
                 });
             });
+        }
+
+        function changeStatus(status){
+            var statusBtn = document.getElementById("status-btn");
+            statusBtn.innerHTML = "";
+
+            if (status == 'ENTER'){
+                statusBtn.innerHTML = `<div class="flex items-center justify-center w-64"
+                     style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
+                    <span class="text-white" style="font-size: 15px;">진료 중</span>
+                </div>`;
+            }
         }
 
         function disconnect() {
@@ -90,6 +102,7 @@
         </div>
         <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
+            <div id="status-btn">
             <form th:if="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
                 <button type="submit" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
@@ -105,6 +118,7 @@
                 <div th:if="${#strings.toString(register.status) == 'ENTER'}" class="flex items-center justify-center w-64" style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
                     <span class="text-white" style="font-size: 15px;">진료 중</span>
                 </div>
+            </div>
             </div>
             <a th:href="@{/members/subjects}">
                 <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: white; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">

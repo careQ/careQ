@@ -86,7 +86,7 @@
                         </td>
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex flex-row justify-center">
-                            <button class="start-btn" data-member-id="${registerChart.memberId}" class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">진료 시작</button>
+                            <button class="start-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">진료 시작</button>
                             <form class="m-0" action='/admins/queues' method="POST">
                                 <input type="hidden" name="_csrf" value='`+token+`'/>
                                 <input type="hidden" name="kind" value="queue"/>
@@ -190,9 +190,7 @@
 
         $(document).ready(function () {
             $(document).on("click", ".start-btn", function() {
-                console.log("버튼 클릭 이벤트 발생!");
                 var memberId = $(this).data('member-id');
-                console.log("Member ID:", memberId);
                 connect(memberId, "ENTER");
             });
             $( "#disconnect" ).click(function() { disconnect(); });
