@@ -173,21 +173,39 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     public RegisterChart registerNewMember(String providerType, String username, String tempPassword, String email) {
         Admin currentAdmin = adminService.getCurrentAdmin()
                 .orElseThrow(() -> new RuntimeException("로그인한 관리자가 아닙니다."));
+        Member newMember = validateAndCreateMember(providerType, username, email, tempPassword);
+        return createAndSaveRegisterChart(currentAdmin, newMember);
+    }
 
-        RsData<Member> validation = memberService.validateJoinRequest(providerType, username, email);
-        if (!validation.isSuccess()) {
-            throw new RuntimeException(validation.getMsg());
+    private Member validateAndCreateMember(String providerType, String username, String email, String tempPassword) {
+        try {
+            validateJoinRequest(providerType, username, email);
+            return memberService.createMember(providerType, username, tempPassword, email);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e.getMessage());
         }
+    }
 
-        Member newMember = memberService.createMember(providerType, username, tempPassword, email);
+    private void validateJoinRequest(String providerType, String username, String email) {
+        validate(providerType, username, "회원명 중복: ", true);
+        validate(providerType, email, "이메일 중복: ", false);
+    }
 
+    private void validate(String providerType, String value, String errorMessage, boolean isUsername) {
+        RsData<Member> validation = memberService.validateJoinRequest(providerType, isUsername ? value : null, isUsername ? null : value);
+
+        if (!validation.isSuccess()) {
+            throw new RuntimeException(errorMessage + validation.getMsg());
+        }
+    }
+
+    private RegisterChart createAndSaveRegisterChart(Admin currentAdmin, Member newMember) {
         RegisterChart newRegisterChart = RegisterChart.builder()
                 .status(RegisterChartStatus.WAITING)
                 .admin(currentAdmin)
                 .member(newMember)
                 .isDeleted(false)
                 .build();
-
         return registerChartRepository.save(newRegisterChart);
     }
 }

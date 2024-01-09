@@ -4,7 +4,6 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.dto.JoinFormDto;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
@@ -24,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -144,11 +145,21 @@ public class AdminController {
     @PostMapping("/on-site")
     public String onSiteRegister(@RequestParam("username") String username,
                                  @RequestParam("email") String email) {
+        try {
+            registerNewUser(username, email);
+            return "redirect:/admins/queues";
+        } catch (RuntimeException e) {
+            String errorMsg = "회원 등록에 실패했습니다: " + e.getMessage();
+            return "redirect:/admins/queues?error=" + URLEncoder.encode(errorMsg, StandardCharsets.UTF_8);
+        }
+    }
 
-        String tempPassword = UUID.randomUUID().toString();
+    private void registerNewUser(String username, String email) {
+        String tempPassword = generateTempPassword();
+        registerChartService.registerNewMember("careQ", username, tempPassword, email);
+    }
 
-        RegisterChart newRegisterChart = registerChartService.registerNewMember("careQ", username, tempPassword, email);
-
-        return "redirect:/admins/queues";
+    private String generateTempPassword() {
+        return UUID.randomUUID().toString();
     }
 }
