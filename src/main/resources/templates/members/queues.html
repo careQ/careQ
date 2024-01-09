@@ -67,6 +67,9 @@
             $( "#register-btn" ).click(function() {
                 var memberId = document.getElementById('getMemberId').value;
                 send(memberId, 'WAITING'); });
+            $( "#cancel-btn" ).click(function() {
+                var memberId = document.getElementById('getMemberId').value;
+                send(memberId, 'CANCEL'); });
             $( "#disconnect" ).click(function() { disconnect(); });
         });
     </script>
@@ -132,7 +135,7 @@
             <div th:if="${register != null}">
                 <form th:if="${#strings.toString(register.status) == 'WAITING'}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
                     <input type="hidden" name="_method" value="delete"/>
-                    <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
+                    <button id="cancel-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
                         <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
                     </button>
                 </form>
