@@ -106,21 +106,13 @@
                                      </td>
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex justify-center">
-                            <form class="mb-0" action="/admins/queues" method="POST">
-                                <input type="hidden" name="_csrf" value='`+token+`'/>
-                                <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="status" value="COMPLETE"/>
-                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="complete-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #F83758; width: 90px;">진료 완료</button>
-                            </form>
+                            <button class="complete-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">진료 완료</button>
                         </div>
                     </td>
                 </tr>`;
                         }
-
                         registerCharts.innerHTML += row;
                     });
-
                 }
             };
         }
@@ -153,20 +145,27 @@
     <script>
         var stompClient = null;
 
-
-        function connect(memberId, status) {
-            console.log('memberId', memberId);
+        function connect() {
             var socket = new SockJS('/ws/queue');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/queues/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                stompClient.subscribe('/topic/queues/main'+'/subjects/'+document.getElementById('subjectId').value
                     +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
                     console.log(JSON.parse(message.body));
-                    window.location.reload();
+                    getCharts('');
                 });
-                send(memberId, status);
             });
+        }
+
+        function eachConnect(memberId, status) {
+            console.log('eachConnected: ');
+            stompClient.subscribe('/topic/queues/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                    +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                console.log(JSON.parse(message.body));
+                getCharts('');
+            });
+            send(memberId, status);
         }
 
         function disconnect() {
@@ -189,13 +188,14 @@
         }
 
         $(document).ready(function () {
+            $(document).ready(function(){connect();})
             $(document).on("click", ".start-btn", function() {
                 var memberId = $(this).data('member-id');
-                connect(memberId, "ENTER");
+                eachConnect(memberId, "ENTER");
             });
             $(document).on("click", ".complete-btn", function() {
                 var memberId = $(this).data('member-id');
-                connect(memberId, "COMPLETE");
+                eachConnect(memberId, "COMPLETE");
             });
             $( "#disconnect" ).click(function() { disconnect(); });
         });

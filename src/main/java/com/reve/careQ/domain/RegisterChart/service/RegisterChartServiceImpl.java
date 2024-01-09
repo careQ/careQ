@@ -58,6 +58,11 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         return registerChartRepository.findByAdminIdAndMemberId(adminId, memberId);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<RegisterChart> findByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId){
+        return registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
+    }
+
     private Admin findAdmin(Long hospitalId, Long subjectId) {
         return adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));

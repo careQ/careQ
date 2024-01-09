@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.dto.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
@@ -81,12 +82,20 @@ public class RegisterChartController {
         Thread.sleep(1000); // simulated delay
 
         Admin admin = adminService.findByHospitalIdAndSubjectId(registerChartDto.getHospitalId(),registerChartDto.getSubjectId()).get();
-        RegisterChart registerChart = registerChartService.findByAdminIdAndMemberId(admin.getId(), registerChartDto.getMemberId()).get();
+        RegisterChart registerChart = registerChartService.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), registerChartDto.getMemberId()).get();
         if((registerChartDto.getUserType() == RegisterChartDto.UserType.ADMIN)&&(registerChart.getStatus() != registerChartDto.getStatus())){
-            registerChartService.updateStatus(registerChart, registerChartDto.getStatus());
+            registerChartService.updateStatusByAdminAndMember(admin, registerChartDto.getMemberId(), registerChartDto.getStatus());
         }
 
         sendingOperations.convertAndSend("/topic/queues/members/"+registerChartDto.getMemberId()+"/subjects/"+registerChartDto.getSubjectId()
+                +"/hospitals/"+registerChartDto.getHospitalId(), registerChartDto);
+    }
+
+    @MessageMapping("/main")
+    public void sendMain(RegisterChartDto registerChartDto) throws Exception {
+        Thread.sleep(1000); // simulated delay
+
+        sendingOperations.convertAndSend("/topic/queues/main/subjects/"+registerChartDto.getSubjectId()
                 +"/hospitals/"+registerChartDto.getHospitalId(), registerChartDto);
     }
 }

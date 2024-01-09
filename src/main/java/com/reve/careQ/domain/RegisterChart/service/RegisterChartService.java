@@ -16,5 +16,6 @@ public interface RegisterChartService {
     void processRegisterChart(Long hospitalId, Long subjectId);
     Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId);
     RsData<RegisterChart> updateStatus(RegisterChart registerChart, RegisterChartStatus status);
+    Optional<RegisterChart> findByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
 }
 

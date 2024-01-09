@@ -132,7 +132,7 @@ public class AdminController {
         Admin admin = adminService.getCurrentAdmin().get();
 
         if (kind.equals("queue")) {
-            registerChartService.updateStatusByAdminAndMember(admin, memberId, status);
+//            registerChartService.updateStatusByAdminAndMember(admin, memberId, status);
         } else {
             reservationService.updateStatusByAdminAndMember(admin, memberId, status);
         }

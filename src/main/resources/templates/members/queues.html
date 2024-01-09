@@ -14,6 +14,10 @@
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/queues/main'+'/subjects/'+window.location.pathname.split('/')[3]
+                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
+                    console.log(JSON.parse(message.body));
+                });
                 stompClient.subscribe('/topic/queues/members/'+document.getElementById('getMemberId').value
                     +'/subjects/'+window.location.pathname.split('/')[3]
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
@@ -39,6 +43,18 @@
             }
         }
 
+        function send(memberId, status) {
+            let msg = {
+                'userType': 'MEMBER',
+                'memberId': memberId,
+                'hospitalId': window.location.pathname.split('/')[5],
+                'subjectId': window.location.pathname.split('/')[3],
+                'status': status
+            }
+
+            stompClient.send("/app/main", {}, JSON.stringify(msg));
+        }
+
         function disconnect() {
             if (stompClient !== null) {
                 stompClient.disconnect();
@@ -48,6 +64,9 @@
 
         $(function () {
             $(document).ready(function(){connect();})
+            $( "#register-btn" ).click(function() {
+                var memberId = document.getElementById('getMemberId').value;
+                send(memberId, 'WAITING'); });
             $( "#disconnect" ).click(function() { disconnect(); });
         });
     </script>
@@ -106,7 +125,7 @@
         <div class="flex flex-col w-64 my-10">
             <div id="status-btn">
             <form th:if="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
-                <button type="submit" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
+                <button type="submit" id="register-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
                 </button>
             </form>
