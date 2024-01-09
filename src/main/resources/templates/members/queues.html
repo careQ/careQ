@@ -30,14 +30,16 @@
         }
 
         function changeStatus(status){
-            var statusBtn = document.getElementById("status-btn");
 
             if (status == 'ENTER'){
+                var statusBtn = document.getElementById("status-btn");
                 statusBtn.innerHTML = "";
                 statusBtn.innerHTML = `<div class="flex items-center justify-center w-64"
                      style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
                     <span class="text-white" style="font-size: 15px;">진료 중</span>
                 </div>`;
+            } else if (status == 'CANCEL'){
+                window.location.reload();
             } else if (status == 'COMPLETE'){
                 window.location.href = window.location.origin + "/members";
             }

@@ -87,14 +87,7 @@
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex flex-row justify-center">
                             <button class="start-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">진료 시작</button>
-                            <form class="m-0" action='/admins/queues' method="POST">
-                                <input type="hidden" name="_csrf" value='`+token+`'/>
-                                <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="status" value="CANCEL"/>
-                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">줄서기 취소</button>
-                            </form>
-
+                            <button class="cancel-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">줄서기 취소</button>
                         </div>
                     </td>
                 </tr>`;
@@ -192,6 +185,10 @@
             $(document).on("click", ".start-btn", function() {
                 var memberId = $(this).data('member-id');
                 eachConnect(memberId, "ENTER");
+            });
+            $(document).on("click", ".cancel-btn", function() {
+                var memberId = $(this).data('member-id');
+                eachConnect(memberId, "CANCEL");
             });
             $(document).on("click", ".complete-btn", function() {
                 var memberId = $(this).data('member-id');
