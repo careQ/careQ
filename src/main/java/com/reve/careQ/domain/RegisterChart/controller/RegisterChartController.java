@@ -88,7 +88,7 @@ public class RegisterChartController {
                 +"/hospitals/"+registerChartDto.getHospitalId(), registerChartDto);
     }
 
-    @MessageMapping("/main")
+    @MessageMapping("/queue/main")
     public void sendMain(RegisterChartDto registerChartDto) throws Exception {
         Thread.sleep(1000); // simulated delay
 

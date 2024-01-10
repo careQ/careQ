@@ -14,7 +14,7 @@
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/queues/main'+'/subjects/'+window.location.pathname.split('/')[3]
+                stompClient.subscribe('/topic/queues/main/subjects/'+window.location.pathname.split('/')[3]
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
                     console.log(JSON.parse(message.body));
                 });
@@ -30,11 +30,10 @@
         }
 
         function changeStatus(status){
-
             if (status == 'ENTER'){
                 var statusBtn = document.getElementById("status-btn");
                 statusBtn.innerHTML = "";
-                statusBtn.innerHTML = `<div class="flex items-center justify-center w-64"
+                statusBtn.innerHTML = `<div class="flex items-center justify-center w-64 mb-6"
                      style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
                     <span class="text-white" style="font-size: 15px;">진료 중</span>
                 </div>`;
@@ -54,7 +53,7 @@
                 'status': status
             }
 
-            stompClient.send("/app/main", {}, JSON.stringify(msg));
+            stompClient.send("/app/queue/main", {}, JSON.stringify(msg));
         }
 
         function disconnect() {
@@ -65,12 +64,11 @@
         }
 
         $(function () {
+            var memberId = document.getElementById('getMemberId').value;
             $(document).ready(function(){connect();})
             $( "#register-btn" ).click(function() {
-                var memberId = document.getElementById('getMemberId').value;
                 send(memberId, 'WAITING'); });
             $( "#cancel-btn" ).click(function() {
-                var memberId = document.getElementById('getMemberId').value;
                 send(memberId, 'CANCEL'); });
             $( "#disconnect" ).click(function() { disconnect(); });
         });
