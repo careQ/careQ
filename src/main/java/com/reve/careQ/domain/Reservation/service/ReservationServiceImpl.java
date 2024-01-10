@@ -42,15 +42,31 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.getTodayReservation(admin);
     }
 
+    @Transactional
     public Reservation createReservation(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         Member currentUser = getCurrentUser();
-        Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
-                .orElseThrow(() -> new RuntimeException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
-        LocalDateTime dateTime = LocalDateTime.parse(selectedDate + "T" + selectedTime);
+        Admin admin = getAdmin(hospitalId, subjectId);
+        LocalDateTime dateTime = parseDateTime(selectedDate, selectedTime);
 
-        checkDuplicateReservation(dateTime, admin.getId());
+        validateReservation(dateTime, admin.getId());
 
         return saveReservation(dateTime, admin, currentUser);
+    }
+
+    private Admin getAdmin(Long hospitalId, Long subjectId) {
+        return adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
+                .orElseThrow(() -> new RuntimeException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
+    }
+
+    private LocalDateTime parseDateTime(String selectedDate, String selectedTime) {
+        return LocalDateTime.parse(selectedDate + "T" + selectedTime);
+    }
+
+    private void validateReservation(LocalDateTime dateTime, Long adminId) {
+        RsData<String> checkResult = checkDuplicateReservation(dateTime, adminId);
+        if (!checkResult.isSuccess()) {
+            throw new RuntimeException(checkResult.getMsg());
+        }
     }
 
     @Override
@@ -79,10 +95,11 @@ public class ReservationServiceImpl implements ReservationService {
         return RsData.of("S-3", "예약 가능한 병원입니다.");
     }
 
-    private void checkDuplicateReservation(LocalDateTime dateTime, Long adminId) {
+    private RsData<String> checkDuplicateReservation(LocalDateTime dateTime, Long adminId) {
         if (reservationRepository.existsByDateAndAdminId(dateTime, adminId)) {
-            throw new RuntimeException("이미 예약된 시간대입니다.");
+            return RsData.of("F-5", "이미 예약된 시간대입니다.");
         }
+        return RsData.of("S-3", "예약 가능한 시간대입니다.");
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.reve.careQ.domain.RegisterChart.controller;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
+import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class RegisterChartController {
     private final RegisterChartService registerChartService;
+    private final Rq rq;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
@@ -38,18 +40,15 @@ public class RegisterChartController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
-    public ResponseEntity<?> createRegister(@PathVariable("subject-id") Long subjectId,
-                                            @PathVariable("hospital-id") Long hospitalId) {
+    public String createRegister(@PathVariable("subject-id") Long subjectId,
+                                 @PathVariable("hospital-id") Long hospitalId) {
 
         RsData<RegisterChart> registerChartRs = registerChartService.insert(hospitalId, subjectId);
 
         if (registerChartRs.isSuccess()) {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                    .location(URI.create("/members/subjects/" + subjectId + "/hospitals/" + hospitalId + "/queues"))
-                    .build();
+            return "redirect:/members/subjects/" + subjectId + "/hospitals/" + hospitalId + "/queues";
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(registerChartRs);
+            return rq.historyBack(registerChartRs);
         }
     }
 
