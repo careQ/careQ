@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
+import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
@@ -16,6 +17,7 @@ import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.domain.Subject.service.SubjectService;
+import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     private final ReservationService reservationService;
     private final HospitalService hospitalService;
     private final SubjectService subjectService;
+    private final Rq rq;
 
     @Override
     @Transactional(readOnly = true)
@@ -170,6 +174,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     @Override
+    @Transactional
     public RegisterChart registerNewMember(String providerType, String username, String tempPassword, String email) {
         Admin currentAdmin = adminService.getCurrentAdmin()
                 .orElseThrow(() -> new RuntimeException("로그인한 관리자가 아닙니다."));
@@ -177,25 +182,31 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         return createAndSaveRegisterChart(currentAdmin, newMember);
     }
 
+    @Override
+    @Transactional
+    public void registerNewUser(OnsiteRegisterDto onsiteRegisterDto) {
+        registerNewMember("careQ", onsiteRegisterDto.getUsername(), generateTempPassword(), onsiteRegisterDto.getEmail());
+    }
+
+    private String generateTempPassword() {
+        return UUID.randomUUID().toString();
+    }
+
     private Member validateAndCreateMember(String providerType, String username, String email, String tempPassword) {
-        try {
-            validateJoinRequest(providerType, username, email);
-            return memberService.createMember(providerType, username, tempPassword, email);
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        validateJoinRequest(providerType, username, email);
+        return memberService.createMember(providerType, username, tempPassword, email);
     }
 
     private void validateJoinRequest(String providerType, String username, String email) {
-        validate(providerType, username, "회원명 중복: ", true);
-        validate(providerType, email, "이메일 중복: ", false);
+        validate(providerType, username, true);
+        validate(providerType, email, false);
     }
 
-    private void validate(String providerType, String value, String errorMessage, boolean isUsername) {
+    private void validate(String providerType, String value, boolean isUsername) {
         RsData<Member> validation = memberService.validateJoinRequest(providerType, isUsername ? value : null, isUsername ? null : value);
 
         if (!validation.isSuccess()) {
-            throw new RuntimeException(errorMessage + validation.getMsg());
+            throw new RuntimeException(validation.getMsg());
         }
     }
 

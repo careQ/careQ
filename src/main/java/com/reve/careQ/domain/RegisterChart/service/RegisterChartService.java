@@ -1,6 +1,7 @@
 package com.reve.careQ.domain.RegisterChart.service;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
+import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
@@ -15,5 +16,6 @@ public interface RegisterChartService {
     RsData<RegisterChart> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);
     void processRegisterChart(Long hospitalId, Long subjectId);
     RegisterChart registerNewMember(String providerType, String username, String tempPassword, String email);
+    void registerNewUser(OnsiteRegisterDto onsiteRegisterDto);
 }
 

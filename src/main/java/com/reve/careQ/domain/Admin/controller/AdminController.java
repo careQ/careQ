@@ -3,6 +3,7 @@ package com.reve.careQ.domain.Admin.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.dto.JoinFormDto;
 import com.reve.careQ.domain.Admin.service.AdminService;
+import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
@@ -10,12 +11,14 @@ import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
+import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,12 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/admins")
@@ -39,6 +39,7 @@ public class AdminController {
     private final AdminRq adminRq;
     private final RegisterChartService registerChartService;
     private final ReservationService reservationService;
+    private final Rq rq;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -142,24 +143,27 @@ public class AdminController {
         return "redirect:/admins/queues";
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/on-site")
-    public String onSiteRegister(@RequestParam("username") String username,
-                                 @RequestParam("email") String email) {
+    public String onSiteRegister(@Valid @ModelAttribute OnsiteRegisterDto onsiteRegisterDto,
+                                 BindingResult bindingResult) {
         try {
-            registerNewUser(username, email);
+            validateOnsiteRegister(onsiteRegisterDto, bindingResult);
+            registerChartService.registerNewUser(onsiteRegisterDto);
             return "redirect:/admins/queues";
         } catch (RuntimeException e) {
-            String errorMsg = "회원 등록에 실패했습니다: " + e.getMessage();
-            return "redirect:/admins/queues?error=" + URLEncoder.encode(errorMsg, StandardCharsets.UTF_8);
+            return handleRegisterError(e);
         }
     }
 
-    private void registerNewUser(String username, String email) {
-        String tempPassword = generateTempPassword();
-        registerChartService.registerNewMember("careQ", username, tempPassword, email);
+    private void validateOnsiteRegister(OnsiteRegisterDto onsiteRegisterDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new RuntimeException("회원 등록에 실패했습니다: " + bindingResult.getFieldError().getDefaultMessage());
+        }
     }
 
-    private String generateTempPassword() {
-        return UUID.randomUUID().toString();
+    private String handleRegisterError(RuntimeException e) {
+        String errorMsg = e.getMessage();
+        return rq.historyBack(errorMsg);
     }
 }
