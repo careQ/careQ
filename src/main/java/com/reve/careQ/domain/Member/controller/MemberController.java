@@ -73,6 +73,12 @@ public class MemberController {
         return "members/searches";
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage")
+    public String mypage() {
+        return "members/mypage";
+    }
+
     @PreAuthorize("isAnonymous()")
     @GetMapping("/passwords")
     public String showFindPassword() {
