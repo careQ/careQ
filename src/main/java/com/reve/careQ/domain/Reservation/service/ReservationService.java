@@ -18,6 +18,5 @@ public interface ReservationService {
     RsData<String> deleteReservation(Long reservationId);
     RsData<Reservation> updateStatus(Reservation reservation, ReservationStatus status);
     RsData<Reservation> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);
-    Reservation confirmReservation(Long adminId, Long memberId);
     Optional<Reservation> findReservationByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
 }
