@@ -1,9 +1,11 @@
 package com.reve.careQ.domain.Member.controller;
 
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
-import com.reve.careQ.domain.Member.dto.MemberHomeDto;
+import com.reve.careQ.domain.Member.dto.MemberQueueInfoDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -28,6 +30,7 @@ public class MemberController {
     private final MemberService memberService;
     private final Rq rq;
     private final ApiKeys apiKeys;
+    private final ReservationService reservationService;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -43,11 +46,15 @@ public class MemberController {
         Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
         currentUserOptional.ifPresent(currentUser -> {
-            MemberHomeDto memberHomeData = memberService.getMemberHomeData(currentUser.getId());
+            MemberQueueInfoDto memberQueueInfoData = memberService.getMemberQueueInfoData(currentUser.getId());
 
-            model.addAttribute("reservations", memberHomeData.getReservations());
-            model.addAttribute("waitingCount", memberHomeData.getWaitingCount());
-            model.addAttribute("currentStatus", memberHomeData.getCurrentStatus());
+            List<Reservation> reservations = reservationService.findByMemberId(currentUser.getId());
+
+            model.addAttribute("registerCharts", memberQueueInfoData.getRegisterCharts());
+            model.addAttribute("waitingCounts", memberQueueInfoData.getWaitingCounts());
+            model.addAttribute("currentStatuses", memberQueueInfoData.getCurrentStatuses());
+            model.addAttribute("expectedWaitingTimes", memberQueueInfoData.getExpectedWaitingTimes());
+            model.addAttribute("reservations", reservations);
         });
 
         return "members/members-home";

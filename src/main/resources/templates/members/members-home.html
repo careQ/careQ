@@ -23,13 +23,13 @@
                 <span class="text-[#78C4BA]">병원명/진료과</span>
                 <div class="flex justify-between">
                     <div class="w-1/2 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
-                        <div class="text-[#78C4BA]">현재 대기</div>
-                        <div class="text-black" style="font-size: 1.15rem;">
-                            <span th:if="${waitingCount == null}">줄서기 안함</span>
-                            <span th:if="${waitingCount == 0 and currentStatus == 'CANCEL'}">줄서기 취소</span>
-                            <span th:if="${waitingCount == 0 and currentStatus == 'COMPLETE'}">줄서기 완료</span>
-                            <span th:if="${waitingCount == 0 and currentStatus != 'CANCEL' and currentStatus != 'COMPLETE'}">내 차례</span>
-                            <span th:if="${waitingCount > 0}">[[${waitingCount}]]명</span>
+                        <div th:each="entry : ${waitingCounts.entrySet()}">
+                            <div class="text-[#78C4BA]">현재 대기 - [[${entry.getKey()}]]</div>
+                            <div class="text-black" style="font-size: 1.15rem;">
+                                <span th:if="${entry.getValue() == null or currentStatuses.get(entry.getKey()) == null}"></span>
+                                <span th:if="${entry.getValue() == 0 and currentStatuses.get(entry.getKey()) != 'CANCEL' and currentStatuses.get(entry.getKey()) != 'COMPLETE'}">내 차례</span>
+                                <span th:if="${entry.getValue() > 0}">[[${entry.getValue()}]]명, 예상 대기 시간: [[${expectedWaitingTimes.get(entry.getKey())}]]분</span>
+                            </div>
                         </div>
                     </div>
                     <div class="w-1/2 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">

@@ -1,6 +1,6 @@
 package com.reve.careQ.domain.Member.service;
 
-import com.reve.careQ.domain.Member.dto.MemberHomeDto;
+import com.reve.careQ.domain.Member.dto.MemberQueueInfoDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
@@ -19,9 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -74,6 +75,7 @@ public class MemberServiceImpl implements MemberService{
         return findByUsername(username);
     }
 
+    @Override
     public List<Reservation> getReservationsForMember(Member currentUser) {
         return reservationRepository.findByMember(currentUser);
     }
@@ -182,32 +184,102 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public MemberHomeDto getMemberHomeData(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new IllegalArgumentException("해당 회원 ID를 찾을 수 없습니다:" + memberId));
-
-        List<Reservation> reservations = getReservationsForMember(member);
-        Long waitingCount = getWaitingCount(memberId);
-        RegisterChartStatus currentStatus = getCurrentStatus(memberId);
-
-        return new MemberHomeDto(reservations, waitingCount, currentStatus);
+    public MemberQueueInfoDto getMemberQueueInfoData(Long memberId) {
+        Member member = findMemberById(memberId);
+        List<RegisterChart> registerCharts = getRegisterChartsForMember(member);
+        return createMemberQueueInfoDto(registerCharts, member);
     }
 
-    @Override
-    public Long getWaitingCount(Long memberId) {
-        return getRegisterChartByMemberId(memberId)
-                .map(registerChart -> registerChartRepository.countByIdLessThanAndIsDeletedFalse(registerChart.getId()))
-                .orElse(null);
+    private Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원 ID를 찾을 수 없습니다:" + memberId));
     }
 
-    @Override
-    public RegisterChartStatus getCurrentStatus(Long memberId) {
-        return getRegisterChartByMemberId(memberId)
-                .map(RegisterChart::getStatus)
-                .orElse(null);
+    private List<RegisterChart> getRegisterChartsForMember(Member member) {
+        return registerChartRepository.findByMemberAndIsDeletedFalse(member);
     }
 
-    private Optional<RegisterChart> getRegisterChartByMemberId(Long memberId) {
-        return registerChartRepository.findByMemberIdAndIsDeletedFalse(memberId);
+    private MemberQueueInfoDto createMemberQueueInfoDto(List<RegisterChart> registerCharts, Member member) {
+        if (registerCharts.isEmpty()) {
+            return handleNoWaitings(registerCharts);
+        } else {
+            return handleWaitingsExist(registerCharts, member);
+        }
     }
 
+    private MemberQueueInfoDto handleNoWaitings(List<RegisterChart> registerCharts) {
+        Map<String, Long> waitingCounts = new HashMap<>();
+        Map<String, RegisterChartStatus> currentStatuses = new HashMap<>();
+        Map<String, Long> expectedWaitingTimes = new HashMap<>();
+
+        waitingCounts.put("줄서기 없음", null);
+        currentStatuses.put("줄서기 없음", null);
+        expectedWaitingTimes.put("줄서기 없음", null);
+
+        return MemberQueueInfoDto.of(registerCharts, waitingCounts, currentStatuses, expectedWaitingTimes);
+    }
+
+    private MemberQueueInfoDto handleWaitingsExist(List<RegisterChart> registerCharts, Member member) {
+        Function<RegisterChart, String> keyMapper = this::getHospitalAndSubject;
+
+        Map<String, Long> waitingCounts = createWaitingCountsMap(registerCharts, member, keyMapper);
+        Map<String, RegisterChartStatus> currentStatuses = createCurrentStatusesMap(registerCharts, keyMapper);
+        Map<String, Long> expectedWaitingTimes = createExpectedWaitingTimesMap(registerCharts, waitingCounts, keyMapper);
+
+        return MemberQueueInfoDto.of(registerCharts, waitingCounts, currentStatuses, expectedWaitingTimes);
+    }
+
+    private Map<String, Long> createWaitingCountsMap(List<RegisterChart> registerCharts, Member member, Function<RegisterChart, String> keyMapper) {
+        return registerCharts.stream().collect(
+                Collectors.toMap(
+                        keyMapper,
+                        chart -> getWaitingCount(member, chart),
+                        (oldValue, newValue) -> newValue
+                )
+        );
+    }
+
+    private Map<String, RegisterChartStatus> createCurrentStatusesMap(List<RegisterChart> registerCharts, Function<RegisterChart, String> keyMapper) {
+        return registerCharts.stream().collect(
+                Collectors.toMap(
+                        keyMapper,
+                        RegisterChart::getStatus,
+                        (oldValue, newValue) -> newValue
+                )
+        );
+    }
+
+    private Map<String, Long> createExpectedWaitingTimesMap(List<RegisterChart> registerCharts, Map<String, Long> waitingCounts, Function<RegisterChart, String> keyMapper) {
+        return registerCharts.stream().collect(
+                Collectors.toMap(
+                        keyMapper,
+                        chart -> calculateExpectedWaitingTime(waitingCounts.get(getHospitalAndSubject(chart)), chart.getStatus()),
+                        (oldValue, newValue) -> newValue
+                )
+        );
+    }
+
+    private String getHospitalAndSubject(RegisterChart registerChart) {
+        return registerChart.getAdmin().getHospital().getName() + "/" + registerChart.getAdmin().getSubject().getName();
+    }
+
+    private Long getWaitingCount(Member member, RegisterChart registerChart) {
+        List<RegisterChart> allRegisterCharts = registerChartRepository.findByAdminHospitalAndAdminSubjectAndIsDeletedFalse(registerChart.getAdmin().getHospital(), registerChart.getAdmin().getSubject());
+        List<RegisterChart> memberRegisterCharts = registerChartRepository.findByMemberAndAdminHospitalAndAdminSubjectAndIsDeletedFalse(member, registerChart.getAdmin().getHospital(), registerChart.getAdmin().getSubject());
+
+        if (memberRegisterCharts.isEmpty()) {
+            return (long) allRegisterCharts.size();
+        } else {
+            LocalDateTime memberTime = memberRegisterCharts.get(0).getTime();
+            return allRegisterCharts.stream().filter(chart -> chart.getTime().isBefore(memberTime)).count();
+        }
+    }
+
+    private Long calculateExpectedWaitingTime(Long waitingCount, RegisterChartStatus currentStatus) {
+        if (waitingCount != null && currentStatus != RegisterChartStatus.CANCEL && currentStatus != RegisterChartStatus.COMPLETE) {
+            return waitingCount * 5;
+        } else {
+            return null;
+        }
+    }
 }

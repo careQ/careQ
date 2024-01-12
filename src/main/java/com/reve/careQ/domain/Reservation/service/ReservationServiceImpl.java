@@ -32,6 +32,11 @@ public class ReservationServiceImpl implements ReservationService {
         return memberService.getCurrentUser().orElseThrow(() -> new RuntimeException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
     }
 
+    @Override
+    public List<Reservation> findByMemberId(Long memberId) {
+        return reservationRepository.findByMemberId(memberId);
+    }
+
     @Transactional(readOnly = true)
     public Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId){
         return reservationRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
