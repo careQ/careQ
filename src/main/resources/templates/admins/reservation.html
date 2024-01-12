@@ -13,7 +13,7 @@
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                stompClient.subscribe('/topic/reservations/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
                     +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
                     console.log(JSON.parse(message.body));
                     window.location.reload();
@@ -42,8 +42,8 @@
         }
 
         $(function () {
-            $( "#confirm-btn" ).click(function() {
-                var memberId = document.getElementById('confirm-btn').value;
+            $( ".confirm-btn" ).click(function() {
+                var memberId = $(this).val();
                 connect(memberId);});
             $( "#disconnect" ).click(function() { disconnect(); });
         });
@@ -133,7 +133,7 @@
                         <button id="cancel-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">환자취소</button>
                     </th:block>
                     <th:block th:if="${!reservation.isDeleted}">
-                        <button id="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
+                        <button class="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
                     </th:block>
                 </td>
             </tr>

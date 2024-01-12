@@ -5,7 +5,6 @@ import com.reve.careQ.domain.Admin.dto.JoinFormDto;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
-import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
@@ -34,7 +33,6 @@ public class AdminController {
 
     private final AdminService adminService;
     private final AdminRq adminRq;
-    private final RegisterChartService registerChartService;
     private final ReservationService reservationService;
 
     @PreAuthorize("isAnonymous()")
@@ -128,14 +126,11 @@ public class AdminController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/queues")
-    public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("kind") String kind, @RequestParam("status") RegisterChartStatus status) {
+    public String updateRegisterStatus(@RequestParam("memberId") Long memberId, @RequestParam("status") RegisterChartStatus status) {
         Admin admin = adminService.getCurrentAdmin().get();
 
-        if (kind.equals("queue")) {
-            registerChartService.updateStatusByAdminAndMember(admin, memberId, status);
-        } else {
-            reservationService.updateStatusByAdminAndMember(admin, memberId, status);
-        }
+        reservationService.updateStatusByAdminAndMember(admin, memberId, status);
+
         return "redirect:/admins/queues";
     }
 }

@@ -1,6 +1,7 @@
 package com.reve.careQ.domain.RegisterChart.dto;
 
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
+import com.reve.careQ.domain.Reservation.dto.ReservationDto;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterChartDto {
-
+    public enum UserType{
+        MEMBER, ADMIN
+    }
+    private UserType userType;
     private Long adminId;
     private Long memberId;
     private Long subjectId;

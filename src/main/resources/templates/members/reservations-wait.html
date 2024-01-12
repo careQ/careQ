@@ -27,7 +27,7 @@
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/members/'+document.getElementById('getMemberId').value
+                stompClient.subscribe('/topic/reservations/members/'+document.getElementById('getMemberId').value
                     +'/subjects/'+window.location.pathname.split('/')[3]
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
                     if((JSON.parse(message.body).userType == 'ADMIN')&&(JSON.parse(message.body).status == 'CONFIRMED')){
