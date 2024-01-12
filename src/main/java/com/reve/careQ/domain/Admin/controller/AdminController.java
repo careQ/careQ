@@ -8,9 +8,7 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
 import com.reve.careQ.global.rsData.RsData;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -87,16 +85,14 @@ public class AdminController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/reservations")
-    public String confirmReservation(@RequestParam("adminId") Long adminId,
-                                     @RequestParam("memberId") Long memberId,
-                                     HttpSession session, Model model) {
-        try {
-            reservationService.confirmReservation(adminId, memberId);
-            session.setAttribute("reservationStatus", ReservationStatus.CONFIRMED.name());
-            model.addAttribute("message", "예약이 성공적으로 확인되었습니다.");
-        } catch (NoSuchElementException e) {
-            model.addAttribute("errorMessage", "해당하는 예약 정보를 찾을 수 없습니다.");
-        }
+    public String deleteReservation(@RequestParam("memberId") Long memberId) {
+        Admin admin = adminService.getCurrentAdmin()
+                .orElseThrow(() -> new RuntimeException ("관리자 정보를 찾을 수 없습니다."));
+
+        Reservation reservation = reservationService.findReservationByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId)
+                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
+
+        reservationService.deleteReservation(reservation.getId());
 
         return "redirect:/admins/reservations";
     }

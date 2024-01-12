@@ -42,6 +42,11 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.getTodayReservation(admin);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Reservation> findReservationByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId){
+        return reservationRepository.findReservationByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
+    }
+
     public Reservation createReservation(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
         Member currentUser = getCurrentUser();
         Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)

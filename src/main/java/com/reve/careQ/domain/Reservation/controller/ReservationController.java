@@ -109,7 +109,8 @@ public class ReservationController {
         Thread.sleep(1000); // simulated delay
 
         Admin admin = adminService.findByHospitalIdAndSubjectId(reservationDto.getHospitalId(),reservationDto.getSubjectId()).get();
-        Reservation reservation = reservationService.findByAdminIdAndMemberId(admin.getId(), reservationDto.getMemberId()).get();
+        Reservation reservation = reservationService.findReservationByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), reservationDto.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("예약 정보를 찾을 수 없습니다."));
         if((reservationDto.getUserType() == ReservationDto.UserType.ADMIN)&&(reservation.getStatus() != reservationDto.getStatus())){
             reservationService.updateStatus(reservation, reservationDto.getStatus());
         }
@@ -118,4 +119,3 @@ public class ReservationController {
                 +"/hospitals/"+reservationDto.getHospitalId(), reservationDto);
     }
 }
-
