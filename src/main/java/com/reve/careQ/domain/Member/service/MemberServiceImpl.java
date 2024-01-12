@@ -178,4 +178,9 @@ public class MemberServiceImpl implements MemberService{
 
         return existingMemberValidation;
     }
+
+    public boolean checkPassword(String password, Long id){
+        return passwordEncoder.matches(password, findById(id).get().getPassword());
+    }
+
 }

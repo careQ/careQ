@@ -75,9 +75,20 @@ public class MemberController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/mypage")
-    public String mypage() {
-        return "members/mypage";
+    public ModelAndView mypage(boolean checkPassword) {
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("checkPassword", checkPassword);
+        mv.setViewName("members/mypage");
+        return mv;
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/mypage", params = {"password"})
+    @ResponseBody
+    public boolean checkPassword(@RequestParam(name="password",required=false,defaultValue="") String password) {
+        return memberService.checkPassword(password, rq.getMember().getId());
+    }
+
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/passwords")
