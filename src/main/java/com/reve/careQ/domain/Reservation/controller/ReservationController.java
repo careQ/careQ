@@ -118,4 +118,12 @@ public class ReservationController {
         sendingOperations.convertAndSend("/topic/reservations/members/"+reservationDto.getMemberId()+"/subjects/"+reservationDto.getSubjectId()
                 +"/hospitals/"+reservationDto.getHospitalId(), reservationDto);
     }
+
+    @MessageMapping("/reservation/main")
+    public void sendMain(ReservationDto reservationDto) throws Exception {
+        Thread.sleep(1000); // simulated delay
+
+        sendingOperations.convertAndSend("/topic/reservations/main/subjects/"+reservationDto.getSubjectId()
+                +"/hospitals/"+reservationDto.getHospitalId(), reservationDto);
+    }
 }

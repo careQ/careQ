@@ -8,18 +8,26 @@
     <script>
         var stompClient = null;
 
-        function connect(memberId) {
+        function connect() {
             var socket = new SockJS('/ws/reservation');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/reservations/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                stompClient.subscribe('/topic/reservations/main/subjects/'+document.getElementById('subjectId').value
                     +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
                     console.log(JSON.parse(message.body));
                     window.location.reload();
                 });
-                send(memberId);
             });
+        }
+
+        function eachConnect(memberId) {
+            stompClient.subscribe('/topic/reservations/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                console.log(JSON.parse(message.body));
+                window.location.reload();
+            });
+            send(memberId);
         }
 
         function disconnect() {
@@ -42,9 +50,10 @@
         }
 
         $(function () {
+            $(document).ready(function(){connect();})
             $( ".confirm-btn" ).click(function() {
                 var memberId = $(this).val();
-                connect(memberId);});
+                eachConnect(memberId);});
             $( "#disconnect" ).click(function() { disconnect(); });
         });
     </script>
@@ -116,7 +125,7 @@
             </thead>
             <tbody>
             <!-- 예약 목록을 순회하며 표시 -->
-            <tr th:each="reservation : ${reservations}" class="py-2">
+            <tr th:each="reservation : ${reservations}">
                 <td th:text="${reservation.member.username}"></td>
                 <td th:text="${reservation.admin.username}"></td>
                 <td th:text="${reservation.date}"></td>

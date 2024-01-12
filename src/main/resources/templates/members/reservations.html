@@ -1,6 +1,46 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>예약 신청 페이지</title>
+    <!--jQuery-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/ws/reservation');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/reservations/main/subjects/'+window.location.pathname.split('/')[3]
+                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
+                    console.log(JSON.parse(message.body));
+                });
+            });
+        }
+
+        function send(memberId) {
+            let msg = {
+                'userType': 'MEMBER',
+                'memberId': memberId,
+                'hospitalId': window.location.pathname.split('/')[5],
+                'subjectId': window.location.pathname.split('/')[3],
+                'status': 'PENDING'
+            }
+
+            stompClient.send("/app/reservation/main", {}, JSON.stringify(msg));
+        }
+
+        $(function () {
+            var memberId = document.getElementById('getMemberId').value;
+            $(document).ready(function(){connect();})
+            $( "#btn-reservation" ).click(function() {
+                send(memberId); });
+        });
+    </script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
@@ -28,6 +68,7 @@
         </div>
         <!-- 회원 기본 정보 -->
         <div class="w-64 mb-7 flex flex-col text-center">
+            <input id="getMemberId" type="hidden" th:value="${@rq.getMember().getId()}">
             <p class="font-semibold text-l" th:text="${@rq.getMember.username + '님이 선택하신'}"></p>
             <p><span class="text-[#78C4BA] text-l" th:text="|${hospital.name} ${subject.name}|">병원 / 진료과</span></p>
         </div>
@@ -126,29 +167,29 @@
             });
 
         </script>
-<!--        <script>-->
-<!--            // 오늘 날짜 구하기-->
-<!--            var today = new Date();-->
-<!--            today.setDate(today.getDate() + 1);-->
+        <!--        <script>-->
+        <!--            // 오늘 날짜 구하기-->
+        <!--            var today = new Date();-->
+        <!--            today.setDate(today.getDate() + 1);-->
 
-<!--            // 날짜를 yyyy-MM-dd 형식으로 변환-->
-<!--            var yyyy = today.getFullYear();-->
-<!--            var mm = today.getMonth() + 1;-->
-<!--            var dd = today.getDate();-->
+        <!--            // 날짜를 yyyy-MM-dd 형식으로 변환-->
+        <!--            var yyyy = today.getFullYear();-->
+        <!--            var mm = today.getMonth() + 1;-->
+        <!--            var dd = today.getDate();-->
 
-<!--            if (mm < 10) {-->
-<!--                mm = '0' + mm;-->
-<!--            }-->
+        <!--            if (mm < 10) {-->
+        <!--                mm = '0' + mm;-->
+        <!--            }-->
 
-<!--            if (dd < 10) {-->
-<!--                dd = '0' + dd;-->
-<!--            }-->
+        <!--            if (dd < 10) {-->
+        <!--                dd = '0' + dd;-->
+        <!--            }-->
 
-<!--            var minDate = yyyy + '-' + mm + '-' + dd;-->
+        <!--            var minDate = yyyy + '-' + mm + '-' + dd;-->
 
-<!--            // 최소 날짜를 설정-->
-<!--            document.getElementById("startDateInput").setAttribute("min", minDate);-->
-<!--        </script>-->
+        <!--            // 최소 날짜를 설정-->
+        <!--            document.getElementById("startDateInput").setAttribute("min", minDate);-->
+        <!--        </script>-->
     </div>
 </main>
 
