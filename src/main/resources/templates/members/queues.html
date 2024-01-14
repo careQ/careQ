@@ -11,7 +11,7 @@
         <!-- 헤더 -->
         <div class="h-10 w-64">
             <div class="flex justify-between">
-                <a th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${subject.id},hospitalId=${hospital.id})}">
+                <a th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${registerQueueInfo.subject.id},hospitalId=${registerQueueInfo.hospital.id})}">
                     <button>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#78C4BA">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -34,7 +34,7 @@
         <div class="flex w-64 justify-center mt-10 mb-6">
             <div class="flex flex-col justify-center text-center h-full text-lg font-bold">
                 <div class="text-[#858587]" th:text="|${@rq.getMember.username}이 선택하신|">이름이 선택하신</div>
-                <div class="text-[#78C4BA]" th:text="|${hospital.name} ${subject.name}|">병원 / 진료과</div>
+                <div class="text-[#78C4BA]" th:text="|${registerQueueInfo.hospital.name} ${registerQueueInfo.subject.name}|">병원 / 진료과</div>
             </div>
         </div>
         <!-- 대기 현황 -->
@@ -43,14 +43,14 @@
                 <div class="flex justify-between">
                     <div class="w-1/2 h-25 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
                         <div class="text-[#78C4BA]">현재 대기</div>
-                        <div class="text-black" style="font-size: 1.15rem;" th:text="${waitingStatus}">N명</div>
+                        <div class="text-black" style="font-size: 1.15rem;" th:text="${registerQueueInfo.waitingStatus}">N명</div>
                     </div>
                     <div class="w-1/2 h-25 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
                         <div class="text-[#78C4BA]">예상시간</div>
                         <div class="text-black" style="font-size: 1.15em;">
-                            <span th:if="${waitingTime != null}">
-                                <span th:text="${waitingTime / 60}"></span>시간
-                                <span th:text="${waitingTime % 60}"></span>분
+                            <span th:if="${registerQueueInfo.waitingTime != null}">
+                                <span th:text="${registerQueueInfo.waitingTime / 60}"></span>시간
+                                <span th:text="${registerQueueInfo.waitingTime % 60}"></span>분
                             </span>
                         </div>
                     </div>
@@ -59,12 +59,12 @@
         </div>
         <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
-            <form th:if="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+            <form th:if="${registerQueueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${registerQueueInfo.subject.id}, hospitalId=${registerQueueInfo.hospital.id})}" method="POST">
                 <button type="submit" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
                 </button>
             </form>
-            <form th:unless="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+            <form th:unless="${registerQueueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${registerQueueInfo.subject.id}, hospitalId=${registerQueueInfo.hospital.id})}" method="POST">
                 <input type="hidden" name="_method" value="delete"/>
                 <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 취소</span>

@@ -10,7 +10,6 @@ import com.reve.careQ.global.rsData.RsData;
 import java.util.Optional;
 
 public interface RegisterChartService {
-    Optional<RegisterChart> findById(Long id);
     RegisterQueueInfoDto getRegisterQueueInfo(Long hospitalId, Long subjectId);
     RsData<RegisterChart> insert(Long hospitalId, Long subjectId);
     RsData<RegisterChart> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);

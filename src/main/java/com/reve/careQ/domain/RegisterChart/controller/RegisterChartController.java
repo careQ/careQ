@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,19 +24,11 @@ public class RegisterChartController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId, Model model){
+    public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId){
         ModelAndView mv = new ModelAndView();
-
         RegisterQueueInfoDto registerQueueInfo = registerChartService.getRegisterQueueInfo(hospitalId, subjectId);
-
-        mv.addObject("register", registerQueueInfo.getRegisterChart());
-        mv.addObject("subject", registerQueueInfo.getSubject());
-        mv.addObject("hospital", registerQueueInfo.getHospital());
-        mv.addObject("waitingCount", registerQueueInfo.getWaitingCount());
-        mv.addObject("waitingTime", registerQueueInfo.getWaitingTime());
-        mv.addObject("waitingStatus", registerQueueInfo.getWaitingStatus());
+        mv.addObject("registerQueueInfo", registerQueueInfo);
         mv.setViewName("members/queues");
-
         return mv;
     }
 

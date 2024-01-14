@@ -1,8 +1,8 @@
 package com.reve.careQ.domain.RegisterChart.service;
 
+import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.Member.entity.Member;
-import com.reve.careQ.domain.Member.repository.MemberRepository;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
@@ -22,19 +22,14 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class QueueInfoServiceImpl implements QueueInfoService {
     private final RegisterChartRepository registerChartRepository;
-    private final MemberRepository memberRepository;
-
+    private final MemberService memberService;
 
     @Override
     public QueueInfoDto getQueueInfoData(Long memberId) {
-        Member member = findMemberById(memberId);
+        Member member = memberService.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원 ID를 찾을 수 없습니다:" + memberId));
         List<RegisterChart> registerCharts = getRegisterChartsForMember(member);
         return createQueueInfoDto(registerCharts, member);
-    }
-
-    private Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원 ID를 찾을 수 없습니다:" + memberId));
     }
 
     private List<RegisterChart> getRegisterChartsForMember(Member member) {

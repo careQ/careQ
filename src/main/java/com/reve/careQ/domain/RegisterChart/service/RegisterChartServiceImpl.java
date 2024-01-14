@@ -41,12 +41,6 @@ public class RegisterChartServiceImpl implements RegisterChartService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<RegisterChart> findById(Long id){
-        return registerChartRepository.findById(id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public RegisterQueueInfoDto getRegisterQueueInfo(Long hospitalId, Long subjectId) {
         Admin admin = findAdmin(hospitalId, subjectId);
         Member currentUser = getCurrentUser();

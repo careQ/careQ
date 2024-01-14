@@ -52,10 +52,7 @@ public class MemberController {
 
             List<Reservation> reservations = reservationService.findByMemberId(currentUser.getId());
 
-            model.addAttribute("registerCharts", queueInfoData.getRegisterCharts());
-            model.addAttribute("waitingCounts", queueInfoData.getWaitingCounts());
-            model.addAttribute("currentStatuses", queueInfoData.getCurrentStatuses());
-            model.addAttribute("expectedWaitingTimes", queueInfoData.getExpectedWaitingTimes());
+            model.addAttribute("queueInfoData", queueInfoData);
             model.addAttribute("reservations", reservations);
         });
 

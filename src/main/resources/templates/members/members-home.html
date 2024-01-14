@@ -24,31 +24,32 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
         <div id="carouselExampleControlsWaiting" class="carousel slide w-64" data-bs-interval="false">
             <div class="carousel-inner">
-                <div th:each="waitingCount : ${waitingCounts.entrySet()}" class="carousel-item">
+                <div th:each="waitingCount : ${queueInfoData.waitingCounts.entrySet()}" class="carousel-item">
                     <div class="block rounded-lg bg-[#f4f4f4] text-center w-64">
                         <div class="h-full p-2 flex flex-col justify-center">
-                            <span class="text-[#78C4BA]">[[${waitingCount.getKey()}]]</span>
+                            <span class="text-[#78C4BA]">[[${waitingCount.key}]]</span>
                             <!-- 줄서기 내역이 없을 경우 -->
-                            <p th:if="${waitingCount.getKey() == '줄서기 내역이 없습니다.'}" style="color:#78C4BA; font-weight:bold;">당일 예약이 없을 시 <br> 줄서기 이용이 가능합니다.
-
-                            <div th:if="${waitingCount.getKey() != '줄서기 내역이 없습니다.'}" class="flex justify-between">
+                            <p th:if="${waitingCount.key == '줄서기 내역이 없습니다.'}" style="color:#78C4BA; font-weight:bold;">당일 예약이 없을 시 <br> 줄서기 이용이 가능합니다.
+                            <div th:if="${waitingCount.key != '줄서기 내역이 없습니다.'}" class="flex justify-between">
                                 <div class="w-1/2 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
                                     <!-- 현재 대기 -->
                                     <div class="text-[#78C4BA]">현재 대기</div>
                                     <div class="text-black" style="font-size: 1.15rem;">
-                                        <span th:if="${waitingCount.getValue() == null or currentStatuses.get(waitingCount.getKey()) == null}"></span>
-                                        <span th:if="${waitingCount.getValue() == 0 and currentStatuses.get(waitingCount.getKey()) != 'CANCEL' and currentStatuses.get(waitingCount.getKey()) != 'COMPLETE'}">내 차례</span>
-                                        <span th:if="${waitingCount.getValue() > 0}">[[${waitingCount.getValue()}]]명</span>
+                                        <span th:if="${waitingCount.value == null or queueInfoData.currentStatuses.get(waitingCount.key) == null}"></span>
+                                        <span th:if="${waitingCount.value == 0 and queueInfoData.currentStatuses.get(waitingCount.key) != 'CANCEL' and queueInfoData.currentStatuses.get(waitingCount.key) != 'COMPLETE'}">내 차례</span>
+                                        <span th:if="${waitingCount.value > 0}">[[${waitingCount.value}]]명</span>
                                     </div>
                                 </div>
                                 <div class="w-1/2 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
                                     <!-- 예상 시간 -->
                                     <div class="text-[#78C4BA]">예상시간</div>
                                     <div class="text-black" style="font-size: 1.15em;">
-                                        <span th:if="${expectedWaitingTimes.get(waitingCount.getKey()) != null}">
-                                            <span th:text="${expectedWaitingTimes.get(waitingCount.getKey()) / 60}"></span>시간
-                                            <span th:text="${expectedWaitingTimes.get(waitingCount.getKey()) % 60}"></span>분
-                                        </span>
+                                        <div class="text-black" style="font-size: 1.15em;">
+                                            <span th:if="${queueInfoData.expectedWaitingTimes.get(waitingCount.key) != null}">
+                                                <span th:text="${queueInfoData.expectedWaitingTimes.get(waitingCount.key) / 60}"></span>시간
+                                                <span th:text="${queueInfoData.expectedWaitingTimes.get(waitingCount.key) % 60}"></span>분
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
