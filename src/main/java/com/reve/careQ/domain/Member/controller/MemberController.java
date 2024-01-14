@@ -150,6 +150,11 @@ public class MemberController {
         return false;
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage/medicalrecords")
+    public String medicalrecords() {
+        return "members/medicalRecords";
+    }
 
     private String redirectToPageWithMsg(String page, RsData<Member> rsData) {
         return rsData.isFail() ? rq.historyBack(rsData) : rq.redirectWithMsg(page, rsData);
