@@ -128,16 +128,26 @@ public class MemberController {
     @ResponseBody
     public boolean changeUsername(@RequestParam(name="username",required=false,defaultValue="") String username,
                                   @RequestParam(name="password",required=false,defaultValue="") String password) {
-        System.out.println("username:"+username);
-        System.out.println("password:"+password);
-        System.out.println("rqrqrrqrqrqrqrusername:"+rq.getMember().getUsername());
         RsData<Member> memberRs = memberService.changeUsername(rq.getMember(), username);
         if(memberRs.isSuccess()){
-            System.out.println("11111111111111111111");
             rq.refresh(memberRs.getData(), password);
-            System.out.println("222222222222222");
             return true;
-        }else { System.out.println("333333333333333333333");return false;}
+        }
+
+        return false;
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/mypage", params = {"newpassword"})
+    @ResponseBody
+    public boolean changePassword(@RequestParam(name="newpassword",required=false,defaultValue="") String newpassword) {
+        RsData<Member> memberRs = memberService.changePassword(rq.getMember(), newpassword);
+        if(memberRs.isSuccess()){
+            rq.refresh(memberRs.getData(), newpassword);
+            return true;
+        }
+
+        return false;
     }
 
 

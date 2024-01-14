@@ -195,4 +195,20 @@ public class MemberServiceImpl implements MemberService{
         member.setUsername(username);
         return memberRepository.save(member);
     }
+
+    @Transactional
+    public RsData<Member> changePassword(Member member, String newpassword){
+        if(passwordEncoder.matches(newpassword, member.getPassword())){
+            return RsData.failOf("F-1", "비밀번호가 동일합니다.");
+        }
+
+        Member changeMember = setPassword(member, newpassword);
+
+        return RsData.of("S-3", "비밀번호가 변경되었습니다.", changeMember);
+    }
+
+    private Member setPassword(Member member, String newpassword){
+        member.setPassword(encodePassword(newpassword));
+        return memberRepository.save(member);
+    }
 }

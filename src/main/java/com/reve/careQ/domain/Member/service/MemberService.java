@@ -18,4 +18,5 @@ public interface MemberService{
     void modifyPassword(String email) throws EmailException;
     boolean checkPassword(String password, Long id);
     RsData<Member> changeUsername(Member member, String username);
+    RsData<Member> changePassword(Member member, String newpassword);
 }
