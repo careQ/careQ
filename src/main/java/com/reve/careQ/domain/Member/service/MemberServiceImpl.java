@@ -212,9 +212,9 @@ public class MemberServiceImpl implements MemberService{
         Map<String, RegisterChartStatus> currentStatuses = new HashMap<>();
         Map<String, Long> expectedWaitingTimes = new HashMap<>();
 
-        waitingCounts.put("줄서기 없음", null);
-        currentStatuses.put("줄서기 없음", null);
-        expectedWaitingTimes.put("줄서기 없음", null);
+        waitingCounts.put("줄서기 내역이 없습니다.", null);
+        currentStatuses.put("줄서기 내역이 없습니다.", null);
+        expectedWaitingTimes.put("줄서기 내역이 없습니다.", null);
 
         return MemberQueueInfoDto.of(registerCharts, waitingCounts, currentStatuses, expectedWaitingTimes);
     }

@@ -47,9 +47,13 @@
                     </div>
                     <div class="w-1/2 h-25 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
                         <div class="text-[#78C4BA]">예상시간</div>
-                        <div class="text-black" style="font-size: 1.15em;" th:text="${waitingTime}">MM분</div>
+                        <div class="text-black" style="font-size: 1.15em;">
+                            <span th:if="${waitingTime != null}">
+                                <span th:text="${waitingTime / 60}"></span>시간
+                                <span th:text="${waitingTime % 60}"></span>분
+                            </span>
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
