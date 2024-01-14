@@ -1,9 +1,10 @@
 package com.reve.careQ.domain.Member.controller;
 
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
-import com.reve.careQ.domain.Member.dto.MemberQueueInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.service.QueueInfoService;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
@@ -31,6 +32,7 @@ public class MemberController {
     private final Rq rq;
     private final ApiKeys apiKeys;
     private final ReservationService reservationService;
+    private final QueueInfoService queueInfoService;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -46,14 +48,14 @@ public class MemberController {
         Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
         currentUserOptional.ifPresent(currentUser -> {
-            MemberQueueInfoDto memberQueueInfoData = memberService.getMemberQueueInfoData(currentUser.getId());
+            QueueInfoDto queueInfoData = queueInfoService.getQueueInfoData(currentUser.getId());
 
             List<Reservation> reservations = reservationService.findByMemberId(currentUser.getId());
 
-            model.addAttribute("registerCharts", memberQueueInfoData.getRegisterCharts());
-            model.addAttribute("waitingCounts", memberQueueInfoData.getWaitingCounts());
-            model.addAttribute("currentStatuses", memberQueueInfoData.getCurrentStatuses());
-            model.addAttribute("expectedWaitingTimes", memberQueueInfoData.getExpectedWaitingTimes());
+            model.addAttribute("registerCharts", queueInfoData.getRegisterCharts());
+            model.addAttribute("waitingCounts", queueInfoData.getWaitingCounts());
+            model.addAttribute("currentStatuses", queueInfoData.getCurrentStatuses());
+            model.addAttribute("expectedWaitingTimes", queueInfoData.getExpectedWaitingTimes());
             model.addAttribute("reservations", reservations);
         });
 

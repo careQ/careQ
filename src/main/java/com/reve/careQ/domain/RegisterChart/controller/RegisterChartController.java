@@ -1,7 +1,7 @@
 package com.reve.careQ.domain.RegisterChart.controller;
 
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterQueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -28,14 +28,14 @@ public class RegisterChartController {
     public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId, Model model){
         ModelAndView mv = new ModelAndView();
 
-        RegisterChartInfoDto registerChartInfo = registerChartService.getRegisterChartInfo(hospitalId, subjectId);
+        RegisterQueueInfoDto registerQueueInfo = registerChartService.getRegisterQueueInfo(hospitalId, subjectId);
 
-        mv.addObject("register", registerChartInfo.getRegisterChart());
-        mv.addObject("subject", registerChartInfo.getSubject());
-        mv.addObject("hospital", registerChartInfo.getHospital());
-        mv.addObject("waitingCount", registerChartInfo.getWaitingCount());
-        mv.addObject("waitingTime", registerChartInfo.getWaitingTime());
-        mv.addObject("waitingStatus", registerChartInfo.getWaitingStatus());
+        mv.addObject("register", registerQueueInfo.getRegisterChart());
+        mv.addObject("subject", registerQueueInfo.getSubject());
+        mv.addObject("hospital", registerQueueInfo.getHospital());
+        mv.addObject("waitingCount", registerQueueInfo.getWaitingCount());
+        mv.addObject("waitingTime", registerQueueInfo.getWaitingTime());
+        mv.addObject("waitingStatus", registerQueueInfo.getWaitingStatus());
         mv.setViewName("members/queues");
 
         return mv;

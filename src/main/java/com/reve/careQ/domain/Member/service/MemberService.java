@@ -1,6 +1,5 @@
 package com.reve.careQ.domain.Member.service;
 
-import com.reve.careQ.domain.Member.dto.MemberQueueInfoDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.mail.EmailException;
@@ -19,5 +18,4 @@ public interface MemberService{
     void modifyPassword(String email) throws EmailException;
     Member createMember(String providerTypeCode, String username, String password, String email);
     RsData<Member> validateJoinRequest(String providerTypeCode, String username, String email);
-    MemberQueueInfoDto getMemberQueueInfoData(Long id);
 }

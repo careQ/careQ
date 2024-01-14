@@ -8,8 +8,8 @@ import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterQueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
 import com.reve.careQ.domain.RegisterChart.exception.EntityNotFoundException;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
@@ -47,7 +47,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
 
     @Override
     @Transactional(readOnly = true)
-    public RegisterChartInfoDto getRegisterChartInfo(Long hospitalId, Long subjectId) {
+    public RegisterQueueInfoDto getRegisterQueueInfo(Long hospitalId, Long subjectId) {
         Admin admin = findAdmin(hospitalId, subjectId);
         Member currentUser = getCurrentUser();
         RegisterChart registerChart = findRegisterChart(admin, currentUser);
@@ -57,7 +57,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
         Long waitingCount = calculateWaitingCount(hospitalId, subjectId, registerChart);
         String waitingStatus = waitingStatus(waitingCount, registerChart);
 
-        return RegisterChartInfoDto.of(registerChart, subject, hospital, admin, waitingCount, calculateExpectedWaitingTime(waitingCount), waitingStatus);
+        return RegisterQueueInfoDto.of(registerChart, subject, hospital, admin, waitingCount, calculateExpectedWaitingTime(waitingCount), waitingStatus);
     }
 
     private Long calculateWaitingCount(Long hospitalId, Long subjectId, RegisterChart registerChart) {

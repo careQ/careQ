@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterChartInfoDto {
+public class RegisterQueueInfoDto {
     private RegisterChart registerChart;
     private Subject subject;
     private Hospital hospital;
@@ -20,8 +20,8 @@ public class RegisterChartInfoDto {
     private Long waitingTime;
     private String waitingStatus;
 
-    public static RegisterChartInfoDto of(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin, Long waitingCount, Long waitingTime, String waitingStatus) {
-        return RegisterChartInfoDto.builder()
+    public static RegisterQueueInfoDto of(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin, Long waitingCount, Long waitingTime, String waitingStatus) {
+        return RegisterQueueInfoDto.builder()
                 .registerChart(registerChart)
                 .subject(subject)
                 .hospital(hospital)
