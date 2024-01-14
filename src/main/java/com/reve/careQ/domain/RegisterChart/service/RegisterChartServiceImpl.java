@@ -11,7 +11,7 @@ import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
-import com.reve.careQ.domain.RegisterChart.exception.ResourceNotFoundException;
+import com.reve.careQ.domain.RegisterChart.exception.EntityNotFoundException;
 import com.reve.careQ.domain.RegisterChart.repository.RegisterChartRepository;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
@@ -78,13 +78,11 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private Admin findAdmin(Long hospitalId, Long subjectId) {
-        return adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
+        return getEntity(adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId), "해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다.");
     }
 
     private Member getCurrentUser() {
-        return memberService.getCurrentUser()
-                .orElseThrow(() -> new IllegalArgumentException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
+        return getEntity(memberService.getCurrentUser(), "현재 로그인한 사용자 정보를 가져오지 못했습니다.");
     }
 
     private RegisterChart findRegisterChart(Admin admin, Member currentUser) {
@@ -93,26 +91,26 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private Subject findSubject(Long subjectId) {
-        return subjectService.findById(subjectId).orElseThrow(() -> new ResourceNotFoundException("진료 과목을 찾을 수 없습니다."));
+        return getEntity(subjectService.findById(subjectId), "진료 과목을 찾을 수 없습니다.");
     }
 
     private Hospital findHospital(Long hospitalId) {
-        return hospitalService.findById(hospitalId).orElseThrow(() -> new ResourceNotFoundException("해당 병원을 찾을 수 없습니다."));
+        return getEntity(hospitalService.findById(hospitalId), "해당 병원을 찾을 수 없습니다.");
+    }
+
+    private <T> T getEntity(Optional<T> optionalEntity, String errorMessage) {
+        return optionalEntity.orElseThrow(() -> new EntityNotFoundException(errorMessage));
     }
 
     @Override
     @Transactional
     public RsData<RegisterChart> insert(Long hospitalId, Long subjectId){
-        Member currentUser = memberService.getCurrentUser()
-                .orElseThrow(() -> new IllegalArgumentException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
-
+        Member currentUser = getCurrentUser();
         return registerToChart(currentUser, hospitalId, subjectId);
     }
 
     private RsData<RegisterChart> registerToChart(Member currentUser, Long hospitalId, Long subjectId) {
-        Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
-
+        Admin admin = findAdmin(hospitalId, subjectId);
         return checkForDuplicatesAndInsert(currentUser, admin);
     }
 
@@ -152,18 +150,19 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     @Override
     @Transactional
     public RsData<RegisterChart> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status) {
-        RegisterChart registerChart = registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId)
-                .orElseThrow(() -> new IllegalArgumentException("줄서기 정보를 찾을 수 없습니다."));
+        RegisterChart registerChart = getEntity(registerChartRepository.findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), memberId), "줄서기 정보를 찾을 수 없습니다.");
 
-        if(status.equals(RegisterChartStatus.CANCEL) || status.equals(RegisterChartStatus.COMPLETE)){
+        if(isStatusCancelOrComplete(status)){
             registerChart.markAsDeleted(true);
-            registerChart.setStatus(status);
-        } else {
-            registerChart.setStatus(status);
         }
 
+        registerChart.setStatus(status);
         registerChartRepository.save(registerChart);
         return RsData.of("S-1", "줄서기 상태가 업데이트 되었습니다.", registerChart);
+    }
+
+    private boolean isStatusCancelOrComplete(RegisterChartStatus status) {
+        return status.equals(RegisterChartStatus.CANCEL) || status.equals(RegisterChartStatus.COMPLETE);
     }
 
     @Override
@@ -174,31 +173,26 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private RegisterChart findRegisterChart(Long hospitalId, Long subjectId) {
-        Admin admin = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다."));
+        Admin admin = findAdmin(hospitalId, subjectId);
+        Member currentUser = getCurrentUser();
 
-        Member currentUser = memberService.getCurrentUser()
-                .orElseThrow(() -> new IllegalArgumentException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
-
-        return registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("등록 차트를 찾을 수 없습니다."));
+        return getEntity(registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId()), "등록 차트를 찾을 수 없습니다.");
     }
 
     private void deleteRegisterChart(RegisterChart registerChart) {
         registerChart.markAsDeleted(true);
-        if(registerChart.getStatus().equals(RegisterChartStatus.CANCEL) || registerChart.getStatus().equals(RegisterChartStatus.COMPLETE)){
-            registerChart.setStatus(registerChart.getStatus());
-        } else {
+
+        if(!isStatusCancelOrComplete(registerChart.getStatus())){
             registerChart.setStatus(RegisterChartStatus.CANCEL);
         }
+
         registerChartRepository.save(registerChart);
     }
 
     @Override
     @Transactional
     public RegisterChart registerNewMember(String providerType, String username, String tempPassword, String email) {
-        Admin currentAdmin = adminService.getCurrentAdmin()
-                .orElseThrow(() -> new RuntimeException("로그인한 관리자가 아닙니다."));
+        Admin currentAdmin = getEntity(adminService.getCurrentAdmin(), "로그인한 관리자가 아닙니다.");
         Member newMember = validateAndCreateMember(providerType, username, email, tempPassword);
         return createAndSaveRegisterChart(currentAdmin, newMember);
     }
