@@ -54,4 +54,8 @@ public class Member extends BaseEntity {
     public void setProviderTypeCode(String providerTypeCode) {
         this.providerTypeCode = providerTypeCode;
     }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

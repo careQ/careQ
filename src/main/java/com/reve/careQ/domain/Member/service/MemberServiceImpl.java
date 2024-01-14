@@ -148,10 +148,6 @@ public class MemberServiceImpl implements MemberService{
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    private boolean isAuthenticated(Authentication authentication){
-        return authentication != null;
-    }
-
     private RsData<Member> findExistingMemberRs(String username, String email){
         return findByUsernameAndEmail(username, email).map(member -> RsData.of("S-1", "해당 회원이 존재합니다.", member))
                 .orElse(RsData.of("F-4", "해당 계정은 존재하지 않습니다."));
@@ -183,4 +179,20 @@ public class MemberServiceImpl implements MemberService{
         return passwordEncoder.matches(password, findById(id).get().getPassword());
     }
 
+    @Transactional
+    public RsData<Member> changeUsername(Member member, String username){
+        RsData<Member> usernameValidation = isUsernameAlreadyUsedRs(username);
+        if (!usernameValidation.isSuccess()) {
+            return usernameValidation;
+        }
+
+        Member changeMember = setUsername(member, username);
+
+        return RsData.of("S-3", "아이디가 변경되었습니다.", changeMember);
+    }
+
+    private Member setUsername(Member member, String username){
+        member.setUsername(username);
+        return memberRepository.save(member);
+    }
 }

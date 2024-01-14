@@ -9,10 +9,14 @@ import com.reve.careQ.standard.Ut;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.servlet.LocaleResolver;
@@ -23,6 +27,9 @@ import java.util.Locale;
 @Component
 @RequestScope
 public class Rq {
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
     private final MemberService memberService;
     private final MessageSource messageSource;
     private final LocaleResolver localeResolver;
@@ -30,7 +37,7 @@ public class Rq {
     private final HttpServletRequest req;
     private final HttpServletResponse resp;
     private final HttpSession session;
-    private final User user;
+    private User user;
     private Member member = null;
 
     public Rq(MemberService memberService, MessageSource messageSource, LocaleResolver localeResolver, HttpServletRequest req, HttpServletResponse resp, HttpSession session) {
@@ -111,6 +118,21 @@ public class Rq {
     // 메세지에 ttl 적용
     private String msgWithTtl(String msg) {
         return Ut.url.encode(msg) + ";ttl=" + new Date().getTime();
+    }
+
+    public void refresh(Member member, String password) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(member.getUsername(), password)
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        if (authentication.getPrincipal() instanceof User) {
+            this.user = (User) authentication.getPrincipal();
+            this.member = null; // 기존 멤버 정보를 초기화하여 다시 불러올 수 있도록 함
+        } else {
+            this.user = null;
+        }
     }
 
 }

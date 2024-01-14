@@ -123,6 +123,24 @@ public class MemberController {
         return mv;
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/mypage", params = {"username", "password"})
+    @ResponseBody
+    public boolean changeUsername(@RequestParam(name="username",required=false,defaultValue="") String username,
+                                  @RequestParam(name="password",required=false,defaultValue="") String password) {
+        System.out.println("username:"+username);
+        System.out.println("password:"+password);
+        System.out.println("rqrqrrqrqrqrqrusername:"+rq.getMember().getUsername());
+        RsData<Member> memberRs = memberService.changeUsername(rq.getMember(), username);
+        if(memberRs.isSuccess()){
+            System.out.println("11111111111111111111");
+            rq.refresh(memberRs.getData(), password);
+            System.out.println("222222222222222");
+            return true;
+        }else { System.out.println("333333333333333333333");return false;}
+    }
+
+
     private String redirectToPageWithMsg(String page, RsData<Member> rsData) {
         return rsData.isFail() ? rq.historyBack(rsData) : rq.redirectWithMsg(page, rsData);
     }

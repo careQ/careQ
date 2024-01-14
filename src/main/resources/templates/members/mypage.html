@@ -32,6 +32,35 @@
                 }
             };
         }
+
+        function changeUsername(username, password){
+            const xhttp = new XMLHttpRequest();
+
+            xhttp.open("GET", "/members/mypage?username="+ username + "&password="+ password);
+            xhttp.send();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = JSON.parse(this.response);
+
+                    var usernameInfo = document.getElementById("usernameInfo");
+                    usernameInfo.innerHTML = "";
+
+                    if (data == true){
+                        usernameInfo.innerHTML =`
+                            <div class="flex flex-row font-semibold text-[#4392F9] text-xs"> ${username}
+                            <div class="font-normal">으로 변경되었습니다.</div></div>`;
+                    } else if (data == false && username === $('#memberUsername').val() ) {
+                        usernameInfo.innerHTML =`<div class="flex flex-row font-normal text-[#F83758] text-xs">현재 아이디와&nbsp;
+                            <div class="font-semibold">동일</div>합니다.</div>
+                            <div class="text-[#F83758] text-xs">새로운 아이디를 다시 입력해주세요.</div>`;
+                    } else {
+                        usernameInfo.innerHTML =`<div class="flex flex-row font-normal text-[#F83758] text-xs">아이디가&nbsp;
+                            <div class="font-semibold">중복</div>됩니다.</div>
+                            <div class="text-[#F83758] text-xs">새로운 아이디를 다시 입력해주세요.</div>`;
+                    }
+                };
+            }
+        }
     </script>
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
         <!-- 헤더 -->
@@ -49,6 +78,7 @@
             <div class="flex w-6 h-6"></div>
         </div>
         <!-- 내 정보 관리 -->
+        <input id="memberUsername" type="hidden" th:value="${@rq.getMember.username}">
         <div class="flex flex-col w-64 px-6">
             <div class="font-semibold text-sm">내 정보 관리</div>
             <!-- 비밀번호 -->
@@ -63,9 +93,10 @@
             <!-- 아이디 변경 -->
             <div class="mt-2">
                 <div class="text-xs">아이디 변경</div>
+                <div id="usernameInfo"></div>
                 <div class="form-control relative my-1">
                     <input type="text" id= "username" placeholder="변경할 아이디를 입력해주세요" class="w-full input input-bordered text-black text-xs" disabled style="height: 32px; font-size: 12px">
-                    <button class="bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
+                    <button onclick="changeUsername(document.getElementById('username').value, document.getElementById('password').value)" class="bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
                 </div>
             </div>
             <!-- 비밀번호 변경 -->
@@ -93,13 +124,20 @@
         <!-- 로그아웃-->
         <div class="flex justify-between w-64 px-6 py-4">
             <div class="font-semibold text-sm">로그아웃</div>
-            <a href='#' class="flex inline-block mr-2">
-                <button>
+            <form th:if="${@rq.login}" th:action="|/members/logout|" method="post" class="m-0 flex justify-end w-64 mr-2">
+                <button th:if="${@rq.login}" type="submit">
                     <svg class="w-4 h-4 fill-[#78C4BA]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
                         <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
                     </svg>
                 </button>
-            </a>
+            </form>
+<!--            <a th:if="${@rq.login}" th:action="|/members/logout|" class="flex inline-block mr-2">-->
+<!--                <button>-->
+<!--                    <svg class="w-4 h-4 fill-[#78C4BA]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">-->
+<!--                        <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>-->
+<!--                    </svg>-->
+<!--                </button>-->
+<!--            </a>-->
         </div>
         <hr class="w-60" style="color: #F6F6F6;">
     </div>
