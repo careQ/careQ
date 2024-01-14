@@ -16,13 +16,19 @@ public class RegisterChartInfoDto {
     private Subject subject;
     private Hospital hospital;
     private Admin admin;
+    private Long waitingCount;
+    private Long waitingTime;
+    private String waitingStatus;
 
-    public static RegisterChartInfoDto of(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin) {
+    public static RegisterChartInfoDto of(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin, Long waitingCount, Long waitingTime, String waitingStatus) {
         return RegisterChartInfoDto.builder()
                 .registerChart(registerChart)
                 .subject(subject)
                 .hospital(hospital)
                 .admin(admin)
+                .waitingCount(waitingCount)
+                .waitingTime(waitingTime)
+                .waitingStatus(waitingStatus)
                 .build();
     }
 }

@@ -33,6 +33,9 @@ public class RegisterChartController {
         mv.addObject("register", registerChartInfo.getRegisterChart());
         mv.addObject("subject", registerChartInfo.getSubject());
         mv.addObject("hospital", registerChartInfo.getHospital());
+        mv.addObject("waitingCount", registerChartInfo.getWaitingCount());
+        mv.addObject("waitingTime", registerChartInfo.getWaitingTime());
+        mv.addObject("waitingStatus", registerChartInfo.getWaitingStatus());
         mv.setViewName("members/queues");
 
         return mv;

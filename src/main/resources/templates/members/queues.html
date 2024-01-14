@@ -43,13 +43,13 @@
                 <div class="flex justify-between">
                     <div class="w-1/2 h-25 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
                         <div class="text-[#78C4BA]">현재 대기</div>
-                        <div class="text-black" style="font-size: 1.15rem;">N명</div>
-
+                        <div class="text-black" style="font-size: 1.15rem;" th:text="${waitingStatus}">N명</div>
                     </div>
                     <div class="w-1/2 h-25 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
                         <div class="text-[#78C4BA]">예상시간</div>
-                        <div class="text-black" style="font-size: 1.15em;">MM분</div>
+                        <div class="text-black" style="font-size: 1.15em;" th:text="${waitingTime}">MM분</div>
                     </div>
+
                 </div>
             </div>
         </div>

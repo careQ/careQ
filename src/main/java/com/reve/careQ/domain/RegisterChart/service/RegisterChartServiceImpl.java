@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,14 +47,34 @@ public class RegisterChartServiceImpl implements RegisterChartService {
 
     @Override
     @Transactional(readOnly = true)
-    public RegisterChartInfoDto getRegisterChartInfo(Long hospitalId, Long subjectId){
+    public RegisterChartInfoDto getRegisterChartInfo(Long hospitalId, Long subjectId) {
         Admin admin = findAdmin(hospitalId, subjectId);
         Member currentUser = getCurrentUser();
         RegisterChart registerChart = findRegisterChart(admin, currentUser);
         Subject subject = findSubject(subjectId);
         Hospital hospital = findHospital(hospitalId);
 
-        return RegisterChartInfoDto.of(registerChart, subject, hospital, admin);
+        Long waitingCount = calculateWaitingCount(hospitalId, subjectId, registerChart);
+        String waitingStatus = waitingStatus(waitingCount, registerChart);
+
+        return RegisterChartInfoDto.of(registerChart, subject, hospital, admin, waitingCount, calculateExpectedWaitingTime(waitingCount), waitingStatus);
+    }
+
+    private Long calculateWaitingCount(Long hospitalId, Long subjectId, RegisterChart registerChart) {
+        Long count = registerChartRepository.countByAdminHospitalIdAndAdminSubjectIdAndStatusNotIn(hospitalId, subjectId, Arrays.asList(RegisterChartStatus.CANCEL, RegisterChartStatus.COMPLETE, RegisterChartStatus.CANCELLED));
+        return isRegisterChartWaitingOrEnter(registerChart) ? count - 1 : count;
+    }
+
+    private String waitingStatus(Long waitingCount, RegisterChart registerChart) {
+        return isRegisterChartWaitingOrEnter(registerChart) ? (waitingCount == 0 ? "내 차례" : waitingCount.toString()) : waitingCount.toString();
+    }
+
+    private Long calculateExpectedWaitingTime(Long waitingCount) {
+        return waitingCount * 5;
+    }
+
+    private boolean isRegisterChartWaitingOrEnter(RegisterChart registerChart) {
+        return registerChart != null && (registerChart.getStatus() == RegisterChartStatus.WAITING || registerChart.getStatus() == RegisterChartStatus.ENTER);
     }
 
     private Admin findAdmin(Long hospitalId, Long subjectId) {
