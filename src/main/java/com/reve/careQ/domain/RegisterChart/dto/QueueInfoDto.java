@@ -1,26 +1,34 @@
 package com.reve.careQ.domain.RegisterChart.dto;
 
+import com.reve.careQ.domain.Admin.entity.Admin;
+import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
-import lombok.Data;
+import com.reve.careQ.domain.Subject.entity.Subject;
+import lombok.*;
 
-import java.util.List;
-import java.util.Map;
-
-@Data
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class QueueInfoDto {
-    private List<RegisterChart> registerCharts;
-    private Map<String, Long> waitingCounts;
-    private Map<String, RegisterChartStatus> currentStatuses;
-    private Map<String, Long> expectedWaitingTimes;
+    private RegisterChart registerChart;
+    private Subject subject;
+    private Hospital hospital;
+    private Admin admin;
+    private Long waitingCount;
+    private Long waitingTime;
+    private String waitingStatus;
 
-    public static QueueInfoDto of(List<RegisterChart> registerCharts, Map<String, Long> waitingCounts, Map<String, RegisterChartStatus> currentStatuses, Map<String, Long> expectedWaitingTimes) {
-        QueueInfoDto dto = new QueueInfoDto();
-        dto.registerCharts = registerCharts;
-        dto.waitingCounts = waitingCounts;
-        dto.currentStatuses = currentStatuses;
-        dto.expectedWaitingTimes = expectedWaitingTimes;
-        return dto;
+    public static QueueInfoDto of(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin, Long waitingCount, Long waitingTime, String waitingStatus) {
+        return QueueInfoDto.builder()
+                .registerChart(registerChart)
+                .subject(subject)
+                .hospital(hospital)
+                .admin(admin)
+                .waitingCount(waitingCount)
+                .waitingTime(waitingTime)
+                .waitingStatus(waitingStatus)
+                .build();
     }
 }
-

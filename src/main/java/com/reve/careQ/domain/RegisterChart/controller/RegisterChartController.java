@@ -1,7 +1,7 @@
 package com.reve.careQ.domain.RegisterChart.controller;
 
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
-import com.reve.careQ.domain.RegisterChart.dto.RegisterQueueInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
@@ -24,10 +24,12 @@ public class RegisterChartController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId){
+    public ModelAndView showQueue(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId) {
+
         ModelAndView mv = new ModelAndView();
-        RegisterQueueInfoDto registerQueueInfo = registerChartService.getRegisterQueueInfo(hospitalId, subjectId);
-        mv.addObject("registerQueueInfo", registerQueueInfo);
+        QueueInfoDto queueInfo = registerChartService.getQueueInfo(hospitalId, subjectId);
+
+        mv.addObject("queueInfo", queueInfo);
         mv.setViewName("members/queues");
         return mv;
     }

@@ -8,7 +8,7 @@ import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
-import com.reve.careQ.domain.RegisterChart.dto.RegisterQueueInfoDto;
+import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
 import com.reve.careQ.domain.RegisterChart.exception.EntityNotFoundException;
@@ -25,8 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,57 +41,12 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     private final SubjectService subjectService;
     private final Rq rq;
 
-    @Override
-    @Transactional(readOnly = true)
-    public RegisterQueueInfoDto getRegisterQueueInfo(Long hospitalId, Long subjectId) {
-        Admin admin = findAdmin(hospitalId, subjectId);
-        Member currentUser = getCurrentUser();
-        RegisterChart registerChart = findRegisterChart(admin, currentUser);
-        Subject subject = findSubject(subjectId);
-        Hospital hospital = findHospital(hospitalId);
-
-        Long waitingCount = calculateWaitingCount(hospitalId, subjectId, registerChart);
-        String waitingStatus = waitingStatus(waitingCount, registerChart);
-
-        return RegisterQueueInfoDto.of(registerChart, subject, hospital, admin, waitingCount, calculateExpectedWaitingTime(waitingCount), waitingStatus);
-    }
-
-    private Long calculateWaitingCount(Long hospitalId, Long subjectId, RegisterChart registerChart) {
-        Long count = registerChartRepository.countByAdminHospitalIdAndAdminSubjectIdAndStatusNotIn(hospitalId, subjectId, Arrays.asList(RegisterChartStatus.CANCEL, RegisterChartStatus.COMPLETE, RegisterChartStatus.CANCELLED));
-        return isRegisterChartWaitingOrEnter(registerChart) ? count - 1 : count;
-    }
-
-    private String waitingStatus(Long waitingCount, RegisterChart registerChart) {
-        return isRegisterChartWaitingOrEnter(registerChart) ? (waitingCount == 0 ? "내 차례" : waitingCount.toString()) : waitingCount.toString();
-    }
-
-    private Long calculateExpectedWaitingTime(Long waitingCount) {
-        return waitingCount * 5;
-    }
-
-    private boolean isRegisterChartWaitingOrEnter(RegisterChart registerChart) {
-        return registerChart != null && (registerChart.getStatus() == RegisterChartStatus.WAITING || registerChart.getStatus() == RegisterChartStatus.ENTER);
-    }
-
     private Admin findAdmin(Long hospitalId, Long subjectId) {
         return getEntity(adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId), "해당 병원과 진료 과목에 해당하는 관리자를 찾을 수 없습니다.");
     }
 
     private Member getCurrentUser() {
         return getEntity(memberService.getCurrentUser(), "현재 로그인한 사용자 정보를 가져오지 못했습니다.");
-    }
-
-    private RegisterChart findRegisterChart(Admin admin, Member currentUser) {
-        Optional<RegisterChart> registerChart = registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId());
-        return registerChart.orElse(null);
-    }
-
-    private Subject findSubject(Long subjectId) {
-        return getEntity(subjectService.findById(subjectId), "진료 과목을 찾을 수 없습니다.");
-    }
-
-    private Hospital findHospital(Long hospitalId) {
-        return getEntity(hospitalService.findById(hospitalId), "해당 병원을 찾을 수 없습니다.");
     }
 
     private <T> T getEntity(Optional<T> optionalEntity, String errorMessage) {
@@ -227,5 +184,78 @@ public class RegisterChartServiceImpl implements RegisterChartService {
                 .isDeleted(false)
                 .build();
         return registerChartRepository.save(newRegisterChart);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<QueueInfoDto> getQueueInfoByMemberId(Long memberId) {
+        Member member = memberService.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원 ID를 찾을 수 없습니다. ID: " + memberId));
+
+        List<RegisterChart> registerCharts = findRegisterChartsByMember(member);
+
+        return registerCharts.stream()
+                .map(this::createQueueInfoFromRegisterChartDto)
+                .collect(Collectors.toList());
+    }
+
+    private List<RegisterChart> findRegisterChartsByMember(Member member) {
+        return registerChartRepository.findByMemberAndIsDeletedFalse(member);
+    }
+
+    private QueueInfoDto createQueueInfoFromRegisterChartDto(RegisterChart registerChart) {
+        Admin admin = registerChart.getAdmin();
+        Subject subject = findSubject(admin.getSubject().getId());
+        Hospital hospital = findHospital(admin.getHospital().getId());
+
+        return createQueueInfoDto(registerChart, subject, hospital, admin);
+    }
+
+    private QueueInfoDto createQueueInfoDto(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin) {
+        Long waitingCount = calculateWaitingCount(hospital.getId(), subject.getId(), registerChart);
+        String waitingStatus = waitingStatus(waitingCount, registerChart);
+        return QueueInfoDto.of(registerChart, subject, hospital, admin, waitingCount, calculateExpectedWaitingTime(waitingCount), waitingStatus);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public QueueInfoDto getQueueInfo(Long hospitalId, Long subjectId) {
+        Admin admin = findAdmin(hospitalId, subjectId);
+        Member currentUser = getCurrentUser();
+        RegisterChart registerChart = findRegisterChart(admin, currentUser);
+        Subject subject = findSubject(subjectId);
+        Hospital hospital = findHospital(hospitalId);
+
+        return createQueueInfoDto(registerChart, subject, hospital, admin);
+    }
+
+    private Long calculateWaitingCount(Long hospitalId, Long subjectId, RegisterChart registerChart) {
+        Long count = registerChartRepository.countByAdminHospitalIdAndAdminSubjectIdAndStatusNotIn(hospitalId, subjectId, Arrays.asList(RegisterChartStatus.CANCEL, RegisterChartStatus.COMPLETE, RegisterChartStatus.CANCELLED));
+        return isRegisterChartWaitingOrEnter(registerChart) ? count - 1 : count;
+    }
+
+    private String waitingStatus(Long waitingCount, RegisterChart registerChart) {
+        return isRegisterChartWaitingOrEnter(registerChart) ? (waitingCount == 0 ? "내 차례" : waitingCount.toString()) : waitingCount.toString();
+    }
+
+    private Long calculateExpectedWaitingTime(Long waitingCount) {
+        return waitingCount * 5;
+    }
+
+    private boolean isRegisterChartWaitingOrEnter(RegisterChart registerChart) {
+        return registerChart != null && (registerChart.getStatus() == RegisterChartStatus.WAITING || registerChart.getStatus() == RegisterChartStatus.ENTER);
+    }
+
+    private RegisterChart findRegisterChart(Admin admin, Member currentUser) {
+        Optional<RegisterChart> registerChart = registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), currentUser.getId());
+        return registerChart.orElse(null);
+    }
+
+    private Subject findSubject(Long subjectId) {
+        return getEntity(subjectService.findById(subjectId), "진료 과목을 찾을 수 없습니다.");
+    }
+
+    private Hospital findHospital(Long hospitalId) {
+        return getEntity(hospitalService.findById(hospitalId), "해당 병원을 찾을 수 없습니다.");
     }
 }
