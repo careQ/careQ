@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.exception.EntityNotFoundException;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -214,5 +216,32 @@ public class RegisterChartServiceImplTest {
         Member newMember = newMember1.get();
         assertEquals(onsiteRegisterDto.getUsername(), newMember.getUsername());
         assertEquals(onsiteRegisterDto.getEmail(), newMember.getEmail());
+    }
+
+    @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
+    @DisplayName("회원 ID로 대기열 정보를 가져온다.")
+    public void getQueueInfoByMemberIdTest() {
+        List<QueueInfoDto> queueInfoList = registerChartService.getQueueInfoByMemberId(member.getId());
+
+        // 대기열 정보 확인
+        for (QueueInfoDto queueInfo : queueInfoList) {
+            assertThat(member.getId()).isEqualTo(queueInfo.getRegisterChart().getMember().getId());
+            assertThat(queueInfo.getAdmin().getId()).isEqualTo(admin.getId());
+        }
+    }
+
+    @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
+    @DisplayName("병원 ID와 과목 ID로 대기열 정보를 가져온다.")
+    public void getQueueInfoTest() {
+        // 줄서기 등록
+        registerChartService.insert(hospitalId, subjectId);
+
+        QueueInfoDto queueInfo = registerChartService.getQueueInfo(hospitalId, subjectId);
+
+        // 대기열 정보 확인
+        assertThat(queueInfo.getAdmin().getId()).isEqualTo(admin.getId());
+        assertThat(member.getId()).isEqualTo(queueInfo.getRegisterChart().getMember().getId());
     }
 }
