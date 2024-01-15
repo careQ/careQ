@@ -99,4 +99,86 @@ public class RegisterChartServiceImplTest {
         assertThat(result.getResultCode()).isEqualTo("F-5");
         assertThat(result.getMsg()).isEqualTo("당일 예약이 존재하여 줄서기 등록이 불가능합니다.");
     }
+
+    @Test
+    @DisplayName("줄서기가 성공적으로 취소된다.")
+    public void cancelTest() {
+        // 줄서기 등록
+        registerChartService.insert(hospitalId, subjectId);
+
+        // 줄서기 취소
+        RsData<RegisterChart> result = registerChartService.updateStatusByAdminAndMember(admin, member.getId(), RegisterChartStatus.CANCEL);
+
+        assertThat(result.getResultCode()).isEqualTo("S-1");
+        assertThat(result.getMsg()).isEqualTo("줄서기 상태가 업데이트 되었습니다.");
+        assertThat(result.getData()).isNotNull();
+        assertThat(result.getData().getStatus()).isEqualTo(RegisterChartStatus.CANCEL);
+    }
+
+    @Test
+    @DisplayName("줄서기가 성공적으로 완료된다.")
+    public void completeTest() {
+        // 줄서기 등록
+        registerChartService.insert(hospitalId, subjectId);
+
+        // 줄서기 완료
+        RsData<RegisterChart> result = registerChartService.updateStatusByAdminAndMember(admin, member.getId(), RegisterChartStatus.COMPLETE);
+
+        assertThat(result.getResultCode()).isEqualTo("S-1");
+        assertThat(result.getMsg()).isEqualTo("줄서기 상태가 업데이트 되었습니다.");
+        assertThat(result.getData()).isNotNull();
+        assertThat(result.getData().getStatus()).isEqualTo(RegisterChartStatus.COMPLETE);
+    }
+
+    @Test
+    @DisplayName("이미 취소된 줄서기에 대해서 다시 취소를 시도할 경우, 예외가 발생한다.")
+    public void cancelAlreadyCancelledRegisterChartTest() {
+        // 줄서기 등록
+        registerChartService.insert(hospitalId, subjectId);
+
+        // 줄서기 취소
+        registerChartService.updateStatusByAdminAndMember(admin, member.getId(), RegisterChartStatus.CANCEL);
+
+        // 이미 취소된 줄서기에 대해 다시 취소를 시도
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> {
+            registerChartService.updateStatusByAdminAndMember(admin, member.getId(), RegisterChartStatus.CANCEL);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("줄서기 정보를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("이미 완료된 줄서기에 대해서 다시 완료를 시도하는 경우, 예외가 발생한다.")
+    public void completeAlreadyCompletedRegisterChartTest() {
+        // 줄서기 등록
+        registerChartService.insert(hospitalId, subjectId);
+
+        // 줄서기 완료
+        registerChartService.updateStatusByAdminAndMember(admin, member.getId(), RegisterChartStatus.COMPLETE);
+
+        // 이미 완료된 줄서기에 대해 다시 완료를 시도
+        Exception exception = assertThrows(EntityNotFoundException.class, () -> {
+            registerChartService.updateStatusByAdminAndMember(admin, member.getId(), RegisterChartStatus.COMPLETE);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("줄서기 정보를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("findRegisterChart()를 통해 이미 논리 삭제된 줄서기 차트를 다시 찾으려고 할 때 예외를 던진다.")
+    public void processRegisterChartTest() {
+        // 줄서기 등록
+        RsData<RegisterChart> rsData = registerChartService.insert(hospitalId, subjectId);
+        RegisterChart registerChart = rsData.getData();
+
+        // 줄서기 논리 삭제 처리
+        registerChartService.processRegisterChart(hospitalId, subjectId);
+
+        // 처리 후 줄서기 조회 시, findRegisterChart() 테스트 예외 발생 확인
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            registerChartService.processRegisterChart(hospitalId, subjectId);
+        });
+
+        assertEquals("등록 차트를 찾을 수 없습니다.", exception.getMessage());
+    }
 }
