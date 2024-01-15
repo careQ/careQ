@@ -2,6 +2,7 @@ package com.reve.careQ.domain.RegisterChart.service;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
+import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
@@ -12,6 +13,7 @@ import com.reve.careQ.global.rsData.RsData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -21,13 +23,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-@WithMockUser(username="useruser1", roles={"USER"})
 public class RegisterChartServiceImplTest {
 
     @Autowired
@@ -45,7 +47,12 @@ public class RegisterChartServiceImplTest {
     private Admin admin;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp(TestInfo testInfo) {
+        // 'registerNewMemberOnsiteTest'는 관리자 테스트이기 때문에 setUp 설정이 안되도록
+        if ("registerNewMemberOnsiteTest".equals(testInfo.getTestMethod().orElseThrow().getName())) {
+            return;
+        }
+
         hospitalId = 1L;
         subjectId = 1L;
         member = memberService.getCurrentUser().orElseThrow(() -> new NoSuchElementException("로그인한 사용자를 찾을 수 없습니다."));
@@ -54,6 +61,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("줄서기가 성공적으로 등록된다.")
     public void insertTest() {
         RsData<RegisterChart> result = registerChartService.insert(hospitalId, subjectId);
@@ -68,6 +76,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("이미 줄서기를 한 경우 중복 접수는 실패한다.")
     public void insertTestWithDuplicated() {
         // 첫 번째 접수를 시도
@@ -85,6 +94,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("당일 예약이 존재하는 경우 해당 병원 및 진료과목에서 줄서기는 불가능하다.")
     public void insertTestWithExistingReservation() {
         // 당일 예약 생성
@@ -101,6 +111,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("줄서기가 성공적으로 취소된다.")
     public void cancelTest() {
         // 줄서기 등록
@@ -116,6 +127,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("줄서기가 성공적으로 완료된다.")
     public void completeTest() {
         // 줄서기 등록
@@ -131,6 +143,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("이미 취소된 줄서기에 대해서 다시 취소를 시도할 경우, 예외가 발생한다.")
     public void cancelAlreadyCancelledRegisterChartTest() {
         // 줄서기 등록
@@ -148,6 +161,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("이미 완료된 줄서기에 대해서 다시 완료를 시도하는 경우, 예외가 발생한다.")
     public void completeAlreadyCompletedRegisterChartTest() {
         // 줄서기 등록
@@ -165,6 +179,7 @@ public class RegisterChartServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1", roles={"USER"})
     @DisplayName("findRegisterChart()를 통해 이미 논리 삭제된 줄서기 차트를 다시 찾으려고 할 때 예외를 던진다.")
     public void processRegisterChartTest() {
         // 줄서기 등록
@@ -180,5 +195,24 @@ public class RegisterChartServiceImplTest {
         });
 
         assertEquals("등록 차트를 찾을 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    @WithMockUser(username="adminadmin1", roles={"ADMIN"})
+    @DisplayName("관리자는 username과 email을 입력하여 미가입 회원을 현장에서 등록한다.")
+    public void registerNewMemberOnsiteTest() {
+        // 현장 접수 DTO 생성
+        OnsiteRegisterDto onsiteRegisterDto = new OnsiteRegisterDto( "username", "email@example.com");
+
+        // 현장에서 새로운 회원 등록 시도
+        registerChartService.registerNewUser(onsiteRegisterDto);
+
+        // 등록 후 회원 정보 확인
+        Optional<Member> newMember1 = memberService.findByUsername(onsiteRegisterDto.getUsername());
+        assertTrue(newMember1.isPresent());
+
+        Member newMember = newMember1.get();
+        assertEquals(onsiteRegisterDto.getUsername(), newMember.getUsername());
+        assertEquals(onsiteRegisterDto.getEmail(), newMember.getEmail());
     }
 }
