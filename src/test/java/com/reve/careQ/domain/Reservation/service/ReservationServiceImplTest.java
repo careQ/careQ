@@ -4,8 +4,11 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.RegisterChart.exception.EntityNotFoundException;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
+import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.rsData.RsData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +36,8 @@ public class ReservationServiceImplTest {
     private AdminService adminService;
     @Autowired
     private MemberService memberService;
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     private long hospitalId;
     private long subjectId;
@@ -155,5 +160,128 @@ public class ReservationServiceImplTest {
         assertFalse(result.isSuccess());
         assertEquals("F-4", result.getResultCode());
         assertEquals("이미 예약한 병원입니다.", result.getMsg());
+    }
+
+    @Test
+    @DisplayName("예약은 논리 삭제 후, 상태가 CANCELLED로 변경된다.")
+    public void deleteReservationTest() {
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        RsData<String> result = reservationService.deleteReservation(reservation.getId());
+
+        assertNotNull(result);
+        assertEquals("S-2", result.getResultCode());
+        assertEquals("예약 정보가 삭제되었습니다.", result.getMsg());
+
+        // 논리 삭제 후 상태 변경을 검증
+        Reservation deletedReservation = reservationRepository.findById(reservation.getId()).orElse(null);
+        assertNotNull(deletedReservation);
+        assertTrue(deletedReservation.getIsDeleted());
+        assertEquals(ReservationStatus.CANCELLED, deletedReservation.getStatus());
+        assertEquals(RegisterChartStatus.CANCELLED, deletedReservation.getRegisterStatus());
+    }
+
+    @Test
+    @DisplayName("예약 생성 시 진료 상태는 WAITING이고, 예약 상태는 PENDING이다.")
+    public void whenCreateReservationThenStatusTest() {
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+
+        assertNotNull(reservation);
+        assertEquals(RegisterChartStatus.WAITING, reservation.getRegisterStatus());
+        assertEquals(ReservationStatus.PENDING, reservation.getStatus());
+    }
+
+    @Test
+    @DisplayName("회원은 예약 상태가 PENDING 또는 CONFIRMED일 때, CANCELLED로 변경하고 예약을 논리 삭제할 수 있다.")
+    public void updateStatusToCancelledByAdminAndMemberTest1() {
+        Long memberId = member.getId();
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+
+        // status를 PENDING 또는 CONFIRMED
+        reservationService.updateStatus(reservation, ReservationStatus.PENDING);
+        assertEquals(ReservationStatus.PENDING, reservation.getStatus());
+
+        // status를 CANCELLED로 변경
+        reservationService.updateStatus(reservation, ReservationStatus.CANCELLED);
+        assertEquals(ReservationStatus.CANCELLED, reservation.getStatus());
+
+        // registerStatus를 CANCELLED로 변경하고 확인
+        RsData<Reservation> result = reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.CANCELLED);
+
+        assertNotNull(result);
+        assertEquals("S-1", result.getResultCode());
+        assertEquals("진료 상태가 업데이트 되었습니다.", result.getMsg());
+        assertEquals(RegisterChartStatus.CANCELLED, result.getData().getRegisterStatus());
+        assertTrue(result.getData().getIsDeleted());
+    }
+
+    @Test
+    @DisplayName("예약을 생성한 후, updateStatus()를 호출하여 예약 상태가 CONFIRMED로 업데이트된다.")
+    public void updateStatusTest() {
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        RsData<Reservation> result = reservationService.updateStatus(reservation, ReservationStatus.CONFIRMED);
+
+        assertNotNull(result);
+        assertEquals("S-1", result.getResultCode());
+        assertEquals("예약 상태가 업데이트 되었습니다.", result.getMsg());
+        assertEquals(ReservationStatus.CONFIRMED, result.getData().getStatus());
+    }
+
+    @Test
+    @DisplayName("관리자는 예약의 진료 상태가 WAITING일 때, ENTER로 변경할 수 있다.")
+    public void updateStatusByAdminAndMemberTest() {
+        Long memberId = member.getId();
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+
+        // registerStatus를 WAITING
+        assertEquals(RegisterChartStatus.WAITING, reservation.getRegisterStatus());
+
+        RsData<Reservation> result = reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
+
+        assertNotNull(result);
+        assertEquals("S-1", result.getResultCode());
+        assertEquals("진료 상태가 업데이트 되었습니다.", result.getMsg());
+
+        // updateStatusByAdminAndMember() 호출 후 registerStatus가 ENTER로 변경
+        assertEquals(RegisterChartStatus.ENTER, result.getData().getRegisterStatus());
+    }
+
+    @Test
+    @DisplayName("관리자는 예약의 진료 상태가 ENTER일 때, COMPLETE로 변경하고 예약을 논리 삭제할 수 있다.")
+    public void updateStatusToCompleteByAdminAndMemberTest() {
+        Long memberId = member.getId();
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+
+        // registerStatus를 ENTER
+        reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
+        assertEquals(RegisterChartStatus.ENTER, reservation.getRegisterStatus());
+
+        // registerStatus를 COMPLETE로 변경
+        RsData<Reservation> result = reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.COMPLETE);
+
+        assertNotNull(result);
+        assertEquals("S-1", result.getResultCode());
+        assertEquals("진료 상태가 업데이트 되었습니다.", result.getMsg());
+        assertEquals(RegisterChartStatus.COMPLETE, result.getData().getRegisterStatus());
+        assertTrue(result.getData().getIsDeleted());
+    }
+
+    @Test
+    @DisplayName("관리자는 예약의 진료 상태가 WAITING 또는 ENTER일 때, CANCELLED로 변경하고 예약을 논리 삭제할 수 있다.")
+    public void updateStatusToCancelledByAdminAndMemberTest() {
+        Long memberId = member.getId();
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+
+        // registerStatus를 WAITING 또는 ENTER로
+        reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
+        assertEquals(RegisterChartStatus.ENTER, reservation.getRegisterStatus());
+
+        // registerStatus를 CANCELLED로 변경
+        RsData<Reservation> result = reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.CANCELLED);
+
+        assertNotNull(result);
+        assertEquals("S-1", result.getResultCode());
+        assertEquals("진료 상태가 업데이트 되었습니다.", result.getMsg());
+        assertEquals(RegisterChartStatus.CANCELLED, result.getData().getRegisterStatus());
+        assertTrue(result.getData().getIsDeleted());
     }
 }
