@@ -2,8 +2,6 @@ package com.reve.careQ.domain.Member.service;
 
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
-import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.mail.EmailException;
 import com.reve.careQ.global.mail.TempPasswordMail;
 import com.reve.careQ.global.rsData.RsData;
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +23,6 @@ public class MemberServiceImpl implements MemberService{
     private static final int TEMP_PASSWORD_LENGTH = 6;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
-    private final ReservationRepository reservationRepository;
     private final TempPasswordMail tempPasswordMail;
 
     public Optional<Member> findById(Long id) {
@@ -67,10 +63,6 @@ public class MemberServiceImpl implements MemberService{
 
         String username = authentication.getName();
         return findByUsername(username);
-    }
-
-    public List<Reservation> getReservationsForMember(Member currentUser) {
-        return reservationRepository.findByMember(currentUser);
     }
 
     @Transactional

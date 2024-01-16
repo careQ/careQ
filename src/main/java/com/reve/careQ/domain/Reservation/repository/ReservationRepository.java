@@ -16,7 +16,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     boolean existsByDateAndAdminId(LocalDateTime date, Long adminId);
     List<Reservation> findByAdmin(Admin admin);
     boolean existsByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
-    List<Reservation> findByMember(Member currentUser);
+    List<Reservation> findByMember(Member member);
     @Query("SELECT reservation FROM Reservation reservation WHERE reservation.admin = :admin " +
             "AND FUNCTION('DATE_FORMAT', reservation.date, '%Y-%m-%d') = CURRENT_DATE")
     List<Reservation> getTodayReservation(@Param("admin") Admin admin);
