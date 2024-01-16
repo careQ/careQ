@@ -16,10 +16,10 @@ public interface RegisterChartRepository extends JpaRepository<RegisterChart, Lo
     Optional<RegisterChart> findByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
     Optional<RegisterChart> findRegisterChartByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
     boolean existsByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
-    Optional<RegisterChart> findByAdminIdAndMemberId(Long adminId, Long memberId);
     @Query("SELECT registerchart FROM RegisterChart registerchart WHERE registerchart.admin = :admin and registerchart.isDeleted = false " +
             "and registerchart.member.username like %:name% order by registerchart.time")
     List<RegisterChart> getRegisterChartByAdminAndMemberName(@Param("admin") Admin admin, @Param("name") String name);
+    List<RegisterChart> findByMemberIdAndStatus(Long memberId, RegisterChartStatus status);
     @EntityGraph(attributePaths = {"admin", "admin.subject", "admin.hospital"})
     List<RegisterChart> findByMemberAndIsDeletedFalse(@Param("member") Member member);
     Long countByAdminHospitalIdAndAdminSubjectIdAndStatusNotIn(Long hospitalId, Long subjectId, List<RegisterChartStatus> statuses);

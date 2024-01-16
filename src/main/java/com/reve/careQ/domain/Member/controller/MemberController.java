@@ -29,6 +29,8 @@ import java.util.Optional;
 public class MemberController {
 
     private final MemberService memberService;
+    private final RegisterChartService registerChartService;
+    private final ReservationService reservationService;
     private final Rq rq;
     private final ApiKeys apiKeys;
     private final ReservationService reservationService;
@@ -80,6 +82,23 @@ public class MemberController {
         return "members/searches";
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage")
+    public ModelAndView mypage(boolean checkPassword) {
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("checkPassword", checkPassword);
+        mv.setViewName("members/mypage");
+        return mv;
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/mypage", params = {"password"})
+    @ResponseBody
+    public boolean checkPassword(@RequestParam(name="password",required=false,defaultValue="") String password) {
+        return memberService.checkPassword(password, rq.getMember().getId());
+    }
+
+
     @PreAuthorize("isAnonymous()")
     @GetMapping("/passwords")
     public String showFindPassword() {
@@ -110,6 +129,44 @@ public class MemberController {
 
             modifyPasswordAndSendEmail(email);
         }
+        return mv;
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/mypage", params = {"username", "password"})
+    @ResponseBody
+    public boolean changeUsername(@RequestParam(name="username",required=false,defaultValue="") String username,
+                                  @RequestParam(name="password",required=false,defaultValue="") String password) {
+        RsData<Member> memberRs = memberService.changeUsername(rq.getMember(), username);
+        if(memberRs.isSuccess()){
+            rq.refresh(memberRs.getData(), password);
+            return true;
+        }
+
+        return false;
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(value = "/mypage", params = {"newpassword"})
+    @ResponseBody
+    public boolean changePassword(@RequestParam(name="newpassword",required=false,defaultValue="") String newpassword) {
+        RsData<Member> memberRs = memberService.changePassword(rq.getMember(), newpassword);
+        if(memberRs.isSuccess()){
+            rq.refresh(memberRs.getData(), newpassword);
+            return true;
+        }
+
+        return false;
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage/medicalrecords")
+    public ModelAndView medicalrecords() {
+        ModelAndView mv = new ModelAndView();
+
+        mv.addObject("records", registerChartService.getMedicalCharts());
+        mv.setViewName("members/medical-records");
+
         return mv;
     }
 

@@ -1,6 +1,8 @@
 package com.reve.careQ.domain.Reservation.service;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
+import com.reve.careQ.domain.Member.entity.Member;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
@@ -21,4 +23,6 @@ public interface ReservationService {
     RsData<Reservation> updateStatus(Reservation reservation, ReservationStatus status);
     RsData<Reservation> updateStatusByAdminAndMember(Admin admin, Long memberId, RegisterChartStatus status);
     Optional<Reservation> findReservationByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
+    List<Reservation> getReservationsForMember(Member member);
+    List<RegisterChartDto> getReservationsByMemberIdAndRegisterStatus(Long memberId);
 }

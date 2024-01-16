@@ -2,6 +2,7 @@ package com.reve.careQ.domain.Reservation.entity;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Member.entity.Member;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.global.baseEntity.BaseEntity;
 import jakarta.persistence.*;
@@ -56,5 +57,19 @@ public class Reservation extends BaseEntity {
     }
     public void setRegisterStatus(RegisterChartStatus registerStatus) {
         this.registerStatus = registerStatus;
+    }
+
+    public RegisterChartDto toResponse() {
+        return RegisterChartDto.builder()
+                .adminId(this.admin.getId())
+                .memberId(this.member.getId())
+                .subjectId(this.admin.getSubject().getId())
+                .subjectName(this.admin.getSubject().getName())
+                .hospitalId(this.admin.getHospital().getId())
+                .hospitalName(this.admin.getHospital().getName())
+                .memberUsername(this.member.getUsername())
+                .time(this.getModifyDate())
+                .status(this.registerStatus)
+                .build();
     }
 }

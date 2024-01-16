@@ -2,8 +2,6 @@ package com.reve.careQ.domain.Member.service;
 
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.repository.MemberRepository;
-import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.mail.EmailException;
 import com.reve.careQ.global.mail.TempPasswordMail;
 import com.reve.careQ.global.rsData.RsData;
@@ -15,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+import java.util.UUID;
 import java.util.*;
 
 @Service
@@ -24,7 +24,6 @@ public class MemberServiceImpl implements MemberService{
     private static final int TEMP_PASSWORD_LENGTH = 6;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
-    private final ReservationRepository reservationRepository;
     private final TempPasswordMail tempPasswordMail;
 
     public Optional<Member> findById(Long id) {
@@ -173,5 +172,42 @@ public class MemberServiceImpl implements MemberService{
         }
 
         return existingMemberValidation;
+    }
+
+    public boolean checkPassword(String password, Long id){
+        return passwordEncoder.matches(password, findById(id).get().getPassword());
+    }
+
+    @Transactional
+    public RsData<Member> changeUsername(Member member, String username){
+        RsData<Member> usernameValidation = isUsernameAlreadyUsedRs(username);
+        if (!usernameValidation.isSuccess()) {
+            return usernameValidation;
+        }
+
+        Member changeMember = setUsername(member, username);
+
+        return RsData.of("S-3", "아이디가 변경되었습니다.", changeMember);
+    }
+
+    private Member setUsername(Member member, String username){
+        member.setUsername(username);
+        return memberRepository.save(member);
+    }
+
+    @Transactional
+    public RsData<Member> changePassword(Member member, String newpassword){
+        if(passwordEncoder.matches(newpassword, member.getPassword())){
+            return RsData.failOf("F-1", "비밀번호가 동일합니다.");
+        }
+
+        Member changeMember = setPassword(member, newpassword);
+
+        return RsData.of("S-3", "비밀번호가 변경되었습니다.", changeMember);
+    }
+
+    private Member setPassword(Member member, String newpassword){
+        member.setPassword(encodePassword(newpassword));
+        return memberRepository.save(member);
     }
 }
