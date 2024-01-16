@@ -33,8 +33,6 @@ public class MemberController {
     private final ReservationService reservationService;
     private final Rq rq;
     private final ApiKeys apiKeys;
-    private final ReservationService reservationService;
-    private final RegisterChartService registerChartService;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")

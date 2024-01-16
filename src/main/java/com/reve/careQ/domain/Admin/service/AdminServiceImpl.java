@@ -120,6 +120,8 @@ public class AdminServiceImpl implements AdminService{
                 .orElse(RsData.of("F-1", "해당 관리자가 존재하지 않습니다.\n다른 병원으로 검색해주세요."));
     }
 
+    @Override
+    @Transactional
     public Optional<Admin> getCurrentAdmin() {
         Authentication authentication = getAuthentication();
 
