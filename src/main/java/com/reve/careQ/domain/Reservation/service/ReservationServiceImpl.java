@@ -1,14 +1,12 @@
 package com.reve.careQ.domain.Reservation.service;
 
 import com.reve.careQ.domain.Admin.entity.Admin;
-
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
 import com.reve.careQ.domain.Reservation.exception.ReservationNotFoundException;
 import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
@@ -56,10 +54,6 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional(readOnly = true)
     public Optional<Reservation> findReservationByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId){
         return reservationRepository.findReservationByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
-    }
-
-    public List<Reservation> getReservationsForMember(Member member) {
-        return reservationRepository.findByMember(member);
     }
 
     @Override

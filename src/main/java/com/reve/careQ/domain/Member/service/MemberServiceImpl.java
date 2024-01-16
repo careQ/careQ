@@ -15,21 +15,23 @@ import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MemberServiceImpl implements MemberService{
     private static final int TEMP_PASSWORD_LENGTH = 6;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
     private final TempPasswordMail tempPasswordMail;
 
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Member> findById(Long id) {
         return memberRepository.findById(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Member> findByUsername(String username) {
         return memberRepository.findByUsername(username);
     }
@@ -40,6 +42,7 @@ public class MemberServiceImpl implements MemberService{
 
     private Optional<Member> findByUsernameAndEmail(String username, String email) { return memberRepository.findByUsernameAndEmail(username, email); }
 
+    @Override
     @Transactional
     public RsData<Member> join(String providerTypeCode, String username, String password, String email) {
         RsData<Member> validationData = validateJoinRequest(providerTypeCode, username, email);
@@ -54,6 +57,7 @@ public class MemberServiceImpl implements MemberService{
         return RsData.of("S-1", "회원가입이 완료되었습니다.", member);
     }
 
+    @Override
     @Transactional
     public Optional<Member> getCurrentUser() {
         Authentication authentication = getAuthentication();
@@ -67,10 +71,6 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public List<Reservation> getReservationsForMember(Member currentUser) {
-        return reservationRepository.findByMember(currentUser);
-    }
-
     @Transactional
     public RsData<Member> findPassword(String username, String email) {
         RsData<Member> validationData = validateFindPasswordRequest(username, email);
@@ -82,6 +82,7 @@ public class MemberServiceImpl implements MemberService{
         return RsData.of("S-3", "입력하신 이메일로 임시 비밀번호를 전송했습니다.", validationData.getData());
     }
 
+    @Override
     @Transactional
     public void modifyPassword(String email) throws EmailException {
         String tempPassword = generateTempPassword();
@@ -116,6 +117,8 @@ public class MemberServiceImpl implements MemberService{
         return StringUtils.hasText(password) ? passwordEncoder.encode(password) : null;
     }
 
+    @Override
+    @Transactional
     public RsData<Member> validateJoinRequest(String providerTypeCode, String username, String email) {
         RsData<Member> usernameValidation = isUsernameAlreadyUsedRs(username);
         if (!usernameValidation.isSuccess()) {
@@ -174,10 +177,13 @@ public class MemberServiceImpl implements MemberService{
         return existingMemberValidation;
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public boolean checkPassword(String password, Long id){
         return passwordEncoder.matches(password, findById(id).get().getPassword());
     }
 
+    @Override
     @Transactional
     public RsData<Member> changeUsername(Member member, String username){
         RsData<Member> usernameValidation = isUsernameAlreadyUsedRs(username);
@@ -195,6 +201,7 @@ public class MemberServiceImpl implements MemberService{
         return memberRepository.save(member);
     }
 
+    @Override
     @Transactional
     public RsData<Member> changePassword(Member member, String newpassword){
         if(passwordEncoder.matches(newpassword, member.getPassword())){
