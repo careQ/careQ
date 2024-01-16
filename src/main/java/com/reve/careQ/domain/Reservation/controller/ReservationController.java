@@ -3,8 +3,10 @@ package com.reve.careQ.domain.Reservation.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
+import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.Reservation.dto.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Reservation.exception.ReservationNotFoundException;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
 import com.reve.careQ.global.rq.Rq;
@@ -34,6 +36,7 @@ public class ReservationController {
 
     private final SimpMessageSendingOperations sendingOperations;
     private final Rq rq;
+    private final MemberService memberService;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
@@ -46,16 +49,15 @@ public class ReservationController {
         return mv;
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public String createReservation(@PathVariable("subject-id") Long subjectId,
                                     @PathVariable("hospital-id") Long hospitalId,
                                     @RequestParam("selectedDate") String selectedDate,
                                     @RequestParam("selectedTime") String selectedTime) {
         try {
-            String redirectUrl = reservationService.createReservationAndReturnRedirectUrl(hospitalId, subjectId, selectedDate, selectedTime);
+            String redirectUrl = reservationService.createReservationWithCheckAndReturnRedirectUrl(hospitalId, subjectId, selectedDate, selectedTime);
             return "redirect:" + redirectUrl;
-        } catch (Exception e) {
+        } catch (ReservationNotFoundException e) {
             return rq.historyBack(RsData.of("F-5", e.getMessage()));
         }
     }

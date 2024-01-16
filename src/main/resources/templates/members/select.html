@@ -46,7 +46,7 @@
                     </div>
                 </button>
             </form>
-            <form method="post" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${subject.id},hospitalId=${hospital.id})}">
+            <form method="get" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/reservations(subjectId=${subject.id},hospitalId=${hospital.id})}">
                 <button type="submit">
                     <div class="w-64 h-28 rounded bg-[#FFFFFF] text-center p-2 border border-[#78C4BA]">
                         <div class="text-[#78C4BA] flex flex-col justify-center h-full">
