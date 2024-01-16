@@ -49,7 +49,7 @@ public class MemberController {
 
         currentUserOptional.ifPresent(currentUser -> {
             List<QueueInfoDto> queueInfo = registerChartService.getQueueInfoByMemberId(currentUser.getId());
-            List<Reservation> reservations = reservationService.findByMemberId(currentUser.getId());
+            List<Reservation> reservations = reservationService.findByMemberIdAndIsDeletedFalse(currentUser.getId());
 
             model.addAttribute("queueInfoDtoList", queueInfo);
             model.addAttribute("reservations", reservations);

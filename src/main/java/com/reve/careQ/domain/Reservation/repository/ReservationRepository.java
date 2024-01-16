@@ -14,8 +14,7 @@ import java.util.Optional;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     boolean existsByDateAndAdminIdAndIsDeletedFalse(LocalDateTime date, Long adminId);
     List<Reservation> findByAdmin(Admin admin);
-    List<Reservation> findByMemberId(Long memberId);
-    Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId);
+    List<Reservation> findByMemberIdAndIsDeletedFalse(Long memberId);
     boolean existsByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
     List<Reservation> findByMember(Member currentUser);
     @Query("SELECT reservation FROM Reservation reservation WHERE reservation.admin = :admin " +
@@ -24,5 +23,4 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     Optional<Reservation> findByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
     Optional<Reservation> findReservationByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
 }
-
 
