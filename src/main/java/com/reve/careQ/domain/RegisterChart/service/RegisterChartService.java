@@ -8,6 +8,7 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.global.rsData.RsData;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RegisterChartService {
     QueueInfoDto getQueueInfo(Long hospitalId, Long subjectId);

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    boolean existsByDateAndAdminId(LocalDateTime date, Long adminId);
+    boolean existsByDateAndAdminIdAndIsDeletedFalse(LocalDateTime date, Long adminId);
     List<Reservation> findByAdmin(Admin admin);
     List<Reservation> findByMemberId(Long memberId);
     Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId);
