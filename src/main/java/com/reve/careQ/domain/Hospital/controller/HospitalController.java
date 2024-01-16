@@ -1,16 +1,10 @@
 package com.reve.careQ.domain.Hospital.controller;
 
-import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.dto.HospitalDto;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
-import com.reve.careQ.domain.Member.entity.Member;
-import com.reve.careQ.domain.Member.service.MemberService;
-import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.domain.Subject.service.SubjectService;
-import com.reve.careQ.global.rq.Rq;
-import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -19,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -29,9 +22,6 @@ public class HospitalController {
     private final SubjectService subjectService;
     private final HospitalService hospitalService;
     private final AdminService adminService;
-    private final MemberService memberService;
-    private final ReservationService reservationService;
-    private final Rq rq;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
@@ -84,29 +74,4 @@ public class HospitalController {
 
         return mv;
     }
-
-    @PreAuthorize("isAuthenticated")
-    @PostMapping("/{hospital-id}")
-    public String handleSelect(@PathVariable("subject-id") Long subjectId, @PathVariable("hospital-id") Long hospitalId) {
-
-        Optional<Admin> adminOptional = adminService.findByHospitalIdAndSubjectId(hospitalId, subjectId);
-        Optional<Member> currentUserOptional = memberService.getCurrentUser();
-
-        if (adminOptional.isPresent() && currentUserOptional.isPresent()) {
-            Admin admin = adminOptional.get();
-            Member currentUser = currentUserOptional.get();
-
-            RsData<String> reservationStatus = reservationService.checkDuplicateReservation(admin.getId(), currentUser.getId());
-
-            if (reservationStatus.isSuccess()) {
-                rq.historyBack(reservationStatus.getData());
-                return "redirect:/members/subjects/" + subjectId + "/hospitals/" + hospitalId + "/reservations";
-            } else {
-                return rq.historyBack(reservationStatus);
-            }
-        }
-        return "redirect:/";
-    }
-
-
 }

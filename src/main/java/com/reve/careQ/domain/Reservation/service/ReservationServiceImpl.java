@@ -9,6 +9,7 @@ import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 
 import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
+import com.reve.careQ.domain.Reservation.exception.ReservationNotFoundException;
 import com.reve.careQ.domain.Reservation.repository.ReservationRepository;
 import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
@@ -86,7 +87,15 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public String createReservationAndReturnRedirectUrl(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
+    public String createReservationWithCheckAndReturnRedirectUrl(Long hospitalId, Long subjectId, String selectedDate, String selectedTime) {
+        Member currentUser = getCurrentUser();
+        Admin admin = getAdmin(hospitalId, subjectId);
+
+        RsData<String> reservationStatus = checkDuplicateReservation(admin.getId(), currentUser.getId());
+        if (!reservationStatus.isSuccess()) {
+            throw new ReservationNotFoundException(reservationStatus.getMsg());
+        }
+
         Reservation reservation = createReservation(hospitalId, subjectId, selectedDate, selectedTime);
         return generateRedirectUrl(subjectId, hospitalId, reservation.getId());
     }
