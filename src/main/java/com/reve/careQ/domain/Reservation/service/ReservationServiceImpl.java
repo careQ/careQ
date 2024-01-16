@@ -104,7 +104,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private RsData<String> checkDuplicateReservation(LocalDateTime dateTime, Long adminId) {
-        if (reservationRepository.existsByDateAndAdminId(dateTime, adminId)) {
+        if (reservationRepository.existsByDateAndAdminIdAndIsDeletedFalse(dateTime, adminId)) {
             return RsData.of("F-5", "이미 예약된 시간대입니다.");
         }
         return RsData.of("S-3", "예약 가능한 시간대입니다.");

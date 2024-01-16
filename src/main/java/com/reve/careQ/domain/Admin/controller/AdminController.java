@@ -6,10 +6,10 @@ import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Member.dto.OnsiteRegisterDto;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
+import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.domain.Reservation.entity.ReservationStatus;
 import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import jakarta.validation.Valid;
@@ -37,6 +37,7 @@ public class AdminController {
     private final AdminRq adminRq;
     private final ReservationService reservationService;
     private final Rq rq;
+    private final RegisterChartService registerChartService;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
