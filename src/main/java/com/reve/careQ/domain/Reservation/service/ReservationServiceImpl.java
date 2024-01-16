@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -146,5 +148,11 @@ public class ReservationServiceImpl implements ReservationService {
     private RsData<Reservation> saveAndReturnRsData(Reservation reservation, String msg){
         reservationRepository.save(reservation);
         return RsData.of("S-1", msg, reservation);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegisterChartDto> getReservationsByMemberIdAndRegisterStatus(Long memberId){
+        List<Reservation> reservations = reservationRepository.findByMemberIdAndRegisterStatus(memberId, RegisterChartStatus.COMPLETE);
+        return reservations.stream().map(Reservation::toResponse).collect(Collectors.toList());
     }
 }

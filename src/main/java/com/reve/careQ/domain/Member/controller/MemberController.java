@@ -3,6 +3,7 @@ package com.reve.careQ.domain.Member.controller;
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.global.ApiKeyConfig.ApiKeys;
 import com.reve.careQ.global.rq.Rq;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class MemberController {
 
     private final MemberService memberService;
+    private final RegisterChartService registerChartService;
     private final Rq rq;
     private final ApiKeys apiKeys;
 
@@ -152,8 +154,13 @@ public class MemberController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/mypage/medicalrecords")
-    public String medicalrecords() {
-        return "members/medicalRecords";
+    public ModelAndView medicalrecords() {
+        ModelAndView mv = new ModelAndView();
+
+        mv.addObject("records", registerChartService.getMedicalCharts());
+        mv.setViewName("members/medical-records");
+
+        return mv;
     }
 
     private String redirectToPageWithMsg(String page, RsData<Member> rsData) {

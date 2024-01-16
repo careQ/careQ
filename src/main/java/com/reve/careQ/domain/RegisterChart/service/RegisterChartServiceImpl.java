@@ -7,6 +7,7 @@ import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartInfoDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChartStatus;;
@@ -22,7 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +60,12 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     @Transactional(readOnly = true)
     public Optional<RegisterChart> findByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId){
         return registerChartRepository.findByAdminIdAndMemberIdAndIsDeletedFalse(adminId, memberId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegisterChartDto> getRegisterChartsByMemberIdAndStatus(Long memberId){
+        List<RegisterChart> registerCharts = registerChartRepository.findByMemberIdAndStatus(memberId, RegisterChartStatus.COMPLETE);
+        return registerCharts.stream().map(RegisterChart::toResponse).collect(Collectors.toList());
     }
 
     private Admin findAdmin(Long hospitalId, Long subjectId) {
@@ -172,5 +183,23 @@ public class RegisterChartServiceImpl implements RegisterChartService {
             registerChart.setStatus(RegisterChartStatus.CANCEL);
         }
         registerChartRepository.save(registerChart);
+    }
+
+    public List<RegisterChartDto> getMedicalCharts() {
+        Member currentUser = getCurrentUser();
+
+        List<RegisterChartDto> registers = getRegisterChartsByMemberIdAndStatus(currentUser.getId());
+        List<RegisterChartDto> reservations = reservationService.getReservationsByMemberIdAndRegisterStatus(currentUser.getId());
+
+        List<RegisterChartDto> combinedList = Stream.concat(registers.stream(), reservations.stream())
+                .collect(Collectors.toList());
+
+        return getSortedListByTime(combinedList);
+    }
+
+    private List<RegisterChartDto> getSortedListByTime(List<RegisterChartDto> unsortedList){
+        return unsortedList.stream()
+                .sorted(Comparator.comparing(RegisterChartDto::getTime).reversed())
+                .collect(Collectors.toList());
     }
 }
