@@ -81,7 +81,7 @@
         <!-- 헤더 -->
         <div class="h-10 w-64">
             <div class="flex justify-between">
-                <a th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${subject.id},hospitalId=${hospital.id})}">
+                <a th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${queueInfo.subject.id},hospitalId=${queueInfo.hospital.id})}">
                     <button>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#78C4BA">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -105,7 +105,7 @@
             <input id="getMemberId" type="hidden" th:value="${@rq.getMember().getId()}">
             <div class="flex flex-col justify-center text-center h-full text-lg font-bold">
                 <div class="text-[#858587]" th:text="|${@rq.getMember.username}이 선택하신|">이름이 선택하신</div>
-                <div class="text-[#78C4BA]" th:text="|${hospital.name} ${subject.name}|">병원 / 진료과</div>
+                <div class="text-[#78C4BA]" th:text="|${queueInfo.hospital.name} ${queueInfo.subject.name}|">병원 / 진료과</div>
             </div>
         </div>
         <!-- 대기 현황 -->
@@ -114,12 +114,16 @@
                 <div class="flex justify-between">
                     <div class="w-1/2 h-25 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
                         <div class="text-[#78C4BA]">현재 대기</div>
-                        <div class="text-black" style="font-size: 1.15rem;">N명</div>
-
+                        <div class="text-black" style="font-size: 1.15rem;" th:text="${queueInfo.waitingStatus}">N명</div>
                     </div>
                     <div class="w-1/2 h-25 rounded-lg bg-[#FFFFFF] text-center p-2 border border-[#78C4BA] mx-2 mr-5">
                         <div class="text-[#78C4BA]">예상시간</div>
-                        <div class="text-black" style="font-size: 1.15em;">MM분</div>
+                        <div class="text-black" style="font-size: 1.15em;">
+                            <span th:if="${queueInfo.waitingTime != null}">
+                                <span th:text="${queueInfo.waitingTime / 60}"></span>시간
+                                <span th:text="${queueInfo.waitingTime % 60}"></span>분
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,19 +131,19 @@
         <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
             <div id="status-btn">
-            <form th:if="${register == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+            <form th:if="${queueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
                 <button type="submit" id="register-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
                 </button>
             </form>
-            <div th:if="${register != null}">
-                <form th:if="${#strings.toString(register.status) == 'WAITING'}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id}, hospitalId=${hospital.id})}" method="POST">
+            <div th:if="${queueInfo.registerChart != null}">
+                <form th:if="${#strings.toString(queueInfo.waitingStatus) == 'WAITING'}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
                     <input type="hidden" name="_method" value="delete"/>
                     <button id="cancel-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
                         <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
                     </button>
                 </form>
-                <div th:if="${#strings.toString(register.status) == 'ENTER'}" class="flex items-center justify-center w-64" style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
+                <div th:if="${#strings.toString(queueInfo.waitingStatus) == 'ENTER'}" class="flex items-center justify-center w-64" style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
                     <span class="text-white" style="font-size: 15px;">진료 중</span>
                 </div>
             </div>

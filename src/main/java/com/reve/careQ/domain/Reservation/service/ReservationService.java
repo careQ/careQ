@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationService {
+    List<Reservation> findByMemberId(Long memberId);
     Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId);
     List<Reservation> getTodayReservation(Admin admin);
     String createReservationAndReturnRedirectUrl(Long hospitalId, Long subjectId, String selectedDate, String selectedTime);

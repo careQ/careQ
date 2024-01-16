@@ -15,9 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -69,6 +67,7 @@ public class MemberServiceImpl implements MemberService{
         return findByUsername(username);
     }
 
+    @Override
     public List<Reservation> getReservationsForMember(Member currentUser) {
         return reservationRepository.findByMember(currentUser);
     }
@@ -97,7 +96,8 @@ public class MemberServiceImpl implements MemberService{
         tempPasswordMail.sendSimpleMessage(email, tempPassword);
     }
 
-    private Member createMember(String providerTypeCode, String username, String password, String email){
+    @Override
+    public Member createMember(String providerTypeCode, String username, String password, String email){
         Member member = Member
                 .builder()
                 .providerTypeCode(providerTypeCode)
@@ -117,7 +117,7 @@ public class MemberServiceImpl implements MemberService{
         return StringUtils.hasText(password) ? passwordEncoder.encode(password) : null;
     }
 
-    private RsData<Member> validateJoinRequest(String providerTypeCode, String username, String email) {
+    public RsData<Member> validateJoinRequest(String providerTypeCode, String username, String email) {
         RsData<Member> usernameValidation = isUsernameAlreadyUsedRs(username);
         if (!usernameValidation.isSuccess()) {
             return usernameValidation;
@@ -146,10 +146,6 @@ public class MemberServiceImpl implements MemberService{
 
     private Authentication getAuthentication(){
         return SecurityContextHolder.getContext().getAuthentication();
-    }
-
-    private boolean isAuthenticated(Authentication authentication){
-        return authentication != null;
     }
 
     private RsData<Member> findExistingMemberRs(String username, String email){
