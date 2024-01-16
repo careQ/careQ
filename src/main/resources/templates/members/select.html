@@ -37,7 +37,7 @@
         </div>
         <!-- 줄서기/예약 버튼 -->
         <div class="flex flex-col w-64 mb-6">
-            <a th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id},hospitalId=${hospital.id})}">
+            <form method="get" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${subject.id},hospitalId=${hospital.id})}">
                 <button class="w-full h-28 rounded bg-[#78C4BA] text-center p-2 border border-[#78C4BA] mb-4">
                     <div class="text-[#ffffff] flex flex-col justify-center h-full">
                         <div>줄서기</div>
@@ -45,8 +45,8 @@
                         <div style="font-size: 0.8rem;">온라인으로 번호표를 뽑아보세요!</div>
                     </div>
                 </button>
-            </a>
-            <form method="post" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${subject.id},hospitalId=${hospital.id})}">
+            </form>
+            <form method="get" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/reservations(subjectId=${subject.id},hospitalId=${hospital.id})}">
                 <button type="submit">
                     <div class="w-64 h-28 rounded bg-[#FFFFFF] text-center p-2 border border-[#78C4BA]">
                         <div class="text-[#78C4BA] flex flex-col justify-center h-full">

@@ -16,4 +16,6 @@ public interface MemberService{
     boolean checkPassword(String password, Long id);
     RsData<Member> changeUsername(Member member, String username);
     RsData<Member> changePassword(Member member, String newpassword);
+    Member createMember(String providerTypeCode, String username, String password, String email);
+    RsData<Member> validateJoinRequest(String providerTypeCode, String username, String email);
 }

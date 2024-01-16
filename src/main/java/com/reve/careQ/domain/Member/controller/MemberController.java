@@ -3,6 +3,7 @@ package com.reve.careQ.domain.Member.controller;
 import com.reve.careQ.domain.Member.dto.JoinFormDto;
 import com.reve.careQ.domain.Member.entity.Member;
 import com.reve.careQ.domain.Member.service.MemberService;
+import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
@@ -32,6 +33,8 @@ public class MemberController {
     private final ReservationService reservationService;
     private final Rq rq;
     private final ApiKeys apiKeys;
+    private final ReservationService reservationService;
+    private final RegisterChartService registerChartService;
 
     @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
@@ -44,11 +47,13 @@ public class MemberController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping()
     public String showMembersHome(Model model) {
-
         Optional<Member> currentUserOptional = memberService.getCurrentUser();
 
         currentUserOptional.ifPresent(currentUser -> {
-            List<Reservation> reservations = reservationService.getReservationsForMember(currentUser);
+            List<QueueInfoDto> queueInfo = registerChartService.getQueueInfoByMemberId(currentUser.getId());
+            List<Reservation> reservations = reservationService.findByMemberIdAndIsDeletedFalse(currentUser.getId());
+
+            model.addAttribute("queueInfoDtoList", queueInfo);
             model.addAttribute("reservations", reservations);
         });
 

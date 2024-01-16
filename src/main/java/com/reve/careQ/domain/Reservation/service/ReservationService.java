@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationService {
+    List<Reservation> findByMemberIdAndIsDeletedFalse(Long memberId);
     Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId);
     List<Reservation> getTodayReservation(Admin admin);
-    String createReservationAndReturnRedirectUrl(Long hospitalId, Long subjectId, String selectedDate, String selectedTime);
+    Reservation createReservation(Long hospitalId, Long subjectId, String selectedDate, String selectedTime);
+    String createReservationWithCheckAndReturnRedirectUrl(Long hospitalId, Long subjectId, String selectedDate, String selectedTime);
     RsData<Reservation> insert(Long hospitalId, Long subjectId, String selectedDate, String selectedTime);
     RsData<String> checkDuplicateReservation(Long adminId, Long memberId);
     RsData<String> deleteReservation(Long reservationId);
