@@ -17,5 +17,6 @@ public interface RegisterChartService {
     void processRegisterChart(Long hospitalId, Long subjectId);
     RegisterChart registerNewMember(String providerType, String username, String tempPassword, String email);
     void registerNewUser(OnsiteRegisterDto onsiteRegisterDto);
+    Optional<RegisterChart> findByAdminIdAndMemberIdAndIsDeletedFalse(Long adminId, Long memberId);
 }
 

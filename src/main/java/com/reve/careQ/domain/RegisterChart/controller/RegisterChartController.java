@@ -1,5 +1,8 @@
 package com.reve.careQ.domain.RegisterChart.controller;
 
+import com.reve.careQ.domain.Admin.entity.Admin;
+import com.reve.careQ.domain.Admin.service.AdminService;
+import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.RegisterChart.dto.QueueInfoDto;
 import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
@@ -8,6 +11,8 @@ import com.reve.careQ.global.rsData.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +26,8 @@ import java.net.URI;
 public class RegisterChartController {
     private final RegisterChartService registerChartService;
     private final Rq rq;
+    private final AdminService adminService;
+    private final SimpMessageSendingOperations sendingOperations;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
@@ -60,5 +67,27 @@ public class RegisterChartController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(RsData.failOf("F-0", e.getMessage()));
         }
+    }
+
+    @MessageMapping("/queue")
+    public void send(RegisterChartDto registerChartDto) throws Exception {
+        Thread.sleep(1000); // simulated delay
+
+        Admin admin = adminService.findByHospitalIdAndSubjectId(registerChartDto.getHospitalId(),registerChartDto.getSubjectId()).get();
+        RegisterChart registerChart = registerChartService.findByAdminIdAndMemberIdAndIsDeletedFalse(admin.getId(), registerChartDto.getMemberId()).get();
+        if((registerChartDto.getUserType() == RegisterChartDto.UserType.ADMIN)&&(registerChart.getStatus() != registerChartDto.getStatus())){
+            registerChartService.updateStatusByAdminAndMember(admin, registerChartDto.getMemberId(), registerChartDto.getStatus());
+        }
+
+        sendingOperations.convertAndSend("/topic/queues/members/"+registerChartDto.getMemberId()+"/subjects/"+registerChartDto.getSubjectId()
+                +"/hospitals/"+registerChartDto.getHospitalId(), registerChartDto);
+    }
+
+    @MessageMapping("/queue/main")
+    public void sendMain(RegisterChartDto registerChartDto) throws Exception {
+        Thread.sleep(1000); // simulated delay
+
+        sendingOperations.convertAndSend("/topic/queues/main/subjects/"+registerChartDto.getSubjectId()
+                +"/hospitals/"+registerChartDto.getHospitalId(), registerChartDto);
     }
 }

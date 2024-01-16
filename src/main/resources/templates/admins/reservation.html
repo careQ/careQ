@@ -8,18 +8,26 @@
     <script>
         var stompClient = null;
 
-        function connect(memberId) {
+        function connect() {
             var socket = new SockJS('/ws/reservation');
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                stompClient.subscribe('/topic/reservations/main/subjects/'+document.getElementById('subjectId').value
                     +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
                     console.log(JSON.parse(message.body));
                     window.location.reload();
                 });
-                send(memberId);
             });
+        }
+
+        function eachConnect(memberId) {
+            stompClient.subscribe('/topic/reservations/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                console.log(JSON.parse(message.body));
+                window.location.reload();
+            });
+            send(memberId);
         }
 
         function disconnect() {
@@ -30,21 +38,22 @@
         }
 
         function send(memberId) {
-                let msg = {
-                    'userType': 'ADMIN',
-                    'memberId': memberId,
-                    'hospitalId': document.getElementById('hospitalId').value,
-                    'subjectId': document.getElementById('subjectId').value,
-                    'status': 'CONFIRMED'
-                }
+            let msg = {
+                'userType': 'ADMIN',
+                'memberId': memberId,
+                'hospitalId': document.getElementById('hospitalId').value,
+                'subjectId': document.getElementById('subjectId').value,
+                'status': 'CONFIRMED'
+            }
 
-                stompClient.send("/app/reservation", {}, JSON.stringify(msg));
+            stompClient.send("/app/reservation", {}, JSON.stringify(msg));
         }
 
         $(function () {
-            $( "#confirm-btn" ).click(function() {
-                var memberId = document.getElementById('confirm-btn').value;
-                connect(memberId);});
+            $(document).ready(function(){connect();})
+            $( ".confirm-btn" ).click(function() {
+                var memberId = $(this).val();
+                eachConnect(memberId);});
             $( "#disconnect" ).click(function() { disconnect(); });
         });
     </script>
@@ -121,19 +130,26 @@
                 <td th:text="${reservation.admin.username}"></td>
                 <td th:text="${reservation.date}"></td>
                 <td>
-                    <span th:if="${#strings.equals(reservation.status, 'PENDING')}" class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 신청</span>
-                    <span th:if="${#strings.equals(reservation.status, 'CONFIRMED')}">예약 확정</span>
-                    <span th:if="${#strings.equals(reservation.status, 'CANCELLED')}" class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">예약 취소</span>
+                    <div th:if="${#strings.equals(reservation.status, 'PENDING')}" class="flex justify-center text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">승인 대기 중</div>
+                    <div th:if="${#strings.equals(reservation.status, 'CONFIRMED')}" class="flex justify-center text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 확정</div>
+                    <div th:if="${#strings.equals(reservation.status, 'CANCELLED')}" class="flex justify-center text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">예약 취소</div>
                 </td>
                 <td>
                     <th:block th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'COMPLETE')}">
                         <button id="complete-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">진료 완료</button>
                     </th:block>
                     <th:block th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'CANCELLED')}">
-                        <button id="cancel-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">환자취소</button>
+                        <div th:value="${reservation.member.id}" disabled class="flex justify-center text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">환자 취소</div>
                     </th:block>
-                    <th:block th:if="${!reservation.isDeleted}">
-                        <button id="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
+                    <th:block th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'PENDING')}">
+                        <button class="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
+                    </th:block>
+                    <th:block th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'CONFIRMED')}">
+                        <form class="m-0" action='/admins/reservations' method="POST">
+                            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="memberId" th:value="${reservation.member.id}"/>
+                            <button style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">예약 취소</button>
+                        </form>
                     </th:block>
                 </td>
             </tr>

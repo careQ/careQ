@@ -5,6 +5,10 @@
     <meta name="_csrf" th:content="${_csrf.token}">
     <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
     <style>
         table {
             border-collapse: collapse;
@@ -82,21 +86,8 @@
                         </td>
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex flex-row justify-center">
-                            <form class="m-0" action='/admins/queues' method="POST">
-                                <input type="hidden" name="_csrf" value='`+token+`'/>
-                                <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="status" value="ENTER"/>
-                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">진료 시작</button>
-                            </form>
-                            <form class="m-0" action='/admins/queues' method="POST">
-                                <input type="hidden" name="_csrf" value='`+token+`'/>
-                                <input type="hidden" name="kind" value="queue"/>
-                                <input type="hidden" name="status" value="CANCEL"/>
-                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #858587; width: 90px;">줄서기 취소</button>
-                            </form>
-
+                            <button class="start-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">진료 시작</button>
+                            <button class="cancel-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">줄서기 취소</button>
                         </div>
                     </td>
                 </tr>`;
@@ -108,21 +99,13 @@
                                      </td>
                         <td class="border-t border-b py-2 px-4 text-sm text-center">
                         <div class="flex justify-center">
-                            <form class="mb-0" action="/admins/queues" method="POST">
-                                <input type="hidden" name="_csrf" value='`+token+`'/>
-                                <input type="hidden" name="kind" value="queue"/>
-                                 <input type="hidden" name="status" value="COMPLETE"/>
-                                <input type="hidden" name="memberId" value='${registerChart.memberId}'/>
-                                <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>
-                            </form>
+                            <button class="complete-btn text-white py-1 px-2 rounded" data-member-id="${registerChart.memberId}" style="background-color: #858587; width: 90px;">진료 완료</button>
                         </div>
                     </td>
                 </tr>`;
                         }
-
                         registerCharts.innerHTML += row;
                     });
-
                 }
             };
         }
@@ -150,6 +133,68 @@
         $(function () {
             $( "#modalOpenButton" ).click(function() { toggleModal(); });
             $( "#modalCloseButton" ).click(function() { toggleModal(); });
+        });
+    </script>
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/ws/queue');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/queues/main/subjects/'+document.getElementById('subjectId').value
+                    +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                    console.log(JSON.parse(message.body));
+                    getCharts('');
+                });
+            });
+        }
+
+        function eachConnect(memberId, status) {
+            console.log('eachConnected: ');
+            stompClient.subscribe('/topic/queues/members/'+memberId+'/subjects/'+document.getElementById('subjectId').value
+                    +'/hospitals/'+document.getElementById('hospitalId').value, function (message) {
+                console.log(JSON.parse(message.body));
+                getCharts('');
+            });
+            send(memberId, status);
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function send(memberId, status) {
+            let msg = {
+                'userType': 'ADMIN',
+                'memberId': memberId,
+                'hospitalId': document.getElementById('hospitalId').value,
+                'subjectId': document.getElementById('subjectId').value,
+                'status': status
+            }
+
+            stompClient.send("/app/queue", {}, JSON.stringify(msg));
+        }
+
+        $(function () {
+            $(document).ready(function(){connect();})
+            $(document).on("click", ".start-btn", function() {
+                var memberId = $(this).data('member-id');
+                eachConnect(memberId, "ENTER");
+            });
+            $(document).on("click", ".cancel-btn", function() {
+                var memberId = $(this).data('member-id');
+                eachConnect(memberId, "CANCEL");
+            });
+            $(document).on("click", ".complete-btn", function() {
+                var memberId = $(this).data('member-id');
+                eachConnect(memberId, "COMPLETE");
+            });
+            $( "#disconnect" ).click(function() { disconnect(); });
         });
     </script>
 </head>
@@ -190,6 +235,8 @@
     <div class="container h-2/5 mx-auto p-5">
         <div class="flex justify-between items-center">
             <div class="flex flex-row">
+                <input type="hidden" id="hospitalId" th:value="${@adminRq.getAdmin().getHospital().getId()}"/>
+                <input type="hidden" id="subjectId" th:value="${@adminRq.getAdmin().getSubject().getId()}"/>
                 <h1 class="font-semibold text-lg text-[#78C4BA]">줄서기 관리</h1>
                 <!-- 현장 접수 버튼 -->
                 <button id="modalOpenButton" data-modal-toggle="popup-modal" class="text-white py-1 px-2 rounded bg-[#78C4BA] ml-3">현장 접수</button>
@@ -290,26 +337,15 @@
                     <span th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}" class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">대기 중</span>
                 </td>
                 <td class="border-t border-b py-2 px-4 text-sm text-center">
-                    <form
-                            th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}"
-                            class="mb-0"
-                            action="/admins/queues"
-                            method="POST">
-
+                    <form th:if="${#strings.equals(reservation.registerStatus, 'WAITING')}" class="mb-0" action="/admins/queues" method="POST">
                         <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-                        <input type="hidden" name="kind" value="reservation"/>
                         <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
                         <input type="hidden" name="status" value="ENTER"/>
-
-                        <button
-                                class="text-white py-1 px-2 rounded"
-                                th:style="${#strings.equals(reservation.status, 'CONFIRMED')} ? 'background-color: #4392F9; width: 90px;' : 'background-color: #D3D3D3; width: 90px;'"
+                        <button class="text-white py-1 px-2 rounded" th:style="${#strings.equals(reservation.status, 'CONFIRMED')} ? 'background-color: #4392F9; width: 90px;' : 'background-color: #D3D3D3; width: 90px;'"
                                 th:disabled="${!#strings.equals(reservation.status, 'CONFIRMED')}">진료 시작</button>
-
                     </form>
                     <form th:if="${#strings.equals(reservation.registerStatus, 'ENTER')}" class="mb-0" action="/admins/queues" method="POST">
                         <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
-                        <input type="hidden" name="kind" value="reservation"/>
                         <input type="hidden" name="memberId" th:value='${reservation.member.id}'/>
                         <input type="hidden" name="status" value="COMPLETE"/>
                         <button class="text-white py-1 px-2 rounded" style="background-color: #F83758; width: 90px;">진료 완료</button>

@@ -3,6 +3,76 @@
     <title>줄서기 등록 페이지</title>
     <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/webjars/jquery/jquery.min.js"></script>
+    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script>
+        var stompClient = null;
+        function connect() {
+            var socket = new SockJS('/ws/queue');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/queues/main/subjects/'+window.location.pathname.split('/')[3]
+                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
+                    console.log(JSON.parse(message.body));
+                });
+                stompClient.subscribe('/topic/queues/members/'+document.getElementById('getMemberId').value
+                    +'/subjects/'+window.location.pathname.split('/')[3]
+                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
+                    if((JSON.parse(message.body).userType == 'ADMIN')){
+                        console.log(JSON.parse(message.body));
+                        changeStatus(JSON.parse(message.body).status);
+                    }
+                });
+            });
+        }
+
+        function changeStatus(status){
+            if (status == 'ENTER'){
+                var statusBtn = document.getElementById("status-btn");
+                statusBtn.innerHTML = "";
+                statusBtn.innerHTML = `<div class="flex items-center justify-center w-64 mb-6"
+                     style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
+                    <span class="text-white" style="font-size: 15px;">진료 중</span>
+                </div>`;
+            } else if (status == 'CANCEL'){
+                window.location.reload();
+            } else if (status == 'COMPLETE'){
+                window.location.href = window.location.origin + "/members";
+            }
+        }
+
+        function send(memberId, status) {
+            let msg = {
+                'userType': 'MEMBER',
+                'memberId': memberId,
+                'hospitalId': window.location.pathname.split('/')[5],
+                'subjectId': window.location.pathname.split('/')[3],
+                'status': status
+            }
+
+            stompClient.send("/app/queue/main", {}, JSON.stringify(msg));
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        $(function () {
+            var memberId = document.getElementById('getMemberId').value;
+            $(document).ready(function(){connect();})
+            $( "#register-btn" ).click(function() {
+                send(memberId, 'WAITING'); });
+            $( "#cancel-btn" ).click(function() {
+                send(memberId, 'CANCEL'); });
+            $( "#disconnect" ).click(function() { disconnect(); });
+        });
+    </script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
@@ -32,6 +102,7 @@
         </div>
         <!-- 선택한 병원/진료과 안내 -->
         <div class="flex w-64 justify-center mt-10 mb-6">
+            <input id="getMemberId" type="hidden" th:value="${@rq.getMember().getId()}">
             <div class="flex flex-col justify-center text-center h-full text-lg font-bold">
                 <div class="text-[#858587]" th:text="|${@rq.getMember.username}이 선택하신|">이름이 선택하신</div>
                 <div class="text-[#78C4BA]" th:text="|${queueInfo.hospital.name} ${queueInfo.subject.name}|">병원 / 진료과</div>
@@ -59,17 +130,24 @@
         </div>
         <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
+            <div id="status-btn">
             <form th:if="${queueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
-                <button type="submit" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
+                <button type="submit" id="register-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
                 </button>
             </form>
-            <form th:unless="${queueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
-                <input type="hidden" name="_method" value="delete"/>
-                <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
-                    <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
-                </button>
-            </form>
+            <div th:if="${queueInfo.registerChart != null}">
+                <form th:if="${#strings.toString(queueInfo.waitingStatus) == 'WAITING'}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <button id="cancel-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
+                        <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
+                    </button>
+                </form>
+                <div th:if="${#strings.toString(queueInfo.waitingStatus) == 'ENTER'}" class="flex items-center justify-center w-64" style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
+                    <span class="text-white" style="font-size: 15px;">진료 중</span>
+                </div>
+            </div>
+            </div>
             <a th:href="@{/members/subjects}">
                 <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: white; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                     <span class="text-[#78C4BA]" style="font-size: 15px;">진료과/병원 다시 선택하기</span>

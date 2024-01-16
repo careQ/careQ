@@ -27,7 +27,11 @@
             stompClient = Stomp.over(socket);
             stompClient.connect({}, function (frame) {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/members/'+document.getElementById('getMemberId').value
+                stompClient.subscribe('/topic/reservations/main/subjects/'+window.location.pathname.split('/')[3]
+                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
+                    console.log(JSON.parse(message.body));
+                });
+                stompClient.subscribe('/topic/reservations/members/'+document.getElementById('getMemberId').value
                     +'/subjects/'+window.location.pathname.split('/')[3]
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
                     if((JSON.parse(message.body).userType == 'ADMIN')&&(JSON.parse(message.body).status == 'CONFIRMED')){
@@ -36,6 +40,18 @@
                     }
                 });
             });
+        }
+
+        function send(memberId) {
+            let msg = {
+                'userType': 'MEMBER',
+                'memberId': memberId,
+                'hospitalId': window.location.pathname.split('/')[5],
+                'subjectId': window.location.pathname.split('/')[3],
+                'status': 'PENDING'
+            }
+
+            stompClient.send("/app/reservation/main", {}, JSON.stringify(msg));
         }
 
         function disconnect() {
@@ -47,6 +63,9 @@
 
         $(function () {
             $(document).ready(function(){connect();})
+            $( "#delete-btn" ).click(function() {
+                var memberId = document.getElementById('getMemberId').value;
+                send(memberId); });
             $( "#disconnect" ).click(function() { disconnect(); });
         });
     </script>
@@ -90,7 +109,7 @@
         <p style="font-size: 14px;" th:text="'예약 진료과 : ' + ${subject.name}"></p>
         <p style="font-size: 14px;" th:text="'예약 일자 : ' + ${date}"></p>
         <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/' + ${reservationId}}" method="post">
-            <button id="delete-btn">삭제</button>
+            <button id="delete-btn" >삭제</button>
         </form>
     </div>
 </main>
