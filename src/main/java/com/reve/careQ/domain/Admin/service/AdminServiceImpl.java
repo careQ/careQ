@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -180,12 +179,12 @@ public class AdminServiceImpl implements AdminService{
     }
 
     private RsData<Admin> isUsernameAlreadyUsedRs (String username) {
-        return findByUsername(username).map(admin -> RsData.<Admin>of("F-1", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username)))
+        return findByUsername(username).map(admin -> RsData.<Admin>of("F-2", "해당 아이디(%s)는 이미 사용중입니다.".formatted(username)))
                 .orElse(RsData.success());
     }
 
     private RsData<Admin> isEmailAlreadyUsedRs (String email) {
-        return findByEmail(email).map(admin -> RsData.<Admin>of("F-1", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email)))
+        return findByEmail(email).map(admin -> RsData.<Admin>of("F-3", "해당 이메일(%s)은 이미 사용중입니다.".formatted(email)))
                 .orElse(RsData.success());
     }
 
@@ -194,7 +193,7 @@ public class AdminServiceImpl implements AdminService{
     }
 
     private RsData<Admin> isSubjectAlreadyExistRs(String subjectCode){
-        return isSubjectAlreadyExist(subjectCode) ? RsData.success() : RsData.of("F-1", "해당 과목코드(%s)는 존재하지 않습니다.".formatted(subjectCode));
+        return isSubjectAlreadyExist(subjectCode) ? RsData.success() : RsData.of("F-4", "해당 과목코드(%s)는 존재하지 않습니다.".formatted(subjectCode));
     }
 
     private boolean isAdminAlreadyExist(Optional<Hospital> hospitalOptional, Optional<Subject> subjectOptional) {
@@ -213,7 +212,7 @@ public class AdminServiceImpl implements AdminService{
             String[] parseXml = hospitalService.parseXml(xmlData).getData();
 
             if (parseXml == null) {
-                return RsData.of("F-1", "존재하지 않는 병원코드 입니다.");
+                return RsData.of("F-5", "존재하지 않는 병원코드 입니다.");
             }
 
             hospitalService.insert(parseXml[0], parseXml[1], parseXml[2], parseXml[3]);
@@ -238,12 +237,12 @@ public class AdminServiceImpl implements AdminService{
 
     private RsData<Admin> isSubjectAlreadyExistByNameRs(Optional<Subject> subjectOptional, String subjectName) {
         return subjectOptional.map(subject -> RsData.<Admin>success())
-                .orElse(RsData.of("F-1", "해당 진료과목(%s)은 존재하지 않습니다.\n진료과목명을 정확하게 입력해주세요.".formatted(subjectName)));
+                .orElse(RsData.of("F-2", "해당 진료과목(%s)은 존재하지 않습니다.\n진료과목명을 정확하게 입력해주세요.".formatted(subjectName)));
     }
 
     private RsData<Admin> isHospitalAlreadyExistByNameRs(Optional<Hospital> hospitalOptional, String hospitalName) {
         return hospitalOptional.map(subject -> RsData.<Admin>success())
-                .orElse(RsData.of("F-1", "해당 병원명(%s)은 존재하지 않습니다.\n 병원명을 정확하게 입력해주세요.".formatted(hospitalName)));
+                .orElse(RsData.of("F-3", "해당 병원명(%s)은 존재하지 않습니다.\n 병원명을 정확하게 입력해주세요.".formatted(hospitalName)));
     }
 
     private Authentication getAuthentication(){
@@ -254,7 +253,7 @@ public class AdminServiceImpl implements AdminService{
     @Transactional
     public List<Reservation> getReservationsForCurrentAdmin() {
         Admin currentAdmin = getCurrentAdmin()
-                .orElseThrow(() -> new NoSuchElementException("현재 관리자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException("인증되지 않은 관리자입니다."));
 
         return getReservationsForAdmin(currentAdmin);
     }

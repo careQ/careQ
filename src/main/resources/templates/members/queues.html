@@ -17,6 +17,9 @@
                 stompClient.subscribe('/topic/queues/main/subjects/'+window.location.pathname.split('/')[3]
                     +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
                     console.log(JSON.parse(message.body));
+                    if((JSON.parse(message.body).userType == 'ADMIN') && (JSON.parse(message.body).status == 'RELOAD')){
+                        window.location.reload();
+                    }
                 });
                 stompClient.subscribe('/topic/queues/members/'+document.getElementById('getMemberId').value
                     +'/subjects/'+window.location.pathname.split('/')[3]
@@ -131,22 +134,22 @@
         <!-- 줄서기 버튼 -->
         <div class="flex flex-col w-64 my-10">
             <div id="status-btn">
-            <form th:if="${queueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
-                <button type="submit" id="register-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
-                    <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
-                </button>
-            </form>
-            <div th:if="${queueInfo.registerChart != null}">
-                <form th:if="${#strings.toString(queueInfo.waitingStatus) == 'WAITING'}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
-                    <input type="hidden" name="_method" value="delete"/>
-                    <button id="cancel-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
-                        <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
+                <form th:if="${queueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
+                    <button type="submit" id="register-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
+                        <span class="text-white" style="font-size: 15px;">줄서기 등록</span>
                     </button>
                 </form>
-                <div th:if="${#strings.toString(queueInfo.waitingStatus) == 'ENTER'}" class="flex items-center justify-center w-64" style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
-                    <span class="text-white" style="font-size: 15px;">진료 중</span>
+                <div th:unless="${queueInfo.registerChart == null}">
+                    <form th:if="${#strings.toString(queueInfo.registerChart.status) == 'WAITING'}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
+                        <input type="hidden" name="_method" value="delete"/>
+                        <button id="cancel-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #F83758; padding: 5px 15px; border: 1px solid #F83758; box-shadow: none;">
+                            <span class="text-white" style="font-size: 15px;">줄서기 취소</span>
+                        </button>
+                    </form>
+                    <div th:if="${#strings.toString(queueInfo.registerChart.status) == 'ENTER'}" class="flex items-center justify-center w-64" style="background-color: #4392F9; padding: 5px 15px; border-radius: 5px;">
+                        <span class="text-white" style="font-size: 15px;">진료 중</span>
+                    </div>
                 </div>
-            </div>
             </div>
             <a th:href="@{/members/subjects}">
                 <button class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: white; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">

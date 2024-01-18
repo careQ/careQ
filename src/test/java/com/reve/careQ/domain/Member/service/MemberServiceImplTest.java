@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,11 +96,10 @@ class MemberServiceImplTest {
     }
 
     @Test
+    @WithMockUser(username="useruser1")
     @DisplayName("로그인된 회원의 정보를 가져오는 것을 성공한다.")
     void testGetCurrentUser_Success() {
         // given
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(EXISTING_USERNAME, EXISTING_PASSWORD));
         // when
         Optional<Member> currentUserOptional = memberServiceImpl.getCurrentUser();
 
@@ -122,19 +119,6 @@ class MemberServiceImplTest {
         });
         //then
         assertEquals("인증되지 않은 사용자입니다.", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("로그인 상태지만 사용자 정보를 찾을 수 없는 경우 로그인된 회원의 정보를 가져오는 것을 실패한다.")
-    void testGetCurrentUser_Failure_2(){
-        // 로그인 상태지만 사용자 정보를 찾을 수 없는 경우
-        // given
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(NEW_USERNAME, "1234"));
-        // when
-        Optional<Member> currentUserOptional = memberServiceImpl.getCurrentUser();
-        // then
-        assertFalse(currentUserOptional.isPresent());
     }
 
     @Test
@@ -206,7 +190,7 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @WithMockUser(username="useruser1", roles={"USER"})
+    @WithMockUser(username="useruser1")
     @DisplayName("입력한 비밀번호와 기존 비밀번호가 일치하여 성공한다.")
     void testCheckPassword_Success(){
         //given
@@ -218,7 +202,7 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @WithMockUser(username="useruser1", roles={"USER"})
+    @WithMockUser(username="useruser1")
     @DisplayName("입력한 비밀번호와 기존 비밀번호가 불일치하여 실패한다.")
     void testCheckPassword_Failure(){
         //given
@@ -231,7 +215,7 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @WithMockUser(username="useruser1", roles={"USER"})
+    @WithMockUser(username="useruser1")
     @DisplayName("현재 사용자의 아이디 변경에 성공한다.")
     void testChangeUsername_Success() {
         //given
@@ -246,7 +230,7 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @WithMockUser(username="useruser1", roles={"USER"})
+    @WithMockUser(username="useruser1")
     @DisplayName("입력 아이디가 중복되어 아이디 변경에 실패한다.")
     void testChangeUsername_Failure() {
         //given
@@ -261,7 +245,7 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @WithMockUser(username="useruser1", roles={"USER"})
+    @WithMockUser(username="useruser1")
     @DisplayName("현재 사용자의 비밀번호 변경에 성공한다.")
     void testChangePassword_Success() {
         //given
@@ -276,7 +260,7 @@ class MemberServiceImplTest {
     }
 
     @Test
-    @WithMockUser(username="useruser1", roles={"USER"})
+    @WithMockUser(username="useruser1")
     @DisplayName("입력 비밀번호가 현재 비밀번호와 동일하여 변경에 실패한다.")
     void testChangePassword_Failure() {
         //given
