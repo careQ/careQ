@@ -180,6 +180,17 @@
             stompClient.send("/app/queue", {}, JSON.stringify(msg));
         }
 
+        function updateWaiting() {
+            let msg = {
+                'userType': 'ADMIN',
+                'hospitalId': document.getElementById('hospitalId').value,
+                'subjectId': document.getElementById('subjectId').value,
+                'status': 'RELOAD'
+            }
+
+            stompClient.send("/app/queue/main", {}, JSON.stringify(msg));
+        }
+
         $(function () {
             $(document).ready(function(){connect();})
             $(document).on("click", ".start-btn", function() {
@@ -189,10 +200,16 @@
             $(document).on("click", ".cancel-btn", function() {
                 var memberId = $(this).data('member-id');
                 eachConnect(memberId, "CANCEL");
+                setTimeout(function () {
+                    updateWaiting();
+                }, 1000);
             });
             $(document).on("click", ".complete-btn", function() {
                 var memberId = $(this).data('member-id');
                 eachConnect(memberId, "COMPLETE");
+                setTimeout(function () {
+                    updateWaiting();
+                }, 1000);
             });
             $( "#disconnect" ).click(function() { disconnect(); });
         });

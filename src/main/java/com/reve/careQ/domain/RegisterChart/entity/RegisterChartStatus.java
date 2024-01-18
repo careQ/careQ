@@ -5,5 +5,6 @@ public enum RegisterChartStatus {
     ENTER, // 순서가 되었음(진료 중, 대기 중)
     CANCEL, // 줄서기 취소
     COMPLETE, // 진료 완료
-    CANCELLED // 환자 예약 취소
+    CANCELLED, // 환자 예약 취소
+    RELOAD // 줄서기 상태 변화로 인한 새로고침
 }
