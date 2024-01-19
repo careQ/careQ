@@ -40,15 +40,18 @@ public class SubjectService {
     @Transactional
     public RsData<Subject> insert(String code, String name) {
 
+        Subject subject = createSubject(code, name);
+
+        return RsData.of("S-1", "과목테이블에 삽입되었습니다.", subject);
+    }
+
+    private Subject createSubject(String code, String name) {
         Subject subject = Subject
                 .builder()
                 .code(code)
                 .name(name)
                 .build();
 
-        subjectRepository.save(subject);
-
-        return RsData.of("S-1", "과목테이블에 삽입되었습니다.", subject);
-
+        return subjectRepository.save(subject);
     }
 }
