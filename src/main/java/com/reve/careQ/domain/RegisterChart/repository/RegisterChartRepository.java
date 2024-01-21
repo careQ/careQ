@@ -22,5 +22,5 @@ public interface RegisterChartRepository extends JpaRepository<RegisterChart, Lo
     List<RegisterChart> findByMemberIdAndStatus(Long memberId, RegisterChartStatus status);
     @EntityGraph(attributePaths = {"admin", "admin.subject", "admin.hospital"})
     List<RegisterChart> findByMemberAndIsDeletedFalse(@Param("member") Member member);
-    Long countByAdminHospitalIdAndAdminSubjectIdAndStatusNotIn(Long hospitalId, Long subjectId, List<RegisterChartStatus> statuses);
+    List<RegisterChart> findByAdminHospitalIdAndAdminSubjectIdAndStatusInOrderByTimeAsc(Long hospitalId, Long subjectId, List<RegisterChartStatus> statuses);
 }
