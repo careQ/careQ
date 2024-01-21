@@ -31,10 +31,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -235,6 +232,20 @@ public class RegisterChartServiceImpl implements RegisterChartService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public QueueInfoDto getQueueInfo(Long hospitalId, Long subjectId) {
+        Admin admin = findAdmin(hospitalId, subjectId);
+        Member currentUser = getCurrentUser();
+        Subject subject = findSubject(subjectId);
+        Hospital hospital = findHospital(hospitalId);
+
+        Optional<RegisterChart> optRegisterChart = Optional.ofNullable(findRegisterChart(admin, currentUser));
+
+        return optRegisterChart.map(rc -> createQueueInfoDto(rc, subject, hospital, admin))
+                .orElseGet(() -> createQueueInfoWithoutRegisterChart(subject, hospital, admin));
+    }
+
     private List<RegisterChart> findRegisterChartsByMember(Member member) {
         return registerChartRepository.findByMemberAndIsDeletedFalse(member);
     }
@@ -248,26 +259,33 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private QueueInfoDto createQueueInfoDto(RegisterChart registerChart, Subject subject, Hospital hospital, Admin admin) {
-        Long waitingCount = calculateWaitingCount(hospital.getId(), subject.getId(), registerChart);
-        String waitingStatus = waitingStatus(waitingCount, registerChart);
-        return QueueInfoDto.of(registerChart, subject, hospital, admin, waitingCount, calculateExpectedWaitingTime(waitingCount), waitingStatus);
+        Optional<RegisterChart> optRegisterChart = Optional.ofNullable(registerChart);
+
+        //rc = registerChart
+        Long waitingCount = optRegisterChart.map(rc -> calculateCurrentUserWaitingIndex(hospital.getId(), subject.getId(), rc)).orElse(null);
+        String waitingStatus = optRegisterChart.map(rc -> waitingStatus(waitingCount, rc)).orElse(null);
+        Long expectedWaitingTime = optRegisterChart.map(chart -> calculateExpectedWaitingTime(waitingCount)).orElse(null);
+
+        return QueueInfoDto.of(registerChart, subject, hospital, admin, waitingCount, expectedWaitingTime, waitingStatus);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public QueueInfoDto getQueueInfo(Long hospitalId, Long subjectId) {
-        Admin admin = findAdmin(hospitalId, subjectId);
-        Member currentUser = getCurrentUser();
-        RegisterChart registerChart = findRegisterChart(admin, currentUser);
-        Subject subject = findSubject(subjectId);
-        Hospital hospital = findHospital(hospitalId);
+    private QueueInfoDto createQueueInfoWithoutRegisterChart(Subject subject, Hospital hospital, Admin admin) {
+        Long waitingCount = calculateTotalWaitingCount(hospital.getId(), subject.getId());
+        Long expectedWaitingTime = calculateExpectedWaitingTime(waitingCount);
 
-        return createQueueInfoDto(registerChart, subject, hospital, admin);
+        return QueueInfoDto.of(null, subject, hospital, admin, waitingCount, expectedWaitingTime, waitingCount.toString());
     }
 
-    private Long calculateWaitingCount(Long hospitalId, Long subjectId, RegisterChart registerChart) {
-        Long count = registerChartRepository.countByAdminHospitalIdAndAdminSubjectIdAndStatusNotIn(hospitalId, subjectId, Arrays.asList(RegisterChartStatus.CANCEL, RegisterChartStatus.COMPLETE, RegisterChartStatus.CANCELLED));
-        return isRegisterChartWaitingOrEnter(registerChart) ? count - 1 : count;
+    private Long calculateTotalWaitingCount(Long hospitalId, Long subjectId) {
+        List<RegisterChart> registerCharts = registerChartRepository.findByAdminHospitalIdAndAdminSubjectIdAndStatusInOrderByTimeAsc(hospitalId, subjectId, Arrays.asList(RegisterChartStatus.WAITING, RegisterChartStatus.ENTER));
+        return (long) registerCharts.size();
+    }
+
+    private Long calculateCurrentUserWaitingIndex(Long hospitalId, Long subjectId, RegisterChart registerChart) {
+        List<RegisterChart> registerCharts = registerChartRepository.findByAdminHospitalIdAndAdminSubjectIdAndStatusInOrderByTimeAsc(hospitalId, subjectId, Arrays.asList(RegisterChartStatus.WAITING, RegisterChartStatus.ENTER));
+        int currentUserIndex = registerCharts.indexOf(registerChart);
+
+        return (currentUserIndex != -1) ? Long.valueOf(currentUserIndex) : Long.valueOf(registerCharts.size());
     }
 
     private String waitingStatus(Long waitingCount, RegisterChart registerChart) {
@@ -275,7 +293,7 @@ public class RegisterChartServiceImpl implements RegisterChartService {
     }
 
     private Long calculateExpectedWaitingTime(Long waitingCount) {
-        return waitingCount * 5;
+        return (waitingCount != null) ? waitingCount * 5 : null;
     }
 
     private boolean isRegisterChartWaitingOrEnter(RegisterChart registerChart) {
