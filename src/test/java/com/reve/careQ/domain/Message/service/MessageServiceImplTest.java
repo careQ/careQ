@@ -28,11 +28,12 @@ class MessageServiceImplTest {
     @DisplayName("새로운 메세지가 성공적으로 저장된다.")
     void testInsert_Success() {
         // given
-        MessageDto messageDto = MessageDto.builder()
-                .chatId(EXISTING_CHATID)
-                .content("메세지 내용")
-                .userType(MessageDto.UserType.MEMBER)
-                .build();
+        MessageDto messageDto = new MessageDto();
+        messageDto.setType(MessageDto.Type.TALK);
+        messageDto.setUserType(MessageDto.UserType.MEMBER);
+        messageDto.setChatId(EXISTING_CHATID);
+        messageDto.setContent("메세지 내용");
+        messageDto.setSender("useruser1");
 
         Chat existingChat = chatServiceImpl.findById(messageDto.getChatId()).get();
 
