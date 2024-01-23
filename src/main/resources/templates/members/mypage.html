@@ -34,6 +34,20 @@
         }
 
         function changeUsername(username, password){
+            // 아이디가 올바른지 체크
+            username = username.trim();
+
+            if (username.length == 0) {
+                toastWarning('아이디를 입력해주세요.');
+                $('#username').focus();
+                return;
+            }
+            if (username.length < 8) {
+                toastWarning('아이디를 8자 이상 입력해주세요.');
+                $('#username').focus();
+                return;
+            }
+
             const xhttp = new XMLHttpRequest();
 
             xhttp.open("GET", "/members/mypage?username="+ username + "&password="+ password);
@@ -63,6 +77,19 @@
         }
 
         function changePassword(newpassword){
+            // 비밀번호가 올바른지 체크
+            newpassword = newpassword.trim();
+
+            if (newpassword.length == 0) {
+                $('#newpassword').focus();
+                toastWarning('비밀번호를 입력해주세요.');
+                return;
+            }
+            if (newpassword.length < 4) {
+                toastWarning('비밀번호를 4자 이상 입력해주세요.');
+                $('#newpassword').focus();
+                return;
+            }
             const xhttp = new XMLHttpRequest();
 
             xhttp.open("GET", "/members/mypage?newpassword="+ newpassword);
