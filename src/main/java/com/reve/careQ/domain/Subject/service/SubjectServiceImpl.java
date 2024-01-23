@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,14 +26,6 @@ public class SubjectServiceImpl implements SubjectService {
 
     public Optional<Subject> findByName(String name) {
         return subjectRepository.findByName(name);
-    }
-
-    @Transactional
-    public RsData<List<Subject>> find(String name) {
-
-        List<Subject> subjectList = subjectRepository.findByNameLike("%" + name + "%");
-
-        return RsData.of("S-1", "해당 이름을 포함한 과목을 찾았습니다.", subjectList);
     }
 
     @Transactional

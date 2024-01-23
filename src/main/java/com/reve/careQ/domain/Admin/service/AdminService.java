@@ -5,6 +5,7 @@ import com.reve.careQ.domain.Hospital.entity.Hospital;
 import com.reve.careQ.domain.RegisterChart.dto.RegisterChartDto;
 import com.reve.careQ.domain.RegisterChart.entity.RegisterChart;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
+import com.reve.careQ.domain.Subject.entity.Subject;
 import com.reve.careQ.global.rsData.RsData;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public interface AdminService {
     List<String> selectAllStates(String subjectCode);
     List<String> selectAllCities(String subjectCode, String state);
     List<Hospital> selectHospitalsByStateAndCity(String subjectCode, String state, String city, String name);
+    List<Subject> selectSubjectsByName(String name);
     List<Reservation> getReservationsForAdmin(Admin admin);
     List<RegisterChart> getRegisterChartByAdminAndMemberName(Admin admin, String name);
     List<RegisterChartDto> getRegisterChartDtoByMemberName(String name);

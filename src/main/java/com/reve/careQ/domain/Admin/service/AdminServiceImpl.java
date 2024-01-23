@@ -64,6 +64,10 @@ public class AdminServiceImpl implements AdminService{
         return adminRepository.selectHospitalsByStateAndCity(subjectCode, state, city, name);
     }
 
+    public List<Subject> selectSubjectsByName(String name) {
+        return adminRepository.selectSubjectsByName(name);
+    }
+
     public List<Reservation> getReservationsForAdmin(Admin admin) {
         return reservationRepository.findByAdmin(admin);
     }
