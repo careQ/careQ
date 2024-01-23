@@ -1,9 +1,7 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>예약 신청 페이지</title>
-    <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <script src="/webjars/jquery/jquery.min.js"></script>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
@@ -45,8 +43,6 @@
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
-        <!-- TODO: API 수정 -> 헤더 -->
-        <!-- 헤더 -->
         <div class="h-8 w-64 relative">
             <a class="absolute left-2" th:href="@{/members/subjects/{subjectId}/hospitals/{hospitalId}(subjectId=${subject.id}, hospitalId=${hospital.id})}">
                 <button>
@@ -167,31 +163,30 @@
             });
 
         </script>
-        <!--        <script>-->
-        <!--            // 오늘 날짜 구하기-->
-        <!--            var today = new Date();-->
-        <!--            today.setDate(today.getDate() + 1);-->
+                <script>
+                    // 오늘 날짜 구하기
+                    var today = new Date();
+                    today.setDate(today.getDate() + 1);
 
-        <!--            // 날짜를 yyyy-MM-dd 형식으로 변환-->
-        <!--            var yyyy = today.getFullYear();-->
-        <!--            var mm = today.getMonth() + 1;-->
-        <!--            var dd = today.getDate();-->
+                    // 날짜를 yyyy-MM-dd 형식으로 변환
+                    var yyyy = today.getFullYear();
+                    var mm = today.getMonth() + 1;
+                    var dd = today.getDate();
 
-        <!--            if (mm < 10) {-->
-        <!--                mm = '0' + mm;-->
-        <!--            }-->
+                    if (mm < 10) {
+                        mm = '0' + mm;
+                    }
 
-        <!--            if (dd < 10) {-->
-        <!--                dd = '0' + dd;-->
-        <!--            }-->
+                    if (dd < 10) {
+                        dd = '0' + dd;
+                    }
 
-        <!--            var minDate = yyyy + '-' + mm + '-' + dd;-->
+                    var minDate = yyyy + '-' + mm + '-' + dd;
 
-        <!--            // 최소 날짜를 설정-->
-        <!--            document.getElementById("startDateInput").setAttribute("min", minDate);-->
-        <!--        </script>-->
+                    // 최소 날짜를 설정
+                    document.getElementById("startDateInput").setAttribute("min", minDate);
+                </script>
     </div>
 </main>
-
 </body>
 </html>

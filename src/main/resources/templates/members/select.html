@@ -1,14 +1,11 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>줄서기/예약 선택 페이지</title>
-    <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
-
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
-        <!-- 헤더 -->
         <div class="h-8 w-64 relative">
             <a class="absolute left-2" th:href="@{/members/subjects/{subjectId}/hospitals(subjectId=${subject.id})}">
                 <button>
@@ -18,7 +15,6 @@
                 </button>
             </a>
         </div>
-        <!-- 아이콘 -->
         <div class="flex w-64 justify-center mt-5">
             <div class="mb-6 inline-block rounded-full bg-[#C0E1DE] p-4">
                 <div class="inline-block rounded-full bg-[#78C4BA] p-4">
