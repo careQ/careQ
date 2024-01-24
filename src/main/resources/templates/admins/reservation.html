@@ -1,9 +1,25 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
-    <title>관리자 메인 페이지</title>
+    <title>관리자 예약 관리 페이지</title>
     <script src="/webjars/jquery/jquery.min.js"></script>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table th, table td {
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-right: none;
+        }
+
+        table thead tr {
+            background-color: #f2f2f2;
+        }
+    </style>
     <script>
         var stompClient = null;
 
@@ -57,7 +73,7 @@
         });
     </script>
 </head>
-<body class="bg-[#ffffff]">
+<body>
 <main layout:fragment="main">
     <header class="text-gray-600 body-font">
         <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
@@ -81,7 +97,7 @@
             <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
             </nav>
             <!-- 로그아웃 버튼 -->
-            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#ffffff] mt-4 md:mt-0">
+            <form th:if="${@adminRq.login}" th:action="|/admins/logout|" method="post" class="inline-flex items-center border-0 py-1 px-3 focus:outline-none text-base text-[#78c4ba] mt-4 md:mt-0">
                 <svg class="w-[24px] h-[24px] fill-[#78c4ba]" viewBox="0 0 576 512" xmlns="http://www.w3.org/2000/svg">
                     <path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"></path>
                 </svg>
@@ -96,60 +112,43 @@
             <input type="hidden" id="hospitalId" th:value="${@adminRq.getAdmin().getHospital().getId()}"/>
             <input type="hidden" id="subjectId" th:value="${@adminRq.getAdmin().getSubject().getId()}"/>
             <h1 class="font-semibold text-lg text-[#78C4BA]">예약자 관리</h1>
-            <!-- 검색창 -->
-            <style>
-                .input-group {
-                    width: auto;
-                }
-            </style>
-            <div class="input-group">
-                <input type="text" id="name" placeholder="Search" class="input input-bordered text-black text-xs" style="height: 32px;width: 212px;">
-                <button class="btn btn-sm" style="background-color: #78C4BA !important; border: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
-            </div>
         </div>
         <!-- 예약 목록 표시 -->
         <table class="w-full border-collapse mt-5">
             <thead>
-            <tr class="bg-gray-300 text-black">
-                <th>회원이름</th>
-                <th>관리자 이름</th>
-                <th>예약일시</th>
-                <th>예약상태</th>
-                <th>승인여부</th>
-            </tr>
+                <tr class="bg-gray-200 text-black">
+                    <th class="py-2 px-4 text-center">순번</th>
+                    <th class="py-2 px-4 text-center">환자 ID</th>
+                    <th class="py-2 px-4 text-center">예약 일시</th>
+                    <th class="py-2 px-4 text-center">예약 상태</th>
+                    <th class="py-2 px-4 text-center">승인 여부</th>
+                </tr>
             </thead>
             <tbody>
             <!-- 예약 목록을 순회하며 표시 -->
-            <tr th:each="reservation : ${reservations}">
-                <td th:text="${reservation.member.username}"></td>
-                <td th:text="${reservation.admin.username}"></td>
-                <td th:text="${reservation.getFormattedDate()}"></td>
-                <td>
-                    <div th:if="${#strings.equals(reservation.status, 'PENDING')}" class="flex justify-center text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">승인 대기 중</div>
-                    <div th:if="${#strings.equals(reservation.status, 'CONFIRMED')}" class="flex justify-center text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 확정</div>
-                    <div th:if="${#strings.equals(reservation.status, 'CANCELLED')}" class="flex justify-center text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">예약 취소</div>
+            <tr th:each="reservation, reservationStat : ${reservations}">
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservationStat.count}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.member.username}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.getFormattedDate()}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center">
+                    <div class="flex justify-center">
+                        <div th:if="${reservation.isDeleted and #strings.equals(reservation.registerStatus, 'COMPLETE') and #strings.equals(reservation.status, 'CONFIRMED')}" class="text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">예약 확정</div>
+                        <div th:if="${#strings.equals(reservation.status, 'PENDING')}" class="text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">승인 대기 중</div>
+                        <div th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'CONFIRMED')}" class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 확정</div>
+                        <div th:if="${#strings.equals(reservation.status, 'CANCELLED')}" class="text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">예약 취소</div>
+                    </div>
                 </td>
-                <td>
-                    <th:block th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'COMPLETE')}">
-                        <button id="complete-btn" th:value="${reservation.member.id}" disabled style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">진료 완료</button>
-                    </th:block>
-                    <th:block th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'CANCELLED')}">
-                        <div th:value="${reservation.member.id}" disabled class="flex justify-center text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">환자 취소</div>
-                    </th:block>
-                    <th:block th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'PENDING')}">
-                        <button class="confirm-btn" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">승인</button>
-                    </th:block>
-                    <th:block th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'CONFIRMED')}">
-                        <form class="m-0" action='/admins/reservations' method="POST">
+                <td class="border-t border-b py-2 px-4 text-sm text-center">
+                    <div class="flex justify-center">
+                        <div th:if="${reservation.isDeleted and #strings.equals(reservation.registerStatus, 'COMPLETE')}" th:value="${reservation.member.id}" class="text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">진료 완료</div>
+                        <div th:if="${reservation.isDeleted and #strings.equals(reservation.status, 'CANCELLED')}" th:value="${reservation.member.id}" class="flex justify-center text-[#858587] py-1 px-2 rounded" style="background-color: white; border: 1px solid #858587; width: 90px;">환자 취소</div>
+                        <button th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'PENDING')}" class="confirm-btn py-1 px-2 rounded" th:value="${reservation.member.id}" style="background-color: #4392F9; color: white; width: 90px;">승인</button>
+                        <form th:if="${!reservation.isDeleted and #strings.equals(reservation.status, 'CONFIRMED')}" class="m-0" action='/admins/reservations' method="POST">
                             <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
                             <input type="hidden" name="memberId" th:value="${reservation.member.id}"/>
-                            <button style="background-color: #F83758; color: white; border-radius: 5px; padding: 3px 15px; margin-top: 5px;">예약 취소</button>
+                            <button class="py-1 px-2 rounded" style="background-color: #F83758; color: white; width: 90px;">예약 취소</button>
                         </form>
-                    </th:block>
+                    </div>
                 </td>
             </tr>
             </tbody>

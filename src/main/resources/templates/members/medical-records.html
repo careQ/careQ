@@ -18,12 +18,15 @@
                     </button>
                 </a>
                 <div class="inline-block ml-9">
-                    <h1 class="font-semibold text-lg text-[#ffffff]">진료 목록</h1>
+                    <h1 class="font-semibold text-lg text-[#ffffff]">Medical Records</h1>
                 </div>
             </div>
         </div>
         <!-- 진료 목록 -->
-        <div id="t_body" class="flex-1 w-64 p-2 overflow-y-auto">
+        <div th:if="${#lists.isEmpty(records)}" class="flex-1 flex items-center justify-center w-64 p-2 overflow-y-auto">
+            <span class='text-sm text-[#78c4ba]'>진료 내역이 없습니다.</span>
+        </div>
+        <div th:unless="${#lists.isEmpty(records)}" id="t_body" class="flex-1 w-64 p-2 overflow-y-auto">
             <!-- 진료 -->
             <tr th:each="record : ${records}">
                 <div class='flex justify-between text-center p-2 mt-2'>
