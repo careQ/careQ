@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +31,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     private Member getCurrentUser() {
         return memberService.getCurrentUser().orElseThrow(() -> new RuntimeException("현재 로그인한 사용자 정보를 가져오지 못했습니다."));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Reservation findById(Long id) {
+        return reservationRepository.findById(id).orElseThrow(() -> new RuntimeException("해당 예약을 찾을 수 없습니다."));
     }
 
     @Override
@@ -74,7 +81,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private LocalDateTime parseDateTime(String selectedDate, String selectedTime) {
-        return LocalDateTime.parse(selectedDate + "T" + selectedTime);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return LocalDateTime.parse(selectedDate + " " + selectedTime, formatter);
     }
 
     private void validateReservation(LocalDateTime dateTime, Long adminId) {

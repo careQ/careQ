@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter
@@ -57,6 +58,10 @@ public class Reservation extends BaseEntity {
     }
     public void setRegisterStatus(RegisterChartStatus registerStatus) {
         this.registerStatus = registerStatus;
+    }
+    public String getFormattedDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return date.format(formatter);
     }
 
     public RegisterChartDto toResponse() {

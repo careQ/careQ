@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationService {
+    Reservation findById(Long id);
     List<Reservation> findByMemberIdAndIsDeletedFalse(Long memberId);
     Optional<Reservation> findByAdminIdAndMemberId(Long adminId, Long memberId);
     List<Reservation> getTodayReservation(Admin admin);
