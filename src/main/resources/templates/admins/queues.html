@@ -337,7 +337,7 @@
             <tr th:each="reservation, reservationStat : ${reservations}">
                 <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservationStat.count}"></td>
                 <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.member.username}"></td>
-                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.date}"></td>
+                <td class="border-t border-b py-2 px-4 text-sm text-center" th:text="${reservation.getFormattedDate()}"></td>
                 <td class="border-t border-b py-2 px-4 text-sm text-center">
                     <!-- 예약 상태 표시 -->
                     <span th:if="${#strings.equals(reservation.status, 'PENDING')}" class="text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 신청</span>

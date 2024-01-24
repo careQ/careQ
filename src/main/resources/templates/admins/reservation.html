@@ -127,7 +127,7 @@
             <tr th:each="reservation : ${reservations}">
                 <td th:text="${reservation.member.username}"></td>
                 <td th:text="${reservation.admin.username}"></td>
-                <td th:text="${reservation.date}"></td>
+                <td th:text="${reservation.getFormattedDate()}"></td>
                 <td>
                     <div th:if="${#strings.equals(reservation.status, 'PENDING')}" class="flex justify-center text-[#4392F9] py-1 px-2 rounded" style="background-color: white; border: 1px solid #4392F9; width: 90px;">승인 대기 중</div>
                     <div th:if="${#strings.equals(reservation.status, 'CONFIRMED')}" class="flex justify-center text-[#F83758] py-1 px-2 rounded" style="background-color: white; border: 1px solid #F83758; width: 90px;">예약 확정</div>

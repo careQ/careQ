@@ -3,7 +3,6 @@ package com.reve.careQ.domain.Reservation.controller;
 import com.reve.careQ.domain.Admin.entity.Admin;
 import com.reve.careQ.domain.Admin.service.AdminService;
 import com.reve.careQ.domain.Hospital.service.HospitalService;
-import com.reve.careQ.domain.Member.service.MemberService;
 import com.reve.careQ.domain.Reservation.dto.ReservationDto;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
 import com.reve.careQ.domain.Reservation.exception.ReservationNotFoundException;
@@ -36,7 +35,6 @@ public class ReservationController {
 
     private final SimpMessageSendingOperations sendingOperations;
     private final Rq rq;
-    private final MemberService memberService;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
@@ -49,6 +47,7 @@ public class ReservationController {
         return mv;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public String createReservation(@PathVariable("subject-id") Long subjectId,
                                     @PathVariable("hospital-id") Long hospitalId,
@@ -69,9 +68,12 @@ public class ReservationController {
                                         @PathVariable("hospital-id") Long hospitalId,
                                         Model model) {
         ModelAndView mv = new ModelAndView();
+        Reservation reservation = reservationService.findById(reservationId);
 
+        mv.addObject("reservation", reservation);
         mv.addObject("subject",subjectService.findById(subjectId).get());
         mv.addObject("hospital",hospitalService.findById(hospitalId).get());
+
         mv.setViewName("members/reservations-wait");
         return mv;
     }
