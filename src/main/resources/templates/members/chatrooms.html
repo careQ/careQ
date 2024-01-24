@@ -20,6 +20,11 @@
                     var chatrooms = document.getElementById("t_body");
                     chatrooms.innerHTML = "";
 
+                    if(data.length == 0){
+                        chatrooms.classList.add("flex", "items-center");
+                        chatrooms.innerHTML = "<span class='text-sm text-[#78c4ba]'>채팅 내역이 없습니다.</span>";
+                    }
+
                     data.forEach(function (chat) {
                         var row = `<tr>
                                    <div class='flex justify-between text-center p-2 mt-2'>
