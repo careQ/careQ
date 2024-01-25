@@ -1,5 +1,6 @@
 package com.reve.careQ.global.security;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,10 +19,17 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    @Qualifier("CustomFailureHandler")
     private final AuthenticationFailureHandler customFailureHandler;
 
-    public SecurityConfig(AuthenticationFailureHandler customFailureHandler) {
+    @Qualifier("AdminFailureHandler")
+    private final AuthenticationFailureHandler adminFailureHandler;
+
+    public SecurityConfig(@Qualifier("CustomFailureHandler") AuthenticationFailureHandler customFailureHandler,
+                          @Qualifier("AdminFailureHandler") AuthenticationFailureHandler adminFailureHandler) {
         this.customFailureHandler = customFailureHandler;
+        this.adminFailureHandler = adminFailureHandler;
     }
 
     @Bean
@@ -32,6 +40,7 @@ public class SecurityConfig {
                 .formLogin(
                         formLogin -> formLogin
                                 .loginPage("/admins/login")
+                                .failureHandler(adminFailureHandler) // 로그인 실패 핸들러
                                 .defaultSuccessUrl("/admins")
 
                 )

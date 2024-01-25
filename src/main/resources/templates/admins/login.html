@@ -52,6 +52,10 @@
                 </label>
                 <input type="password" name="password" placeholder="비밀번호" class="input input-bordered"/>
             </div>
+            <!-- 에러 메시지 -->
+            <span th:if="${error}">
+                <p id="valid" class="alert alert-danger text-sm" style="background-color: #FEF2F2; color: #991B1B" th:text="${exception}"></p>
+            </span>
             <button id="btn-login-1" class="flex justify-center rounded bg-[#78C4BA] gap-1 text-white">
                 <span class="p-3">로그인</span>
             </button>

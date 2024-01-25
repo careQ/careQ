@@ -6,7 +6,6 @@
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
   <script>
     function JoinFormDto__submit(form) {
-
       // username 이(가) 올바른지 체크
       form.username.value = form.username.value.trim(); // 입력란의 입력값에 있을지 모르는 좌우공백제거
 
@@ -66,11 +65,7 @@
   </script>
 
   <div class="max-w-2xl w-full px-4">
-    <h1 class="mb-4">
-      <i class="fa-solid fa-arrow-right-to-bracket"></i>
-      회원가입
-    </h1>
-
+    <h1 class="mb-4 font-semibold text-lg">회원가입</h1>
     <form th:action method="POST" class="flex flex-col gap-6" onsubmit="JoinFormDto__submit(this); return false;">
       <div class="form-control">
         <label class="label">
@@ -104,9 +99,6 @@
         <i class="fa-solid fa-arrow-right-to-bracket"></i>
         <span>회원가입</span>
       </button>
-
-      </th:block>
-
     </form>
   </div>
 </main>
