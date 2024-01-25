@@ -2,6 +2,11 @@
 <head>
     <title>진료 과목 선택 페이지</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <style>
+        .scroll::-webkit-scrollbar{
+            display: none;
+        }
+    </style>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
@@ -67,7 +72,7 @@
                 </button>
             </div>
         </div>
-        <div class="flex-1 p-4 overflow-y-auto">
+        <div class="flex-1 p-4 scroll" style="overflow-y: scroll">
             <table>
                 <tbody id="t_body">
                 <!--진료과목 검색-->
@@ -75,8 +80,6 @@
             </table>
         </div>
     </div>
-
 </main>
 </body>
-
 </html>

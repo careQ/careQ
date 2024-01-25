@@ -41,11 +41,6 @@
     toastWarning(decodeURIComponent(params.errorMsg[0]));
   }
 
-  // 에러 메시지가 있을 경우 토스트로 표시
-  if (params.error) {
-    toastWarning(decodeURIComponent(params.error));
-  }
-
   // history.back 에 의해서 돌아온 경우에 실행됨
   // 평소에도 실행됨
   $(window).bind("pageshow", function (event) {
