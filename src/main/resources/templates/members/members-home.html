@@ -118,7 +118,7 @@
         <!-- 예약 정보 -->
         <div class="w-64 my-2">
             <div th:if="${#lists.isEmpty(reservations)}">
-                <div class="block rounded-lg bg-[#f4f4f4] text-center w-64 h-36 p-2 my-2 flex items-center justify-center" style="color:#808080; font-weight:bold; font-size: 0.8rem;">예약 내역이 존재하지 않습니다.</div>
+                <div class="block rounded-lg bg-[#f4f4f4] text-center w-64 h-36 p-2 my-2 flex items-center justify-center" style="color:#808080; font-weight:bold; font-size: 0.8rem;">예약 내역이 없습니다.</div>
             </div>
             <div th:unless="${#lists.isEmpty(reservations)}">
                 <div id="carouselExampleControls" class="carousel slide" data-bs-interval="false">
