@@ -1,13 +1,26 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>마이페이지</title>
-    <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <script>
         function checkPassword(password){
+            // 비밀번호가 올바른지 체크
+            password = password.trim();
+
+            if (password.length == 0) {
+                $('#password').focus();
+                toastWarning('비밀번호를 입력해주세요.');
+                return;
+            }
+            if (password.length < 4) {
+                toastWarning('비밀번호를 4자 이상 입력해주세요.');
+                $('#password').focus();
+                return;
+            }
+
             const xhttp = new XMLHttpRequest();
 
             xhttp.open("GET", "/members/mypage?password="+password);
@@ -20,11 +33,10 @@
 
                     if (data == true){
                         pwInfo.innerHTML = "";
-                        $("#username").removeAttr("disabled");
-                        $("#newpassword").removeAttr("disabled");
+                        $(".change").removeAttr("disabled");
+                        $(".currentpw").prop("disabled", true);
                     } else{
-                        $("#username").prop("disabled", true);
-                        $("#newpassword").prop("disabled", true);
+                        $(".change").prop("disabled", true);
                         pwInfo.innerHTML =`<div class="text-[#F83758] text-xs">비밀번호가 올바르지 않습니다.</div>
                             <div class="flex flex-row font-normal text-[#F83758] text-xs">비밀번호를&nbsp;
                             <div class="font-semibold">다시 입력</div>해주세요.</div>`;
@@ -63,6 +75,9 @@
                         usernameInfo.innerHTML =`
                             <div class="flex flex-row font-semibold text-[#4392F9] text-xs"> ${username}
                             <div class="font-normal">으로 변경되었습니다.</div></div>`;
+                        $('.input').val('');
+                        $(".currentpw").removeAttr("disabled");
+                        $(".change").prop("disabled", true);
                     } else if (data == false && username === $('#memberUsername').val() ) {
                         usernameInfo.innerHTML =`<div class="flex flex-row font-normal text-[#F83758] text-xs">현재 아이디와&nbsp;
                             <div class="font-semibold">동일</div>합니다.</div>
@@ -104,6 +119,9 @@
                     if (data == true){
                         newpwInfo.innerHTML =`
                             <div class="flex flex-row font-normal text-[#4392F9] text-xs">비밀번호가 변경되었습니다.</div>`;
+                        $('.input').val('');
+                        $(".currentpw").removeAttr("disabled");
+                        $(".change").prop("disabled", true);
                     } else if (data == false) {
                         newpwInfo.innerHTML =`<div class="flex flex-row font-normal text-[#F83758] text-xs">현재 비밀번호와&nbsp;
                             <div class="font-semibold">동일</div>합니다.</div>
@@ -137,8 +155,8 @@
                 <div class="text-xs">현재 비밀번호</div>
                 <div id="pwInfo"></div>
                 <div class="form-control relative my-1">
-                    <input type="password" id= "password" placeholder="현재 비밀번호를 입력해주세요" class="w-full input input-bordered text-black text-xs" style="height: 32px; font-size: 12px">
-                    <button onclick="checkPassword(document.getElementById('password').value)" class="bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
+                    <input type="password" id="password" placeholder="현재 비밀번호를 입력해주세요" class="currentpw w-full input input-bordered text-black text-xs" style="height: 32px; font-size: 12px">
+                    <button onclick="checkPassword(document.getElementById('password').value)" class="currentpw bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
                 </div>
             </div>
             <!-- 아이디 변경 -->
@@ -146,8 +164,8 @@
                 <div class="text-xs">아이디 변경</div>
                 <div id="usernameInfo"></div>
                 <div class="form-control relative my-1">
-                    <input type="text" id= "username" placeholder="변경할 아이디를 입력해주세요" class="w-full input input-bordered text-black text-xs" disabled style="height: 32px; font-size: 12px">
-                    <button onclick="changeUsername(document.getElementById('username').value, document.getElementById('password').value)" class="bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
+                    <input type="text" id="username" placeholder="변경할 아이디를 입력해주세요" class="change w-full input input-bordered text-black text-xs" disabled style="height: 32px; font-size: 12px">
+                    <button onclick="changeUsername(document.getElementById('username').value, document.getElementById('password').value)" disabled class="change bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
                 </div>
             </div>
             <!-- 비밀번호 변경 -->
@@ -155,8 +173,8 @@
                 <div class="text-xs">비밀번호 변경</div>
                 <div id="newpwInfo"></div>
                 <div class="form-control relative my-1">
-                    <input type="password" id= "newpassword" placeholder="변경할 비밀번호를 입력해주세요" class="w-full input input-bordered text-black text-xs" disabled style="height: 32px; font-size: 12px">
-                    <button onclick="changePassword(document.getElementById('newpassword').value)" class="bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
+                    <input type="password" id="newpassword" placeholder="변경할 비밀번호를 입력해주세요" class="change w-full input input-bordered text-black text-xs" disabled style="height: 32px; font-size: 12px">
+                    <button onclick="changePassword(document.getElementById('newpassword').value)" disabled class="change bg-[#78C4BA] rounded text-[#ffffff] absolute bottom-1 right-2 p-1" style="font-size: 9px;">입력</button>
                 </div>
             </div>
         </div>
@@ -188,5 +206,4 @@
     </div>
 </main>
 </body>
-
 </html>
