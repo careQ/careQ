@@ -130,7 +130,7 @@
                                         <div class="bg-[#E4EEED] text-left p-2 border border-[#78C4BA] rounded-lg text-xs">
                                             <span th:text="'병원: ' + ${reservation.admin.hospital.name}"></span><br>
                                             <span th:text="'진료과: ' + ${reservation.admin.subject.name}"></span><br>
-                                            <span th:text="'현황: ' + ${reservation.status}"></span><br>
+                                            <span>현황: 승인 대기 중</span><br>
                                             <span th:text="'일시: ' + ${reservation.getFormattedDate()}"></span><br>
                                             <span class="text-[#F83758]">잊지 않고 방문 부탁드립니다.</span>
                                         </div>
@@ -139,7 +139,7 @@
                                         <div class="bg-[#E4EEED] text-left p-2 border border-[#78C4BA] rounded-lg text-xs">
                                             <span th:text="'병원: ' + ${reservation.admin.hospital.name}"></span><br>
                                             <span th:text="'진료과: ' + ${reservation.admin.subject.name}"></span><br>
-                                            <span th:text="'현황: ' + ${reservation.status}"></span><br>
+                                            <span>현황: 예약 확정</span><br>
                                             <span th:text="'일시: ' + ${reservation.getFormattedDate()}"></span><br>
                                             <span class="text-[#F83758]">잊지 않고 방문 부탁드립니다.</span>
                                         </div>
