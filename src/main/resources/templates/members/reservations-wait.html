@@ -1,73 +1,11 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>예약 대기 페이지</title>
-    <style>
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #78C4BA;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="/css/loader.css">
     <script src="/webjars/jquery/jquery.min.js"></script>
     <script src="/webjars/sockjs-client/sockjs.min.js"></script>
     <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-    <script>
-        var stompClient = null;
-        function connect() {
-            var socket = new SockJS('/ws/reservation');
-            stompClient = Stomp.over(socket);
-            stompClient.connect({}, function (frame) {
-                console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/reservations/main/subjects/'+window.location.pathname.split('/')[3]
-                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
-                    console.log(JSON.parse(message.body));
-                });
-                stompClient.subscribe('/topic/reservations/members/'+document.getElementById('getMemberId').value
-                    +'/subjects/'+window.location.pathname.split('/')[3]
-                    +'/hospitals/'+window.location.pathname.split('/')[5], function (message) {
-                    if((JSON.parse(message.body).userType == 'ADMIN')&&(JSON.parse(message.body).status == 'CONFIRMED')){
-                        console.log(JSON.parse(message.body));
-                        window.location.href = window.location.href + "/confirm";
-                    }
-                });
-            });
-        }
-
-        function send(memberId) {
-            let msg = {
-                'userType': 'MEMBER',
-                'memberId': memberId,
-                'hospitalId': window.location.pathname.split('/')[5],
-                'subjectId': window.location.pathname.split('/')[3],
-                'status': 'PENDING'
-            }
-
-            stompClient.send("/app/reservation/main", {}, JSON.stringify(msg));
-        }
-
-        function disconnect() {
-            if (stompClient !== null) {
-                stompClient.disconnect();
-            }
-            console.log("Disconnected");
-        }
-
-        $(function () {
-            $(document).ready(function(){connect();})
-            $( "#delete-btn" ).click(function() {
-                var memberId = document.getElementById('getMemberId').value;
-                send(memberId); });
-            $( "#disconnect" ).click(function() { disconnect(); });
-        });
-    </script>
+    <script src="/js/member/reservation-wait.js"></script>
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">

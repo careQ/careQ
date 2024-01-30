@@ -1,76 +1,9 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>관리자 채팅방 목록 페이지</title>
-    <!--jQuery-->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        table th, table td {
-            border-top: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            border-right: none;
-        }
-
-        table thead tr {
-            background-color: #f2f2f2;
-        }
-    </style>
-    <script>
-        $(document).ready(function() {
-            getChats('');
-        });
-
-        function getChats(name){
-            const xhttp = new XMLHttpRequest();
-
-            xhttp.open("GET", window.location.pathname + "?name=" + name);
-            xhttp.send();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    var data = JSON.parse(this.response);
-
-                    var chatrooms = document.getElementById("t_body");
-                    chatrooms.innerHTML = "";
-
-                    data.forEach(function (chat, index) {
-                        var createDate = getDate(chat.createDate);
-                        var modifyDate = getDate(chat.modifyDate);
-
-                        var row = `<tr>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center">${index+1}</td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center">${chat.memberUsername}</td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center">`+modifyDate+`</td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center">`+createDate+`</td>
-                    <td class="border-t border-b py-2 px-4 text-sm text-center">
-                        <a href='/admins/chatrooms/`+chat.id+`'>
-                            <button class="bg-[#78c4ba] text-white py-1 px-2 rounded">채팅하기</button>
-                        </a>
-                    </td>
-                </tr>`;
-                        chatrooms.innerHTML += row;
-                    });
-
-                }
-            };
-        }
-
-        function getDate(date){
-            var d = new Date(date);
-
-            var year = d.getFullYear();
-            var month = ('0' + (d.getMonth() + 1)).slice(-2);
-            var day = ('0' + d.getDate()).slice(-2);
-
-            var hours = ('0' + d.getHours()).slice(-2);
-            var minutes = ('0' + d.getMinutes()).slice(-2);
-            var seconds = ('0' + d.getSeconds()).slice(-2);
-            return year + "-" + month + "-" + day + " " + hours + ":" + minutes + ":" + seconds;
-        }
-    </script>
+    <link rel="stylesheet" href="/css/table.css">
+    <script src="/js/admin/chatrooms.js"></script>
 </head>
 <body>
 <main layout:fragment="main">
@@ -110,12 +43,7 @@
         <div class="flex justify-between items-center">
             <h1 class="font-semibold text-lg text-[#78C4BA]">채팅방 관리</h1>
             <!-- 검색창 -->
-            <style>
-                .input-group {
-                    width: auto;
-                }
-            </style>
-            <div class="input-group">
+            <div class="input-group" style="width: auto;">
                 <input type="text" id="name" placeholder="환자ID로 검색" class="input input-bordered text-black text-xs" style="height: 32px;width: 212px;">
                 <button onclick="getChats(document.getElementById('name').value)" class="btn btn-sm" style="background-color: #78C4BA !important; border: none;">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
