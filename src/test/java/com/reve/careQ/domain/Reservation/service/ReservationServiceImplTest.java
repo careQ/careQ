@@ -59,7 +59,7 @@ public class ReservationServiceImplTest {
         Long memberId = member.getId();
 
         // 멤버 예약 생성
-        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         List<Reservation> reservations = reservationService.findByMemberIdAndIsDeletedFalse(memberId);
 
@@ -75,7 +75,7 @@ public class ReservationServiceImplTest {
         Long memberId = member.getId();
 
         // 멤버 예약 생성
-        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         Optional<Reservation> optionalReservation = reservationService.findByAdminIdAndMemberId(adminId, memberId);
 
@@ -101,7 +101,7 @@ public class ReservationServiceImplTest {
     @Test
     @DisplayName("예약이 가능한 시간에 예약을 시도하면 예약에 성공한다.")
     public void createReservationTest() {
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         assertNotNull(reservation);
         assertEquals(reservation.getMember(), member);
@@ -111,7 +111,7 @@ public class ReservationServiceImplTest {
     @Test
     @DisplayName("이미 예약된 시간에 예약을 시도했을 경우, 예외를 던진다.")
     public void createReservationWithDuplicateTimeTest() {
-        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         assertThrows(RuntimeException.class, () ->
                 reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00"));
@@ -121,7 +121,7 @@ public class ReservationServiceImplTest {
     @DisplayName("예약 생성 후 데이터 삽입한다.")
     public void insertTest() {
         String selectedDate = "2024-02-02";
-        String selectedTime = "10:00:00";
+        String selectedTime = "10:00";
 
         RsData<Reservation> result = reservationService.insert(hospitalId, subjectId, selectedDate, selectedTime);
 
@@ -152,7 +152,7 @@ public class ReservationServiceImplTest {
         Long memberId = member.getId();
 
         // 이미 예약한 상태
-        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         RsData<String> result = reservationService.checkDuplicateReservation(adminId, memberId);
 
@@ -165,7 +165,7 @@ public class ReservationServiceImplTest {
     @Test
     @DisplayName("예약은 논리 삭제 후, 상태가 CANCELLED로 변경된다.")
     public void deleteReservationTest() {
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
         RsData<String> result = reservationService.deleteReservation(reservation.getId());
 
         assertNotNull(result);
@@ -183,7 +183,7 @@ public class ReservationServiceImplTest {
     @Test
     @DisplayName("예약 생성 시 진료 상태는 WAITING이고, 예약 상태는 PENDING이다.")
     public void whenCreateReservationThenStatusTest() {
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         assertNotNull(reservation);
         assertEquals(RegisterChartStatus.WAITING, reservation.getRegisterStatus());
@@ -194,7 +194,7 @@ public class ReservationServiceImplTest {
     @DisplayName("회원은 예약 상태가 PENDING 또는 CONFIRMED일 때, CANCELLED로 변경하고 예약을 논리 삭제할 수 있다.")
     public void updateStatusToCancelledByAdminAndMemberTest1() {
         Long memberId = member.getId();
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         // status를 PENDING 또는 CONFIRMED
         reservationService.updateStatus(reservation, ReservationStatus.PENDING);
@@ -217,7 +217,7 @@ public class ReservationServiceImplTest {
     @Test
     @DisplayName("예약을 생성한 후, updateStatus()를 호출하여 예약 상태가 CONFIRMED로 업데이트된다.")
     public void updateStatusTest() {
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
         RsData<Reservation> result = reservationService.updateStatus(reservation, ReservationStatus.CONFIRMED);
 
         assertNotNull(result);
@@ -230,7 +230,7 @@ public class ReservationServiceImplTest {
     @DisplayName("관리자는 예약의 진료 상태가 WAITING일 때, ENTER로 변경할 수 있다.")
     public void updateStatusByAdminAndMemberTest() {
         Long memberId = member.getId();
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         // registerStatus를 WAITING
         assertEquals(RegisterChartStatus.WAITING, reservation.getRegisterStatus());
@@ -249,7 +249,7 @@ public class ReservationServiceImplTest {
     @DisplayName("관리자는 예약의 진료 상태가 ENTER일 때, COMPLETE로 변경하고 예약을 논리 삭제할 수 있다.")
     public void updateStatusToCompleteByAdminAndMemberTest() {
         Long memberId = member.getId();
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         // registerStatus를 ENTER
         reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
@@ -269,7 +269,7 @@ public class ReservationServiceImplTest {
     @DisplayName("관리자는 예약의 진료 상태가 WAITING 또는 ENTER일 때, CANCELLED로 변경하고 예약을 논리 삭제할 수 있다.")
     public void updateStatusToCancelledByAdminAndMemberTest() {
         Long memberId = member.getId();
-        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00:00");
+        Reservation reservation = reservationService.createReservation(hospitalId, subjectId, "2024-02-01", "10:00");
 
         // registerStatus를 WAITING 또는 ENTER로
         reservationService.updateStatusByAdminAndMember(admin, memberId, RegisterChartStatus.ENTER);
