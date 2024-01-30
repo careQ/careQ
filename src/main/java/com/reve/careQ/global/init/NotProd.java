@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.annotation.Transactional;
 
 @Configuration
-@Profile({"local", "test"})
+@Profile({"secret", "test"})
 public class NotProd {
     @Bean
     CommandLineRunner initData(
