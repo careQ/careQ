@@ -2,61 +2,11 @@
 <head>
     <title>병원 선택 페이지</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <style>
-        .scroll::-webkit-scrollbar{
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/scroll.css">
 </head>
 <body>
 <main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
-    <script>
-        $(document).ready = getHospitals('', '', '');
-
-        function getCity(state){
-            const xhttp = new XMLHttpRequest();
-
-            xhttp.open("GET", window.location.pathname + "?state=" + state);
-            xhttp.send();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    var data = JSON.parse(this.response);
-
-                    var selectcity = document.getElementById("city");
-                    selectcity.innerHTML = "<option value=''>구군 선택</option>";
-
-                    data.forEach(function (city) {
-                        var row = "<option value='" + city + "'>"+ city + "</option>";
-                        selectcity.innerHTML += row;
-                    });
-
-                }
-            };
-        }
-
-        function getHospitals(state, city, name){
-            const xhttp = new XMLHttpRequest();
-
-            xhttp.open("GET", window.location.pathname +"?state=" + state + "&city=" + city + "&name=" + name);
-            xhttp.send();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    var data = JSON.parse(this.response);
-
-                    var tbody = document.getElementById("t_body");
-                    tbody.innerHTML = "";
-
-                    data.forEach(function (hospital) {
-                        var row = "<tr><td><a href='" + window.location.pathname + "/" + hospital.id+ "'><button class='w-64 rounded-lg bg-[#f4f4f4] text-center p-2 mt-2'>";
-                        row += "<div id='hospital' class='text-[#121212] text-left ml-3' style='font-size: 0.8rem;'>" + hospital.name + "</div>";
-                        row += "</button></a></td></tr>";
-                        tbody.innerHTML += row;
-                    });
-
-                }
-            };
-        }
-    </script>
+    <script src="/js/member/hospitals.js"></script>
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
         <!-- 헤더 -->
         <div class="flex items-center mb-6">
