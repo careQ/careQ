@@ -4,7 +4,7 @@ spring:
       filter:
         enabled: true
   profiles:
-    active: local
+    active: secret
     include: secret
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
