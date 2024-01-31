@@ -7,8 +7,8 @@ spring:
     active: prod
     include: secret
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/careQ?useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3306/careQ?useUnicode=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul
   jpa:
     hibernate:
       ddl-auto: create
