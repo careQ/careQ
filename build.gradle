@@ -30,6 +30,7 @@ dependencies {
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'com.h2database:h2'
 	runtimeOnly 'com.mysql:mysql-connector-j' // MySQL
 	implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.3' // MariaDB
 	annotationProcessor 'org.projectlombok:lombok'
