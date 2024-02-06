@@ -1,3 +1,5 @@
+server:
+  port: 8083
 spring:
   mvc:
     hidden-method:
@@ -8,7 +10,9 @@ spring:
     include: secret
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3306/careQ?useUnicode=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul
+    url: '${custom.db.url}'
+    username: '${custom.db.username}'
+    password: '${custom.db.password}'
   jpa:
     hibernate:
       ddl-auto: create
