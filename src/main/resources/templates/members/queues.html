@@ -33,7 +33,7 @@
             </div>
         </div>
         <!-- 선택한 병원/진료과 안내 -->
-        <div class="flex w-64 justify-center mt-10 mb-6">
+        <div class="flex w-64 justify-center mt-10 mb-10">
             <input id="getMemberId" type="hidden" th:value="${@rq.getMember().getId()}">
             <div class="flex flex-col justify-center text-center h-full text-lg font-bold">
                 <div class="text-[#858587]" th:text="|${@rq.getMember.username}이 선택하신|">이름이 선택하신</div>
@@ -41,9 +41,9 @@
             </div>
         </div>
         <!-- 대기 현황 -->
-        <div class="text-center w-64 h-32 my-4">
+        <div class="text-center w-64 h-32 my-8">
             <div class="h-full flex flex-col justify-center">
-                <div class="flex justify-between">
+                <div class="flex justify-between mb-10">
                     <div class="w-1/2 h-25 rounded-lg bg-[#E4EEED] text-center p-2 border border-[#78C4BA] mx-2 ml-5">
                         <div class="text-[#78C4BA]">현재 대기</div>
                         <div class="text-black" style="font-size: 1.15rem;" th:if="${queueInfo.waitingStatus} == '내 차례'" th:text="${queueInfo.waitingStatus}"></div>
@@ -61,7 +61,7 @@
             </div>
         </div>
         <!-- 줄서기 버튼 -->
-        <div class="flex flex-col w-64 my-10">
+        <div class="flex flex-col w-64 mt-5">
             <div id="status-btn">
                 <form th:if="${queueInfo.registerChart == null}" th:action="@{/members/subjects/{subjectId}/hospitals/{hospitalId}/queues(subjectId=${queueInfo.subject.id}, hospitalId=${queueInfo.hospital.id})}" method="POST">
                     <button type="submit" id="register-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
