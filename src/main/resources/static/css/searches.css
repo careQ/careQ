@@ -25,7 +25,7 @@ body {
     color: #78C4BA;
     cursor: pointer;
     position: absolute;
-    left: 313px;
+    left: 20px;
 }
 
 .back-button svg {
@@ -53,11 +53,21 @@ body {
 }
 
 .select {
-    width: 50%;
-    margin-right: 1rem;
-    font-size: 0.875rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    flex: 0.5 !important;
+    width: 120px !important;
+    margin-right: 0.5rem !important;
+    font-size: 0.875rem !important;
+    border: 1px solid #ccc !important;
+    border-radius: 7px !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    padding-left: 0.7rem !important;
+    padding-right: 0.5rem !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right center !important;
+    background-size: 16px !important;
 }
 
 #searchButton {
@@ -166,7 +176,7 @@ body {
 .search-button {
     background-color: #78C4BA;
     border: none;
-    padding: -30px;
+    padding: 10px 8px;
     cursor: pointer;
     border-radius: 5px;
 }
