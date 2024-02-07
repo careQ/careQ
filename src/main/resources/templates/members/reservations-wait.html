@@ -53,8 +53,8 @@
             <p style="font-size: 14px;" th:text="'예약 일자 : ' + ${reservation.getFormattedDate()}"></p>
         </div>
 
-        <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/' + ${reservationId}}" method="post">
-            <button id="delete-btn" class="btn btn-md btn-accent gap-3 border-none w-64" style="background-color: #78C4BA; padding: 5px 15px; margin: 10px; border: 1px solid #78C4BA; box-shadow: none;">
+        <form id="reservation-delete" th:action="@{'/members/subjects/' + ${subject.id} + '/hospitals/' + ${hospital.id} + '/reservations/' + ${reservationId}}" method="post" style="margin: 0;">
+            <button id="delete-btn" class="btn btn-md btn-accent gap-3 border-none w-64 mt-5" style="background-color: #78C4BA; padding: 5px 15px; border: 1px solid #78C4BA; box-shadow: none;">
                 <span class="text-white" style="font-size: 15px;">삭제</span>
             </button>
         </form>

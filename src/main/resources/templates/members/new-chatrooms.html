@@ -23,11 +23,8 @@
             </div>
         </div>
         <!-- 문구 -->
-        <div class="bg-[#78C4BA] flex w-64">
-            <div class="flex w-1/2 h-full">
-                <!-- 사진 -->
-            </div>
-            <div class="flex flex-col text-center w-1/2 h-full text-white text-xs mt-3 mb-5">
+        <div class="bg-[#78C4BA] flex w-64 justify-center">
+            <div class="flex flex-col text-center w-1/2 text-white text-sm my-5">
                 <div>채팅을 원하시는</div>
                 <div class="font-semibold">진료과와 병원명을</div>
                 <div>
@@ -36,29 +33,29 @@
                 </div>
             </div>
         </div>
-        <div class="flex-1 flex items-center">
-        <form id="searchChatroomForm" th:action="@{/members/chatrooms/new-chatrooms}" method="POST">
-            <!--진료과/병원 검색-->
-            <input type="hidden" id="memberId" name="memberId" th:value="${@rq.getMember.id}">
-            <div class="flex flex-col justify-center items-center w-64 my-15">
-                <div class="subject-input mb-5">
-                    <div style="width: 210px;">진료과목</div>
-                    <input type="text" name="subjectName" placeholder="진료 과목을 입력해주세요." class="input input-bordered text-black text-xs w-2/3" style="height: 32px;width: 210px;">
-                </div>
-                <div class="hospital-input">
-                    <div style="width: 210px;">병원명</div>
-                    <input type="text" name="hospitalName" placeholder="병원명을 입력해주세요." class="input input-bordered text-black text-xs w-2/3" style="height: 32px;width: 210px;">
-                </div>
-            </div>
-            <!-- 채팅방 입장 버튼 -->
-            <div class="flex flex-col w-64 my-10">
-                <button onclick="searchChatroom(this)" class="w-full rounded bg-[#78C4BA] text-center p-2 border border-[#78C4BA] mb-4">
-                    <div class="text-[#ffffff] flex justify-center h-full">
-                        <div>채팅방 입장하기</div>
+        <div class="flex-1 flex items-end">
+            <form class="flex flex-col m-0" id="searchChatroomForm" th:action="@{/members/chatrooms/new-chatrooms}" method="POST">
+                <!--진료과/병원 검색-->
+                <input type="hidden" id="memberId" name="memberId" th:value="${@rq.getMember.id}">
+                <div class="flex flex-col justify-center items-center w-64 my-15">
+                    <div class="subject-input mb-10">
+                        <div style="width: 210px;">진료과목</div>
+                        <input type="text" name="subjectName" placeholder="진료 과목을 입력해주세요." class="input input-bordered text-black text-xs w-2/3" style="height: 32px;width: 210px;">
                     </div>
-                </button>
-            </div>
-        </form>
+                    <div class="hospital-input">
+                        <div style="width: 210px;">병원명</div>
+                        <input type="text" name="hospitalName" placeholder="병원명을 입력해주세요." class="input input-bordered text-black text-xs w-2/3" style="height: 32px;width: 210px;">
+                    </div>
+                </div>
+                <!-- 채팅방 입장 버튼 -->
+                <div class="flex flex-col items-center w-64 mt-20">
+                    <button onclick="searchChatroom(this)" class="w-64 rounded bg-[#78C4BA] text-center p-2 border border-[#78C4BA]">
+                        <div class="text-[#ffffff] flex justify-center h-full">
+                            <div>채팅방 입장하기</div>
+                        </div>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </main>
