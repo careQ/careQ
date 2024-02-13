@@ -1,24 +1,28 @@
 <html layout:decorate="~{layout/layout.html}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
-    <title>약국 및 병원 검색 페이지</title>
+    <title>약국 검색 페이지</title>
     <link rel="stylesheet" href="/css/searches.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
-<main layout:fragment="main" style="height: 100vh; width:70vh; display: flex; justify-content: center; align-items: center;">
+<main layout:fragment="main" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <div class="sm:w-1/3 md:w-1/2 lg:w-1/3 h-2/3 flex flex-col items-center justify-center overflow-hidden">
-        <div class="h-8 w-64 flex items-center justify-center relative">
-            <a class="absolute left-2" th:href="@{/members}">
+        <!-- 헤더 -->
+        <div class="flex w-64 justify-between items-center my-3 px-2">
+            <a th:href="@{/members}">
                 <button>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="#78C4BA">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
                 </button>
             </a>
-            <h1 class="font-semibold text-lg text-[#78C4BA]">Search</h1>
+            <div class="flex">
+                <h1 class="font-semibold text-lg text-[#78C4BA]">search</h1>
+            </div>
+            <div class="flex w-6 h-6"></div>
         </div>
-        <!—시도/시군구 셀렉트 박스 —>
-        <div class="select-container mt-3">
+        <!--시도/시군구 셀렉트 박스-->
+        <div class="select-container mt-3 w-64">
             <select id="Q0" class="select" name="addressRegion2" style="font-size: 12px;"></select>
             <select id="Q1" class="select" name="addressRegion3" style="font-size: 12px;"></select>
             <button class="search-button">
@@ -27,9 +31,9 @@
                 </svg>
             </button>
         </div>
-        <!— 약국 리스트 —>
-        <div class="list" id="locationList"></div>
-        <div class="map-container" id="map" style="width:100%; height:200px;"></div>
+        <!--약국 리스트-->
+        <div class="list flex w-64 flex-col" id="locationList"></div>
+        <div class="map-container w-64" id="map" style="height:200px;"></div>
     </div>
     <script type="text/javascript" th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${mapKey}}"></script>
     <script type="module" src="/js/api.js"></script>

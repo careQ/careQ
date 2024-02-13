@@ -34,7 +34,6 @@ public class MemberController {
     private final Rq rq;
     private final ApiKeys apiKeys;
 
-    @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
     public String showLogin(@RequestParam(value = "error", required = false)String error, @RequestParam(value = "exception", required = false)String exception, Model model) {
         model.addAttribute("error", error);
@@ -58,13 +57,11 @@ public class MemberController {
         return "members/members-home";
     }
 
-    @PreAuthorize("isAnonymous()")
     @GetMapping("/join")
     public String showJoin() {
         return "members/join";
     }
 
-    @PreAuthorize("isAnonymous()")
     @PostMapping("/join")
     public String join(@Valid JoinFormDto joinFormDto) {
         RsData<Member> joinRs = memberService.join("careQ",joinFormDto.getUsername(), joinFormDto.getPassword(), joinFormDto.getEmail());
@@ -96,14 +93,11 @@ public class MemberController {
         return memberService.checkPassword(password, rq.getMember().getId());
     }
 
-
-    @PreAuthorize("isAnonymous()")
     @GetMapping("/passwords")
     public String showFindPassword() {
         return "members/passwords";
     }
 
-    @PreAuthorize("isAnonymous()")
     @PostMapping("/passwords")
     public String findPassword(String username, String email, HttpSession session) {
         RsData<Member> findPasswordRs = memberService.findPassword(username, email);
@@ -113,7 +107,6 @@ public class MemberController {
         return redirectToPageWithMsg("/members/passwords/mail", findPasswordRs);
     }
 
-    @PreAuthorize("isAnonymous()")
     @GetMapping("/passwords/mail")
     public ModelAndView findPasswordEmail(HttpSession session) {
         ModelAndView mv = new ModelAndView();
