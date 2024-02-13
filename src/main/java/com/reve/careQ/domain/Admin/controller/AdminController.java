@@ -10,7 +10,6 @@ import com.reve.careQ.domain.RegisterChart.service.RegisterChartService;
 import com.reve.careQ.domain.Reservation.service.ReservationService;
 import com.reve.careQ.global.rq.AdminRq;
 import com.reve.careQ.domain.Reservation.entity.Reservation;
-import com.reve.careQ.global.rq.Rq;
 import com.reve.careQ.global.rsData.RsData;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +35,8 @@ public class AdminController {
     private final AdminService adminService;
     private final AdminRq adminRq;
     private final ReservationService reservationService;
-    private final Rq rq;
     private final RegisterChartService registerChartService;
 
-    @PreAuthorize("isAnonymous()")
     @GetMapping("/login")
     public String showLogin(@RequestParam(value = "error", required = false)String error, @RequestParam(value = "exception", required = false)String exception, Model model) {
         model.addAttribute("error", error);
@@ -53,13 +50,11 @@ public class AdminController {
         return "admins/admins-home";
     }
 
-    @PreAuthorize("isAnonymous()")
     @GetMapping("/join")
     public String showJoin() {
         return "admins/join";
     }
 
-    @PreAuthorize("isAnonymous()")
     @PostMapping("/join")
     public String join(@Valid JoinFormDto joinFormDto) {
 
@@ -159,6 +154,6 @@ public class AdminController {
 
     private String handleRegisterError(RuntimeException e) {
         String errorMsg = e.getMessage();
-        return rq.historyBack(errorMsg);
+        return adminRq.historyBack(errorMsg);
     }
 }
