@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: application-secret.yml 파일 만들기
-          run: echo "${{ secrets.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.yml
+        run: echo "${{ secrets.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.yml
 
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
