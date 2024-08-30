@@ -1,5 +1,6 @@
 server:
   port: 8083
+
 spring:
   mvc:
     hidden-method:
@@ -18,6 +19,7 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MariaDB102Dialect
         show_sql: true
         format_sql: true
         use_sql_comments: true
