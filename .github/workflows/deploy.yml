@@ -9,21 +9,45 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: SSH로 EC2에 접속하기
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          APPLICATION_SECRET: ${{ secrets.APPLICATION_SECRET }}
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: JDK 17버전 설치
+        uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: 17
+
+      - name: application-secret.yml 파일 만들기
+        run: echo "${{ secret.APPLICATION_SECRET }}" > ./src/main/resources/application-secret.yml
+
+      - name: 테스트 및 빌드하기
+        run: ./gradlew clean build
+
+      - name: 빌드된 파일 이름 변경하기
+        run: mv ./build/libs/careQ-0.0.1-SNAPSHOT.jar ./project.jar
+
+      - name: SCP로 EC2에 빌드된 파일 전송하기
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: APPLICATION_SECRET
+          source: project.jar
+          target: /home/ubuntu/careq-server/reve
+
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            cd /home/ubuntu/careQ
-            rm -rf src/main/resources/application-secret.yml
-            git pull origin main
-            echo "$APPLICATION_SECRET" > src/main/resources/application-secret.yml
-            ./gradlew clean build
-            sudo fuser -k -n tcp 8083 || true 
-            nohup java -jar build/libs/careQ-0.0.1-SNAPSHOT.jar > ./output.log 2>&1 &
+            rm -rf /home/ubuntu/careq-server/current
+            mkdir /home/ubuntu/careq-server/current
+            mv /home/ubuntu/careq-server/reve/project.jar /home/ubuntu/careq-server/current/project.jar
+            cd /home/ubuntu/careq-server/current
+            sudo fuser -k -n tcp 8083 || true
+            nohup java -jar project.jar > ./output.log 2>&1 & 
+            rm -rf /home/ubuntu/careq-server/reve
