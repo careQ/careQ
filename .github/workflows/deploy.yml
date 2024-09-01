@@ -25,5 +25,5 @@ jobs:
             git pull origin main
             echo "$APPLICATION_SECRET" > src/main/resources/application-secret.yml
             ./gradlew clean build
-            sudo fuser -k -n tcp 8080 || true 
+            sudo fuser -k -n tcp 8083 || true 
             nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
